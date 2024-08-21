@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "727037485270",
+    "project_id": "mealmaestro-46c0d",
+    "storage_bucket": "mealmaestro-46c0d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:727037485270:android:92112d0ce3e9129fdce977",
+        "android_client_info": {
+          "package_name": "com.example.mealmaestro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "727037485270-fdn9tbbnfb9vu0d4ciltcl3lje02nn5s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mealmaestro",
+            "certificate_hash": "bf62659113e17c8ec15f1ab2caa6adea899e9a4b"
+          }
+        },
+        {
+          "client_id": "727037485270-lesrbutdk1uca69kht24k5f7tmk27u3a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLbNh_8nN7mlXvB_reKyL_GMRxD0cDTcY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "727037485270-lesrbutdk1uca69kht24k5f7tmk27u3a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

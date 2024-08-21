@@ -1,0 +1,80 @@
+Index: .idea/.gitignore
+===================================================================
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+deleted file mode 100644
+--- a/.idea/.gitignore	(revision 2b4bef7acc4ea0bd84e967b8dfad6bc384cdecbd)
++++ /dev/null	(revision 2b4bef7acc4ea0bd84e967b8dfad6bc384cdecbd)
+@@ -1,3 +0,0 @@
+-# Default ignored files
+-/shelf/
+-/workspace.xml
+Index: .idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"VcsDirectoryMappings\">\r\n    <mapping directory=\"$PROJECT_DIR$\" vcs=\"Git\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/vcs.xml b/.idea/vcs.xml
+--- a/.idea/vcs.xml	(revision 2b4bef7acc4ea0bd84e967b8dfad6bc384cdecbd)
++++ b/.idea/vcs.xml	(date 1724208160916)
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="VcsDirectoryMappings">
+-    <mapping directory="$PROJECT_DIR$" vcs="Git" />
++    <mapping directory="" vcs="Git" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: gradle/libs.versions.toml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>[versions]\r\nagp = \"8.5.1\"\r\nkotlin = \"1.9.0\"\r\ncoreKtx = \"1.13.1\"\r\njunit = \"4.13.2\"\r\njunitVersion = \"1.2.1\"\r\nespressoCore = \"3.6.1\"\r\nappcompat = \"1.7.0\"\r\nmaterial = \"1.12.0\"\r\nactivity = \"1.9.1\"\r\nconstraintlayout = \"2.1.4\"\r\ngoogleGmsGoogleServices = \"4.4.2\"\r\nfirebaseAuth = \"23.0.0\"\r\n\r\n[libraries]\r\nandroidx-core-ktx = { group = \"androidx.core\", name = \"core-ktx\", version.ref = \"coreKtx\" }\r\njunit = { group = \"junit\", name = \"junit\", version.ref = \"junit\" }\r\nandroidx-junit = { group = \"androidx.test.ext\", name = \"junit\", version.ref = \"junitVersion\" }\r\nandroidx-espresso-core = { group = \"androidx.test.espresso\", name = \"espresso-core\", version.ref = \"espressoCore\" }\r\nandroidx-appcompat = { group = \"androidx.appcompat\", name = \"appcompat\", version.ref = \"appcompat\" }\r\nmaterial = { group = \"com.google.android.material\", name = \"material\", version.ref = \"material\" }\r\nandroidx-activity = { group = \"androidx.activity\", name = \"activity\", version.ref = \"activity\" }\r\nandroidx-constraintlayout = { group = \"androidx.constraintlayout\", name = \"constraintlayout\", version.ref = \"constraintlayout\" }\r\nfirebase-auth = { group = \"com.google.firebase\", name = \"firebase-auth\", version.ref = \"firebaseAuth\" }\r\n\r\n[plugins]\r\nandroid-application = { id = \"com.android.application\", version.ref = \"agp\" }\r\njetbrains-kotlin-android = { id = \"org.jetbrains.kotlin.android\", version.ref = \"kotlin\" }\r\ngoogle-gms-google-services = { id = \"com.google.gms.google-services\", version.ref = \"googleGmsGoogleServices\" }\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+--- a/gradle/libs.versions.toml	(revision 2b4bef7acc4ea0bd84e967b8dfad6bc384cdecbd)
++++ b/gradle/libs.versions.toml	(date 1724208324231)
+@@ -1,5 +1,5 @@
+ [versions]
+-agp = "8.5.1"
++agp = "8.5.2"
+ kotlin = "1.9.0"
+ coreKtx = "1.13.1"
+ junit = "4.13.2"
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><project version=\"4\">\r\n  <component name=\"ExternalStorageConfigurationManager\" enabled=\"true\" />\r\n  <component name=\"ProjectRootManager\" version=\"2\" languageLevel=\"JDK_17\" default=\"true\" project-jdk-name=\"jbr-17\" project-jdk-type=\"JavaSDK\">\r\n    <output url=\"file://$PROJECT_DIR$/build/classes\" />\r\n  </component>\r\n  <component name=\"ProjectType\">\r\n    <option name=\"id\" value=\"Android\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision 2b4bef7acc4ea0bd84e967b8dfad6bc384cdecbd)
++++ b/.idea/misc.xml	(date 1724208336575)
+@@ -1,3 +1,4 @@
++<?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="ExternalStorageConfigurationManager" enabled="true" />
+   <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="jbr-17" project-jdk-type="JavaSDK">
+Index: .idea/deploymentTargetSelector.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"deploymentTargetSelector\">\r\n    <selectionStates>\r\n      <SelectionState runConfigName=\"Unnamed\">\r\n        <option name=\"selectionMode\" value=\"DROPDOWN\" />\r\n      </SelectionState>\r\n    </selectionStates>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/deploymentTargetSelector.xml b/.idea/deploymentTargetSelector.xml
+--- a/.idea/deploymentTargetSelector.xml	(revision 2b4bef7acc4ea0bd84e967b8dfad6bc384cdecbd)
++++ b/.idea/deploymentTargetSelector.xml	(date 1724208336676)
+@@ -2,7 +2,7 @@
+ <project version="4">
+   <component name="deploymentTargetSelector">
+     <selectionStates>
+-      <SelectionState runConfigName="Unnamed">
++      <SelectionState runConfigName="app">
+         <option name="selectionMode" value="DROPDOWN" />
+       </SelectionState>
+     </selectionStates>
