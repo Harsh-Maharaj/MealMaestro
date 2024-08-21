@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
             navigationView.setCheckedItem(R.id.nav_home)
         }
         replaceFragment(HomeFragment())
-
+// testing
         bottomNavigationView.background = null
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
