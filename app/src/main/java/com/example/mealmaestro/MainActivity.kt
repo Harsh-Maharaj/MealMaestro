@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
-
+// bottom navigation view
         fab.setOnClickListener {
             showBottomDialog()
         }
