@@ -64,6 +64,8 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
+
+        //testing purposed for github merge and pull requests
 // bottom navigation view
         fab.setOnClickListener {
             showBottomDialog()
