@@ -1,11 +1,12 @@
-package com.example.mealmaestro
+package com.example.mealmaestro.Auth
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
+import com.example.mealmaestro.DataBase
+import com.example.mealmaestro.MainActivity
+import com.example.mealmaestro.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -15,6 +16,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 
 class GoogleAuth(private val activity: Activity, private val launcher: ActivityResultLauncher<Intent>) {
+
+    private val dataBase = DataBase()
 
     private val gso: GoogleSignInOptions by lazy {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -52,6 +55,7 @@ class GoogleAuth(private val activity: Activity, private val launcher: ActivityR
             .addOnCompleteListener(activity) { task ->
                 if (task.isSuccessful) {
                     Toast.makeText(activity, "Successfully Logged In", Toast.LENGTH_SHORT).show()
+                    dataBase.addUserToDataBase(account.email.toString(), auth.uid.toString())
                     activity.startActivity(Intent(activity, MainActivity::class.java))
                     activity.finish()
                 } else {

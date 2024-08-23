@@ -14,6 +14,10 @@
     <string name="facebook_app_id">1510595023178431</string>
     <string name="fb_login_protocol_scheme">fb1510595023178431</string>
     <string name="facebook_client_token">14865f48e80b5e8b5e41ad51d3f30f52</string>
+    <string name="add_friend">add friend</string>
+    <string name="message_user">message user</string>
+    <string name="user_profile_icon">user profile icon</string>
 
 
+<string name="dataBaseHTTPs">https://mealmaestro-46c0d-default-rtdb.asia-southeast1.firebasedatabase.app/</string>
 </resources>

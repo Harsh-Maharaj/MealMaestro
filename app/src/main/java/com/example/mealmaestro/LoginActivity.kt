@@ -1,16 +1,18 @@
 package com.example.mealmaestro
 
-import android.app.Activity
+import com.example.mealmaestro.Auth.FacebookAuth
 import android.content.Intent
 import android.os.Bundle
-import android.view.inputmethod.InputBinding
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.mealmaestro.Auth.GoogleAuth
+import com.example.mealmaestro.Auth.XAuth
 import com.example.mealmaestro.databinding.ActivityLoginBinding
+import com.facebook.CallbackManager
 import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : AppCompatActivity() {
@@ -18,6 +20,9 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var googleAuth: GoogleAuth
     private lateinit var auth: FirebaseAuth
+    private lateinit var callbackManager: CallbackManager
+    private lateinit var facebookAuth: FacebookAuth
+    private lateinit var xAuth: XAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +35,7 @@ class LoginActivity : AppCompatActivity() {
             insets
         }
 
+        supportActionBar?.hide()
         auth = FirebaseAuth.getInstance()
         binding.loginBtn.setOnClickListener {
             UserLogin()
@@ -39,7 +45,7 @@ class LoginActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // ============================= GOOGLE ====================================================
+        // ========================= GOOGLE ========================================================
         val getResult = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
@@ -50,26 +56,47 @@ class LoginActivity : AppCompatActivity() {
         binding.googleBtn.setOnClickListener {
             googleAuth.launchSignIn()
         }
+        // ======================= FACEBOOK ========================================================
+        facebookAuth = FacebookAuth(this@LoginActivity)
 
+        binding.facebookBtn.setOnClickListener {
+            facebookAuth.logInWithFacebook()
+        }
+        // =========================== X ===========================================================
+
+        xAuth = XAuth(this)
+
+        binding.xBtn.setOnClickListener {
+            xAuth.xAuth()
+        }
     }
 
-    // ========================= email and Password ================================================
-        private fun UserLogin(){
-            val userName = binding.loginUsername.text.toString()
-            val password = binding.loginPassword.text.toString()
+    // ========================= EMAIL & PASSWORD ================================================
+    private fun UserLogin() {
+        val userName = binding.loginUsername.text.toString()
+        val password = binding.loginPassword.text.toString()
 
-            if(userName.isEmpty()||password.isEmpty()){
-                Toast.makeText(this@LoginActivity,"please fill UserName and Password",Toast.LENGTH_SHORT).show()
-            } else {
-                auth.signInWithEmailAndPassword(userName, password)
-                    .addOnCompleteListener { task ->
-                        if(task.isSuccessful){
-                            Toast.makeText(this@LoginActivity, "Login Successfully",Toast.LENGTH_SHORT).show()
-                            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-                        }else{
-                            Toast.makeText(this@LoginActivity, "Login failed, please try again", Toast.LENGTH_SHORT).show()
-                        }
+        if (userName.isEmpty() || password.isEmpty()) {
+            Toast.makeText(
+                this@LoginActivity,
+                "please fill UserName and Password",
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            auth.signInWithEmailAndPassword(userName, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(this@LoginActivity, "Login Successfully", Toast.LENGTH_SHORT)
+                            .show()
+                        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                    } else {
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "Login failed, please try again",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-            }
+                }
         }
+    }
 }

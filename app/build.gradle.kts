@@ -42,16 +42,27 @@ android {
 
 dependencies {
 
-    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.firebase.auth)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
-    implementation("com.google.android.gms:play-services-auth:21.2.0")
-    implementation("com.facebook.android:facebook-login:latest.release")
+    implementation(libs.firebase.storage)
+    dependencies {
+        implementation(libs.androidx.core.ktx)
+        implementation(libs.androidx.appcompat)
+        implementation(libs.material)
+        implementation(libs.androidx.activity)
+        implementation(libs.androidx.constraintlayout)
+        implementation(libs.firebase.auth) // If this resolves to the correct Firebase auth library
+        implementation(libs.firebase.database)
+        testImplementation(libs.junit)
+        androidTestImplementation(libs.androidx.junit)
+        androidTestImplementation(libs.androidx.espresso.core)
+        implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+        implementation("com.google.android.gms:play-services-auth:21.2.0")
+        implementation("com.facebook.android:facebook-login:latest.release")
+        implementation ("com.github.bumptech.glide:glide:4.12.0")
+
+    }
+
 }

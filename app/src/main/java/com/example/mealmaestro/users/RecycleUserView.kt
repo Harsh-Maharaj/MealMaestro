@@ -1,0 +1,41 @@
+package com.example.mealmaestro.users
+
+import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.mealmaestro.DataBase
+import com.example.mealmaestro.databinding.ActivityRecycleUserViewBinding
+
+class RecycleUserView : AppCompatActivity() {
+
+    private lateinit var binding: ActivityRecycleUserViewBinding
+    private lateinit var userList: ArrayList<Users>
+    private lateinit var adapter: UsersAdapter
+    private lateinit var userRecyclerView: RecyclerView // bring the user and allocate them in the recycler viewer
+    private lateinit var dataBase: DataBase
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityRecycleUserViewBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        enableEdgeToEdge()
+        ViewCompat.setOnApplyWindowInsetsListener(binding.recyclingUserView) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        userList = ArrayList()
+        adapter = UsersAdapter(this@RecycleUserView, userList)
+        userRecyclerView = binding.recyclingUserView
+        userRecyclerView.layoutManager = LinearLayoutManager(this@RecycleUserView)
+        userRecyclerView.adapter = adapter
+        dataBase = DataBase(this)
+        dataBase.getUsersFromDataBase(userList,adapter) // call the database for the information
+
+    }
+}

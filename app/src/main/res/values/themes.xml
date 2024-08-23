@@ -1,7 +1,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.MealMaestro" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorOnPrimary">@color/purple</item>
+    <!--<style name="Base.Theme.MealMaestro" parent="Theme.AppCompat.Light.DarkActionBar"> -->
+        <item name="colorPrimary">@color/purple</item>
         <item name="colorOnSecondary">@color/green</item>
         <item name="colorOnBackground">@color/darkGrey</item>
         <item name="colorBackgroundFloating">@color/lightGrey</item>
