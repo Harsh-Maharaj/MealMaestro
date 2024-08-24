@@ -47,6 +47,8 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.firebase.storage)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
     dependencies {
         implementation(libs.androidx.core.ktx)
         implementation(libs.androidx.appcompat)
@@ -62,7 +64,6 @@ dependencies {
         implementation("com.google.android.gms:play-services-auth:21.2.0")
         implementation("com.facebook.android:facebook-login:latest.release")
         implementation ("com.github.bumptech.glide:glide:4.12.0")
-
     }
 
 }

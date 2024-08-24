@@ -18,6 +18,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MealMaestro"
         tools:targetApi="31">
+
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true"> <!-- Make sure to set exported to true -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" /> <!-- No intent-filter here -->
+
         <activity
             android:name=".Chats.ChatFriendsActivity"
             android:exported="false" />
@@ -25,23 +39,14 @@
             android:name=".SignUpActivity"
             android:exported="false" />
         <activity
-            android:name=".LoginActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="false" />
-        <activity
             android:name=".users.RecycleUserView"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            android:exported="true" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".SplashActivity"
-            android:exported="true" /> <!-- FACEBOOK -->
+            android:exported="true" />
+
+        <!-- FACEBOOK -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />

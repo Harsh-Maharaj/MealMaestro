@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="?attr/colorPrimary">
+
+    <ImageView
+        android:id="@+id/nav_header_image"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:src="@drawable/ic_launcher_foreground"
+        android:contentDescription="@string/nav_header_desc"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/nav_header_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Meal Maestro"
+        android:textSize="20sp"
+        android:textColor="@android:color/white"
+        android:layout_gravity="center_horizontal" />
+
+    <TextView
+        android:id="@+id/nav_header_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your Virtual Chef"
+        android:textColor="@android:color/white"
+        android:layout_gravity="center_horizontal" />
+</LinearLayout>
