@@ -70,15 +70,21 @@
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_navigation_view"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="90dp"
             android:layout_alignParentBottom="true"
+            android:layout_margin="10dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/rounded_nav_background"
             android:elevation="8dp"
-            android:padding="0dp"
-            android:layout_margin="16dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            app:itemIconSize="28dp"
             app:menu="@menu/bottom_nav_menu"
             app:itemIconTint="@color/black"
-            app:itemTextColor="@color/black" />
+            app:itemTextColor="@color/black"
+            app:labelVisibilityMode="labeled"
+            app:itemHorizontalTranslationEnabled="false"
+            android:gravity="center"/>
     </RelativeLayout>
 
 </LinearLayout>
