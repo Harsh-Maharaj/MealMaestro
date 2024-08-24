@@ -16,9 +16,9 @@
         android:label="Friends" />
 
     <fragment
-        android:id="@+id/nav_create_post"
+        android:id="@+id/nav_create_posts"
         android:name="com.example.mealmaestro.CreatePostsFragment"
-        android:label="Create Post" />
+        android:label="Create Posts" />
 
     <fragment
         android:id="@+id/nav_favorites"
