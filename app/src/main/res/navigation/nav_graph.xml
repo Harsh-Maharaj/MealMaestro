@@ -2,35 +2,31 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/homeFragment">
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_home">
 
     <fragment
-        android:id="@+id/homeFragment"
+        android:id="@+id/nav_home"
         android:name="com.example.mealmaestro.HomeFragment"
-        android:label="Home"
-        tools:layout="@layout/fragment_home" />
+        android:label="Home" />
 
     <fragment
-        android:id="@+id/friendsFragment"
+        android:id="@+id/nav_friends"
         android:name="com.example.mealmaestro.FriendsFragment"
-        android:label="Friends"
-        tools:layout="@layout/fragment_friends" />
+        android:label="Friends" />
 
     <fragment
-        android:id="@+id/createPostFragment"
+        android:id="@+id/nav_create_post"
         android:name="com.example.mealmaestro.CreatePostsFragment"
-        android:label="Create Post"
-        tools:layout="@layout/fragment_create_posts" />
+        android:label="Create Post" />
 
     <fragment
-        android:id="@+id/favouritesFragment"
+        android:id="@+id/nav_favorites"
         android:name="com.example.mealmaestro.FavouritesFragment"
-        android:label="Favourites"
-        tools:layout="@layout/fragment_favourites" />
+        android:label="Favorites" />
 
     <fragment
-        android:id="@+id/aiFragment"
+        android:id="@+id/nav_ai"
         android:name="com.example.mealmaestro.AiFragment"
-        android:label="AI"
-        tools:layout="@layout/fragment_ai" />
+        android:label="AI" />
 </navigation>
