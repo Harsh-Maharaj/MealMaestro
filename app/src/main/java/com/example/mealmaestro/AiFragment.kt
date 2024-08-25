@@ -12,7 +12,6 @@ import com.google.android.material.textfield.TextInputEditText
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.FileInputStream
 import java.io.IOException
 import java.util.Properties
 import org.json.JSONObject
@@ -56,10 +55,15 @@ class AiFragment : Fragment() {
 
     private fun loadApiKey() {
         val properties = Properties()
-        val fileInputStream = FileInputStream("path/to/api_keys.properties")
-        properties.load(fileInputStream)
-        apiKey = properties.getProperty("OPENAI_API_KEY")
-        fileInputStream.close()
+        try {
+            // Load the file from the assets directory
+            val inputStream = requireContext().assets.open("api_keys.properties")
+            properties.load(inputStream)
+            apiKey = properties.getProperty("OPENAI_API_KEY")
+            inputStream.close()
+        } catch (e: IOException) {
+            Log.e("API_KEY", "Failed to load API key", e)
+        }
     }
 
     private fun getResponse(question: String, callback: (String) -> Unit) {
