@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -11,14 +10,14 @@
         android:label="Home" />
 
     <fragment
-        android:id="@+id/nav_friends"
+        android:id="@+id/nav_friend"
         android:name="com.example.mealmaestro.FriendsFragment"
-        android:label="Friends" />
+        android:label="Friend" />
 
     <fragment
-        android:id="@+id/nav_create_posts"
+        android:id="@+id/nav_create_post"
         android:name="com.example.mealmaestro.CreatePostsFragment"
-        android:label="Create Posts" />
+        android:label="Create Post" />
 
     <fragment
         android:id="@+id/nav_favorites"

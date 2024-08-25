@@ -39,31 +39,29 @@ android {
     }
 }
 
-
 dependencies {
-
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.firebase.storage)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
-    dependencies {
-        implementation(libs.androidx.core.ktx)
-        implementation(libs.androidx.appcompat)
-        implementation(libs.material)
-        implementation(libs.androidx.activity)
-        implementation(libs.androidx.constraintlayout)
-        implementation(libs.firebase.auth) // If this resolves to the correct Firebase auth library
-        implementation(libs.firebase.database)
-        testImplementation(libs.junit)
-        androidTestImplementation(libs.androidx.junit)
-        androidTestImplementation(libs.androidx.espresso.core)
-        implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
-        implementation("com.google.android.gms:play-services-auth:21.2.0")
-        implementation("com.facebook.android:facebook-login:latest.release")
-        implementation ("com.github.bumptech.glide:glide:4.12.0")
-    }
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
+    implementation(libs.cronet.embedded)
 
+    // Additional dependencies
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation("com.facebook.android:facebook-login:latest.release")
+    implementation("com.github.bumptech.glide:glide:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("org.json:json:20210307")
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }
+
