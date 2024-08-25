@@ -66,7 +66,7 @@ class AiFragment : Fragment() {
         val request = Request.Builder()
             .url("https://api.openai.com/v1/chat/completions")
             .addHeader("Content-Type", "application/json")
-            .addHeader("Authorization", "Bearer YOUR_OPENAI_API_KEY") // Replace with your API key
+            .addHeader("Authorization", "Bearer sk-k6HaNpMmUXydD-iwATLJyWulEBq-C2fqJVzZfvrakCT3BlbkFJk_DNOug9WOHHdjWTzAePIuyHu2oIvZrOpgITnFOzIA") // Replace with your API key
             .post(requestBody.toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
 
