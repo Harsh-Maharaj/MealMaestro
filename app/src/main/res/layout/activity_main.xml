@@ -19,11 +19,12 @@
             android:id="@+id/top_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:background="?attr/colorPrimary"
             app:title="Meal Maestro"
             app:titleTextColor="@android:color/white"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-
+        
         <!-- Main Content and Bottom Navigation -->
         <RelativeLayout
             android:layout_width="match_parent"
