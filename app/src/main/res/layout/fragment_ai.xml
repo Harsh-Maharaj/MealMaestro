@@ -1,15 +1,47 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
     android:padding="16dp">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/idTVQuestion"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="AI Page"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:text="Your Question:"
+        android:textStyle="bold"
+        android:paddingBottom="8dp"/>
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/etQuestion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Ask something..."
+        android:imeOptions="actionSend"
+        android:inputType="text"/>
+
+    <TextView
+        android:id="@+id/txtResponse"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="AI Response"
+        android:paddingTop="16dp"
+        android:textStyle="bold"/>
+
+    <!-- Remove or rename the duplicate EditText element -->
+    <!-- Example: Renamed to `etQuestionDuplicate` -->
+    <EditText
+        android:id="@+id/etQuestionDuplicate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Type your question"
+        android:inputType="text"
+        android:layout_margin="16dp"
+        android:padding="12dp"
+        android:background="@drawable/round_border"
+        android:textColor="@color/black"
+        android:textColorHint="@color/green"
+        android:imeOptions="actionSend"
+        />
+
 </LinearLayout>

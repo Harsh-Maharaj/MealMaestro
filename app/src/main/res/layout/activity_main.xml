@@ -50,7 +50,7 @@
                 android:elevation="8dp"
                 android:paddingStart="0dp"
                 android:paddingEnd="0dp"
-                app:itemIconSize="29dp"
+                app:itemIconSize="39dp"
                 app:menu="@menu/bottom_nav_menu"
                 app:itemIconTint="@color/black"
                 app:itemTextColor="@color/black"

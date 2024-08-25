@@ -1,59 +1,100 @@
 package com.example.mealmaestro
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import com.google.android.material.textfield.TextInputEditText
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [AiFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class AiFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private val client = OkHttpClient()
+    private lateinit var txtResponse: TextView
+    private lateinit var idTVQuestion: TextView
+    private lateinit var etQuestion: TextInputEditText
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_ai, container, false)
+        val view = inflater.inflate(R.layout.fragment_ai, container, false)
+
+        etQuestion = view.findViewById(R.id.etQuestion)
+        idTVQuestion = view.findViewById(R.id.idTVQuestion)
+        txtResponse = view.findViewById(R.id.txtResponse)
+
+        etQuestion.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                val question = etQuestion.text.toString().trim()
+                if (question.isNotEmpty()) {
+                    txtResponse.text = "Please wait..."
+                    getResponse(question) { response ->
+                        activity?.runOnUiThread { txtResponse.text = response }
+                    }
+                }
+                true
+            } else false
+        }
+
+        return view
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AiFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AiFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun getResponse(question: String, callback: (String) -> Unit) {
+        idTVQuestion.text = question
+        etQuestion.setText("")
+
+        val requestBody = """
+            {
+                "model": "gpt-3.5-turbo",
+                "messages": [
+                    {"role": "user", "content": "$question"}
+                ],
+                "max_tokens": 500,
+                "temperature": 0.7
+            }
+        """.trimIndent()
+
+        val request = Request.Builder()
+            .url("https://api.openai.com/v1/chat/completions")
+            .addHeader("Content-Type", "application/json")
+            .addHeader("Authorization", "Bearer YOUR_OPENAI_API_KEY") // Replace with your API key
+            .post(requestBody.toRequestBody("application/json".toMediaTypeOrNull()))
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                callback("Failed to connect: ${e.message}")
+                Log.e("API_ERROR", "API call failed", e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use { resp ->
+                    val body = resp.body?.string()
+                    if (resp.isSuccessful && body != null) {
+                        try {
+                            val jsonObject = JSONObject(body)
+                            val jsonArray = jsonObject.getJSONArray("choices")
+                            val textResult = jsonArray.getJSONObject(0).getJSONObject("message").getString("content")
+                            callback(textResult)
+                        } catch (e: Exception) {
+                            callback("Error parsing response: ${e.localizedMessage}")
+                            Log.e("API_ERROR", "Response parsing failed", e)
+                        }
+                    } else {
+                        callback("Error: ${resp.message} - ${body ?: "No response body"}")
+                        Log.e("API_ERROR", "Server responded with error: ${resp.message} - ${body ?: "No response body"}")
+                    }
                 }
             }
+        })
     }
 }
