@@ -15,7 +15,6 @@
         android:layout_marginBottom="16dp"
         android:layout_marginTop="8dp"
         android:padding="12dp"
-        app:cardCornerRadius="16dp"
         app:cardElevation="8dp"
         android:backgroundTint="@color/white">
 
@@ -39,10 +38,6 @@
                 android:layout_height="wrap_content"
                 android:hint="Ask something..."
                 app:boxStrokeColor="@color/purpleLight"
-                app:boxCornerRadiusTopStart="16dp"
-                app:boxCornerRadiusTopEnd="16dp"
-                app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp"
                 app:boxBackgroundMode="outline">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -68,7 +63,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
             android:backgroundTint="@color/white">
 
@@ -115,5 +109,6 @@
     </LinearLayout>
 
 </LinearLayout>
+// testing mergabilty
 
 //Api  key added to gitingore
