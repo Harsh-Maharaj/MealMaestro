@@ -12,8 +12,10 @@ import com.google.android.material.textfield.TextInputEditText
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
+import java.io.FileInputStream
 import java.io.IOException
+import java.util.Properties
+import org.json.JSONObject
 
 class AiFragment : Fragment() {
 
@@ -21,12 +23,16 @@ class AiFragment : Fragment() {
     private lateinit var txtResponse: TextView
     private lateinit var idTVQuestion: TextView
     private lateinit var etQuestion: TextInputEditText
+    private lateinit var apiKey: String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_ai, container, false)
+
+        // Load the API key from the properties file
+        loadApiKey()
 
         etQuestion = view.findViewById(R.id.etQuestion)
         idTVQuestion = view.findViewById(R.id.idTVQuestion)
@@ -48,6 +54,14 @@ class AiFragment : Fragment() {
         return view
     }
 
+    private fun loadApiKey() {
+        val properties = Properties()
+        val fileInputStream = FileInputStream("path/to/api_keys.properties")
+        properties.load(fileInputStream)
+        apiKey = properties.getProperty("OPENAI_API_KEY")
+        fileInputStream.close()
+    }
+
     private fun getResponse(question: String, callback: (String) -> Unit) {
         idTVQuestion.text = question
         etQuestion.setText("")
@@ -66,7 +80,7 @@ class AiFragment : Fragment() {
         val request = Request.Builder()
             .url("https://api.openai.com/v1/chat/completions")
             .addHeader("Content-Type", "application/json")
-            .addHeader("Authorization", "Bearer sk-k6HaNpMmUXydD-iwATLJyWulEBq-C2fqJVzZfvrakCT3BlbkFJk_DNOug9WOHHdjWTzAePIuyHu2oIvZrOpgITnFOzIA") // Replace with your API key
+            .addHeader("Authorization", "Bearer $apiKey")
             .post(requestBody.toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
 
