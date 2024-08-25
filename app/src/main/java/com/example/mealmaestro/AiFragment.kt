@@ -14,8 +14,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
-import java.util.Properties
-import org.json.JSONObject
+import java.util.*
 
 class AiFragment : Fragment() {
 
@@ -55,15 +54,14 @@ class AiFragment : Fragment() {
     }
 
     private fun loadApiKey() {
-        val properties = Properties()
         try {
-            // Load the file from the assets directory
+            val properties = Properties()
             val inputStream = requireContext().assets.open("api_keys.properties")
             properties.load(inputStream)
-            apiKey = properties.getProperty("OPENAI_API_KEY")
-            inputStream.close()
-        } catch (e: IOException) {
-            Log.e("API_KEY", "Failed to load API key", e)
+            apiKey = properties.getProperty("OPENAI_API_KEY") ?: throw IllegalStateException("API Key not found")
+        } catch (e: Exception) {
+            Log.e("AiFragment", "Failed to load API key", e)
+            throw RuntimeException("API Key loading failed", e)
         }
     }
 
@@ -86,7 +84,6 @@ class AiFragment : Fragment() {
             .url("https://api.openai.com/v1/chat/completions")
             .addHeader("Content-Type", "application/json")
             .addHeader("Authorization", "Bearer $apiKey")
-            .addHeader("Authorization", "Bearer YOUR_OPENAI_API_KEY") // Replace with your API key
             .post(requestBody.toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
 

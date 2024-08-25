@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -13,8 +15,9 @@
         android:layout_marginBottom="16dp"
         android:layout_marginTop="8dp"
         android:padding="12dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp">
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        android:backgroundTint="@color/white">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -27,14 +30,20 @@
                 android:layout_height="wrap_content"
                 android:text="Your Question:"
                 android:textStyle="bold"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:paddingBottom="8dp"
                 android:textColor="@color/black"/>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Ask something...">
+                android:hint="Ask something..."
+                app:boxStrokeColor="@color/purpleLight"
+                app:boxCornerRadiusTopStart="16dp"
+                app:boxCornerRadiusTopEnd="16dp"
+                app:boxCornerRadiusBottomStart="16dp"
+                app:boxCornerRadiusBottomEnd="16dp"
+                app:boxBackgroundMode="outline">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etQuestion"
@@ -48,34 +57,61 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Container for AI Response -->
-    <com.google.android.material.card.MaterialCardView
+    <!-- Scrollable Container for AI Response -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:padding="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp">
 
-        <TextView
-            android:id="@+id/txtResponse"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="AI Response will appear here"
-            android:textSize="16sp"
-            android:textColor="@color/black"
-            android:textStyle="bold"/>
-    </com.google.android.material.card.MaterialCardView>
+            android:padding="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            android:backgroundTint="@color/white">
 
-    <!-- Button to Submit the Question -->
-    <Button
-        android:id="@+id/btnSubmitQuestion"
+            <TextView
+                android:id="@+id/txtResponse"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="AI Response will appear here"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"/>
+        </com.google.android.material.card.MaterialCardView>
+    </ScrollView>
+
+    <!-- Button to Save the Response to Favorites -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:padding="12dp"
-        android:backgroundTint="@color/purpleLight"
-        android:text="Ask AI"
-        android:textColor="@color/white"
-        android:textStyle="bold"/>
+        android:orientation="horizontal">
+
+        <!-- Heart Button -->
+        <ImageButton
+            android:id="@+id/btnSaveToFavorites"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_favourites"
+            android:contentDescription="Save to Favorites"
+            app:tint="@color/purpleLight" />
+
+        <!-- Button to Submit the Question -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSubmitQuestion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="16dp"
+            android:backgroundTint="@color/purpleLight"
+            android:text="Ask AI"
+            android:textColor="@color/white"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
 </LinearLayout>
