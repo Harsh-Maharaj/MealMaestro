@@ -12,6 +12,7 @@ import com.google.android.material.textfield.TextInputEditText
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import java.io.IOException
 import java.util.Properties
 import org.json.JSONObject
@@ -85,6 +86,7 @@ class AiFragment : Fragment() {
             .url("https://api.openai.com/v1/chat/completions")
             .addHeader("Content-Type", "application/json")
             .addHeader("Authorization", "Bearer $apiKey")
+            .addHeader("Authorization", "Bearer YOUR_OPENAI_API_KEY") // Replace with your API key
             .post(requestBody.toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
 

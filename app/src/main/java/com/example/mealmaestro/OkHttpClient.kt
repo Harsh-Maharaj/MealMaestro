@@ -36,7 +36,7 @@ fun getResponse(
     val request = Request.Builder()
         .url("https://api.openai.com/v1/chat/completions")
         .addHeader("Content-Type", "application/json")
-        .addHeader("Authorization", "Bearer sk-k6HaNpMmUXydD-iwATLJyWulEBq-C2fqJVzZfvrakCT3BlbkFJk_DNOug9WOHHdjWTzAePIuyHu2oIvZrOpgITnFOzIA")
+        .addHeader("Authorization", "Bearer $apiKey")
         .post(requestBody.toRequestBody("application/json".toMediaTypeOrNull()))
         .build()
 

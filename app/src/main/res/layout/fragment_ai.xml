@@ -13,8 +13,8 @@
         android:layout_marginBottom="16dp"
         android:layout_marginTop="8dp"
         android:padding="12dp"
-        app:cardElevation="8dp"
-        android:backgroundTint="@color/white">
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -25,20 +25,16 @@
                 android:id="@+id/idTVQuestion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Your Question"
+                android:text="Your Question:"
                 android:textStyle="bold"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+                android:textSize="16sp"
                 android:paddingBottom="8dp"
                 android:textColor="@color/black"/>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Ask something..."
-                android:paddingTop="8dp"
-                app:hintTextColor="@color/purpleLight"
-                app:boxStrokeColor="@color/purpleLight"
-                app:boxBackgroundMode="outline">
+                android:hint="Ask something...">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etQuestion"
@@ -52,40 +48,34 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Scrollable Container for AI Response -->
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="16dp">
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            app:cardElevation="8dp"
-            android:backgroundTint="@color/white">
-
-            <TextView
-                android:id="@+id/txtResponse"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="AI Response will appear here"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                android:textColor="@color/black"/>
-        </com.google.android.material.card.MaterialCardView>
-    </ScrollView>
-
-    <!-- Button to Submit the Question -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSubmitQuestion"
+    <!-- Container for AI Response -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:padding="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp">
+
+        <TextView
+            android:id="@+id/txtResponse"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="AI Response will appear here"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"/>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Button to Submit the Question -->
+    <Button
+        android:id="@+id/btnSubmitQuestion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:padding="12dp"
         android:backgroundTint="@color/purpleLight"
         android:text="Ask AI"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
         android:textColor="@color/white"
         android:textStyle="bold"/>
 </LinearLayout>
