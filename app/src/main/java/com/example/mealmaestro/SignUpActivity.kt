@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.mealmaestro.Auth.GoogleAuth
 import com.example.mealmaestro.Auth.XAuth
+import com.example.mealmaestro.Helper.DataBase
 import com.example.mealmaestro.databinding.ActivitySignUpBinding
 import com.facebook.CallbackManager
 import com.google.firebase.auth.FirebaseAuth

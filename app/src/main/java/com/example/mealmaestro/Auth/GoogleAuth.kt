@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
-import com.example.mealmaestro.DataBase
+import com.example.mealmaestro.Helper.DataBase
 import com.example.mealmaestro.MainActivity
 import com.example.mealmaestro.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
