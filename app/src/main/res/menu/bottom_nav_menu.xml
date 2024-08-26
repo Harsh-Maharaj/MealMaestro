@@ -8,9 +8,9 @@
         android:title="Home" />
 
     <item
-        android:id="@+id/ic_friends"
+        android:id="@+id/ic_friend"
         android:icon="@drawable/ic_friends"
-        android:title="Friends" />
+        android:title="Friend" />
 
     <item
         android:id="@+id/nav_create_post"
