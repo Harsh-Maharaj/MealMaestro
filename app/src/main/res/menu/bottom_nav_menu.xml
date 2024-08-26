@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -8,9 +7,9 @@
         android:title="Home" />
 
     <item
-        android:id="@+id/ic_friend"
+        android:id="@+id/nav_friends"
         android:icon="@drawable/ic_friends"
-        android:title="Friend" />
+        android:title="Friends" />
 
     <item
         android:id="@+id/nav_create_post"

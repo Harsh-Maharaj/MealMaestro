@@ -10,9 +10,10 @@
         android:label="Home" />
 
     <fragment
-        android:id="@+id/nav_friend"
+        android:id="@+id/nav_friends"
         android:name="com.example.mealmaestro.FriendsFragment"
-        android:label="Friend" />
+        android:label="Friends"
+        tools:layout="@layout/fragment_friends" />
 
     <fragment
         android:id="@+id/nav_create_post"
