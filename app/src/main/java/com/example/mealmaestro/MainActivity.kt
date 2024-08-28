@@ -10,8 +10,9 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupWithNavController
+import androidx.navigation.ui.NavigationUI
 import com.example.mealmaestro.databinding.ActivityMainBinding
+import com.example.mealmaestro.users.RecycleUserView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -48,7 +49,25 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.navController
 
         val bottomNavigationView: BottomNavigationView = binding.bottomNavigationView
-        bottomNavigationView.setupWithNavController(navController)
+
+        // Handle manual navigation for FriendsFragment
+// Handle manual navigation for FriendsFragment
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_friends -> {
+                    // Start the RecycleUserView Activity
+                    val intent = Intent(this, RecycleUserView::class.java)
+                    startActivity(intent)
+                    true
+                }
+                // other cases
+                else -> {
+                    NavigationUI.onNavDestinationSelected(item, navController)
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+            }
+        }
     }
 
     override fun onBackPressed() {
@@ -58,6 +77,4 @@ class MainActivity : AppCompatActivity() {
             super.onBackPressed()
         }
     }
-
-
 }
