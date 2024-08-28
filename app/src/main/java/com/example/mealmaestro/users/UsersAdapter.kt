@@ -34,31 +34,30 @@ class UsersAdapter(val context: Context, private var userList: ArrayList<Users>)
         val currentUser = userList[position]
         holder.textName.text = currentUser.name
 
+        // Fetch views by IDs and ensure they are found
         val chat = holder.itemView.findViewById<ImageView>(R.id.user_message)
         val addFriend = holder.itemView.findViewById<ImageView>(R.id.add_friend)
         val goBack = holder.itemView.findViewById<ImageView>(R.id.user_back)
-        val dataBase = DataBase(context)
-        val auth = FirebaseAuth.getInstance()
 
-        // go back
-        goBack.setOnClickListener {
-            if (context is Activity) {
-                context.finish()
-            }
-        }
-
-        // open friend chat
-        chat.setOnClickListener {
+        // Verify that the views are not null before attaching click listeners
+        chat?.setOnClickListener {
             val intent = Intent(context, ChatFriendsActivity::class.java)
             intent.putExtra("name", currentUser.name)
             intent.putExtra("uid", currentUser.uid)
             intent.putExtra("icon", currentUser.icon)
             context.startActivity(intent)
-
         }
-        // add new friend
-        addFriend.setOnClickListener {
+
+        addFriend?.setOnClickListener {
+            val auth = FirebaseAuth.getInstance()
+            val dataBase = DataBase(context)
             dataBase.addFriendToDataBase(auth.currentUser!!.uid, currentUser.uid)
+        }
+
+        goBack?.setOnClickListener {
+            if (context is Activity) {
+                context.finish()
+            }
         }
     }
 
@@ -66,7 +65,6 @@ class UsersAdapter(val context: Context, private var userList: ArrayList<Users>)
         val textName: TextView = itemView.findViewById(R.id.user_id)
     }
 
-    // filter (search friend)
     override fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence?): FilterResults {
@@ -90,10 +88,7 @@ class UsersAdapter(val context: Context, private var userList: ArrayList<Users>)
             }
 
             @Suppress("UNCHECKED_CAST")
-            override fun publishResults(
-                constraint: CharSequence?,
-                results: FilterResults?
-            ) {
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
                 userList.clear()
                 userList.addAll(results?.values as ArrayList<Users>)
                 notifyDataSetChanged()
