@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/green">
 
     <!-- Header Layout -->
     <RelativeLayout
@@ -19,7 +21,8 @@
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="Back"
             android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"/>
+            android:layout_centerVertical="true"
+            app:tint="@color/purple"/>
 
         <!-- Page Title -->
         <TextView
@@ -28,7 +31,8 @@
             android:text="Favorites"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:layout_centerInParent="true" />
+            android:layout_centerInParent="true"
+            android:textColor="@color/purple"/>
 
         <!-- Search Button -->
         <ImageButton
@@ -38,7 +42,8 @@
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="Search"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"/>
+            android:layout_centerVertical="true"
+            app:tint="@color/purple"/>
     </RelativeLayout>
 
     <!-- Recipe List -->
@@ -65,7 +70,8 @@
                     android:id="@+id/recipe_image_1"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
-                    android:scaleType="centerCrop" />
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Recipe Image 1"/>
 
                 <Button
                     android:id="@+id/btn_view_recipe_1"
@@ -73,6 +79,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="View Recipe"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="@color/purple"
                     android:layout_marginTop="8dp"/>
             </LinearLayout>
 
@@ -88,7 +96,8 @@
                     android:id="@+id/recipe_image_2"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
-                    android:scaleType="centerCrop" />
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Recipe Image 2"/>
 
                 <Button
                     android:id="@+id/btn_view_recipe_2"
@@ -96,6 +105,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="View Recipe"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="@color/purple"
                     android:layout_marginTop="8dp"/>
             </LinearLayout>
 
@@ -111,7 +122,8 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="8dp"
-        android:gravity="center">
+        android:gravity="center"
+        android:background="@color/purple">
 
         <!-- Navigation Buttons -->
         <ImageButton
@@ -120,7 +132,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackground"
-            android:contentDescription="Home" />
+            android:contentDescription="Home"
+            app:tint="@android:color/white"/>
 
         <ImageButton
             android:id="@+id/btn_nav_add"
@@ -128,7 +141,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackground"
-            android:contentDescription="Add" />
+            android:contentDescription="Add"
+            app:tint="@android:color/white"/>
 
         <ImageButton
             android:id="@+id/btn_nav_favorites"
@@ -136,7 +150,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackground"
-            android:contentDescription="Favorites" />
+            android:contentDescription="Favorites"
+            app:tint="@android:color/white"/>
 
         <ImageButton
             android:id="@+id/btn_nav_leaf"
@@ -144,6 +159,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackground"
-            android:contentDescription="Leaf" />
+            android:contentDescription="Leaf"
+            app:tint="@android:color/white"/>
     </LinearLayout>
 </LinearLayout>
