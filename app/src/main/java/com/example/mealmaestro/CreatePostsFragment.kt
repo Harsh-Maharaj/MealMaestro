@@ -1,33 +1,29 @@
 package com.example.mealmaestro
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import androidx.fragment.app.Fragment
+import com.example.mealmaestro.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import java.util.*
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [CreatePostsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class CreatePostsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var imageView: ImageView
+    private lateinit var editTextCaption: EditText
+    private lateinit var buttonChooseImage: Button
+    private lateinit var buttonPost: Button
+    private var imageUri: Uri? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,23 +33,59 @@ class CreatePostsFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_create_posts, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment CreatePostsFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            CreatePostsFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        imageView = view.findViewById(R.id.image_view)
+        editTextCaption = view.findViewById(R.id.edit_text_caption)
+        buttonChooseImage = view.findViewById(R.id.button_choose_image)
+        buttonPost = view.findViewById(R.id.button_post)
+
+        buttonChooseImage.setOnClickListener { openFileChooser() }
+        buttonPost.setOnClickListener { uploadPost() }
+    }
+
+    private fun openFileChooser() {
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        startActivityForResult(intent, PICK_IMAGE_REQUEST)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
+            imageUri = data.data
+            imageView.setImageURI(imageUri)
+        }
+    }
+
+    private fun uploadPost() {
+        if (imageUri != null) {
+            val storageReference = FirebaseStorage.getInstance().reference.child("uploads")
+            val fileReference = storageReference.child(UUID.randomUUID().toString())
+
+            fileReference.putFile(imageUri!!)
+                .addOnSuccessListener {
+                    fileReference.downloadUrl.addOnSuccessListener { uri ->
+                        val post = hashMapOf(
+                            "user_id" to FirebaseAuth.getInstance().currentUser?.uid,
+                            "image_url" to uri.toString(),
+                            "caption" to editTextCaption.text.toString(),
+                            "likes" to mapOf<String, Boolean>()
+                        )
+
+                        FirebaseFirestore.getInstance().collection("posts")
+                            .add(post)
+                            .addOnSuccessListener {
+                                // Post was successful
+                                requireActivity().finish()
+                            }
+                    }
                 }
-            }
+        }
+    }
+
+    companion object {
+        private const val PICK_IMAGE_REQUEST = 1
     }
 }

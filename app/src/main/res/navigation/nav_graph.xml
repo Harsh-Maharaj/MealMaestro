@@ -7,7 +7,8 @@
     <fragment
         android:id="@+id/nav_home"
         android:name="com.example.mealmaestro.HomeFragment"
-        android:label="Home" />
+        android:label="Home"
+        tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/nav_friends"
@@ -18,15 +19,18 @@
     <fragment
         android:id="@+id/nav_create_post"
         android:name="com.example.mealmaestro.CreatePostsFragment"
-        android:label="Create Post" />
+        android:label="Create Post"
+        tools:layout="@layout/fragment_create_posts" />
 
     <fragment
         android:id="@+id/nav_favorites"
         android:name="com.example.mealmaestro.FavouritesFragment"
-        android:label="Favorites" />
+        android:label="Favorites"
+        tools:layout="@layout/fragment_favourites" />
 
     <fragment
         android:id="@+id/nav_ai"
         android:name="com.example.mealmaestro.AiFragment"
-        android:label="AI" />
+        android:label="AI"
+        tools:layout="@layout/fragment_ai" />
 </navigation>

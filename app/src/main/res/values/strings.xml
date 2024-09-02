@@ -22,8 +22,10 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_desc">Navigation header image description</string>
+    <string name="post_image_desc">Post Image</string>
     <string name="dataBaseHTTPs">https://mealmaestro-46c0d-default-rtdb.asia-southeast1.firebasedatabase.app/</string>
     <string name="large_text">
+
 
         "Material is the metaphor.\n\n"
 

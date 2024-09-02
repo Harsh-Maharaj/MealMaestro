@@ -5,6 +5,7 @@ import android.net.Uri
 import android.widget.Toast
 import com.example.mealmaestro.Chats.Message
 import com.example.mealmaestro.Chats.MessageAdapter
+import com.example.mealmaestro.PostAdapter
 import com.example.mealmaestro.users.FriendsAdapter
 import com.example.mealmaestro.users.Users
 import com.example.mealmaestro.users.UsersAdapter
@@ -216,5 +217,75 @@ class DataBase(private val context: Context?) {
             "timestamp" to System.currentTimeMillis()
         )
         dataBaseRef.child("user").child(uid).child("files").push().setValue(metadata)
+    }
+
+    // ---------------------- New Methods for Posts ----------------------
+
+    fun addPostToDataBase(uid: String, imageUri: Uri, caption: String) {
+        val postId = UUID.randomUUID().toString()
+        val postImageRef = storageRef.child("postImages/$postId.jpg")
+
+        postImageRef.putFile(imageUri).addOnSuccessListener {
+            postImageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                val post = Post(
+                    id = postId,
+                    user_id = uid,
+                    image_url = downloadUri.toString(),
+                    caption = caption,
+                    likes = mapOf()
+                )
+                dataBaseRef.child("posts").child(postId).setValue(post)
+                    .addOnSuccessListener {
+                        Toast.makeText(context, "Post added successfully!", Toast.LENGTH_SHORT).show()
+                    }.addOnFailureListener { e ->
+                        Toast.makeText(context, "Failed to add post: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            }.addOnFailureListener {
+                Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
+            }
+        }.addOnFailureListener {
+            Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun likePost(postId: String, userId: String) {
+        val postRef = dataBaseRef.child("posts").child(postId)
+        postRef.child("likes").child(userId).setValue(true)
+            .addOnSuccessListener {
+                Toast.makeText(context, "Post liked!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, "Failed to like post: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    fun savePostToFavorites(postId: String, userId: String) {
+        val favoritesRef = dataBaseRef.child("favorites").child(userId).child(postId)
+        favoritesRef.setValue(true)
+            .addOnSuccessListener {
+                Toast.makeText(context, "Post saved to favorites!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, "Failed to save post: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    fun getPostsFromDataBase(postList: ArrayList<Post>, adapter: PostAdapter) {
+        dataBaseRef.child("posts").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                postList.clear()
+                for (postSnap in snapshot.children) {
+                    val post = postSnap.getValue(Post::class.java)
+                    if (post != null) {
+                        postList.add(post)
+                    }
+                }
+                adapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(context, "Failed to fetch posts.", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }
