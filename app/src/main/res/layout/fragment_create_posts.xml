@@ -1,15 +1,38 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
     android:padding="16dp">
 
-    <TextView
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginBottom="16dp"
+        android:scaleType="centerCrop"
+        android:background="#E0E0E0"
+        android:contentDescription="Selected Image"/>
+
+    <EditText
+        android:id="@+id/edit_text_caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter your recipe..."
+        android:inputType="textMultiLine"
+        android:minLines="3"/>
+
+    <Button
+        android:id="@+id/button_choose_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create Post Page"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:text="Choose Image"
+        android:layout_marginTop="16dp"/>
+
+    <Button
+        android:id="@+id/button_post"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Post"
+        android:layout_marginTop="16dp"/>
 </LinearLayout>

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="app">
+      <SelectionState runConfigName="Meal Maestro">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2024-08-25T06:26:37.042637800Z">
           <Target type="DEFAULT_BOOT">

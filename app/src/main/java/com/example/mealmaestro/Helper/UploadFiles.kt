@@ -1,4 +1,4 @@
-package com.example.mealmaestro
+package com.example.mealmaestro.Helper
 
 import android.content.Context
 import android.net.Uri
@@ -6,6 +6,8 @@ import android.widget.Toast
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import java.util.UUID
+
+// work in progress, to upload and share files, with friends....
 
 class UploadFiles (private val context: Context){
     private val storageRef: StorageReference = FirebaseStorage.getInstance().reference
