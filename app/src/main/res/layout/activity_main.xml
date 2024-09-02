@@ -8,58 +8,112 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <LinearLayout
-        android:id="@+id/main"
+    <!-- Main content -->
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
-        <!-- Toolbar with Navigation Drawer Icon -->
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/top_toolbar"
+        <!-- Top bar with Navigation Drawer Icon -->
+        <RelativeLayout
+            android:id="@+id/topAppBar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="?attr/colorPrimary"
-            app:title="Meal Maestro"
-            app:titleTextColor="@android:color/white"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+            android:layout_height="120dp"
+            android:orientation="horizontal">
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="110dp"
+                android:layout_gravity="top"
+                android:background="@drawable/wave_bottom"
+                android:layout_weight="1"/>
 
-        <!-- Main Content and Bottom Navigation -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/chatToolBar_img_frame"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="15dp"
+                app:cardCornerRadius="50dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/chatToolBar_img"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/meal_maestro_logo" />
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:id="@+id/cahtToolBar_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="15dp"
+                android:layout_toEndOf="@+id/chatToolBar_img_frame"
+                android:text="@string/app_name"
+                android:textColor="@color/white"
+                android:textSize="25sp" />
+
+            <LinearLayout
+                android:layout_width="180dp"
+                android:layout_height="50dp"
+                android:background="@drawable/round_border"
+                android:backgroundTint="@color/lightGrey"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true">
+
+                <EditText
+                    android:id="@+id/search_bar"
+                    android:layout_width="150dp"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="2dp"
+                    android:background="@drawable/round_border"
+                    android:hint="Search ..."
+                    android:paddingLeft="10dp"
+                    android:textColor="@color/darkGrey"
+                    android:textColorHint="@color/darkGrey" />
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/search"
+                    android:layout_gravity="center"/>
+
+            </LinearLayout>
+        </RelativeLayout>
+
+        <!-- Main content and Bottom Navigation -->
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_below="@id/topAppBar">
 
             <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/nav_host_fragment"
+                android:name="androidx.navigation.fragment.NavHostFragment"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_alignParentTop="true"
                 android:layout_above="@id/bottom_navigation_view"
-                app:navGraph="@navigation/nav_graph"
+                android:layout_alignParentTop="true"
                 app:defaultNavHost="true"
-                android:name="androidx.navigation.fragment.NavHostFragment" />
+                app:navGraph="@navigation/nav_graph" />
 
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottom_navigation_view"
-                android:layout_width="match_parent"
-                android:layout_height="90dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_margin="10dp"
-                android:layout_marginBottom="10dp"
                 android:background="@drawable/rounded_nav_background"
                 android:elevation="8dp"
-                android:paddingStart="0dp"
-                android:paddingEnd="0dp"
+                android:gravity="center"
+                app:itemHorizontalTranslationEnabled="false"
                 app:itemIconSize="39dp"
-                app:menu="@menu/bottom_nav_menu"
                 app:itemIconTint="@color/black"
                 app:itemTextColor="@color/black"
                 app:labelVisibilityMode="labeled"
-                app:itemHorizontalTranslationEnabled="false"
-                android:gravity="center" />
+                app:menu="@menu/bottom_nav_menu" />
         </RelativeLayout>
-    </LinearLayout>
+    </RelativeLayout>
 
     <!-- Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView
@@ -69,5 +123,4 @@
         android:layout_gravity="start"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/nav_menu" />
-
 </androidx.drawerlayout.widget.DrawerLayout>
