@@ -2,10 +2,9 @@ package com.example.mealmaestro
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
@@ -20,7 +19,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var drawerLayout: DrawerLayout
-    private lateinit var toggle: ActionBarDrawerToggle
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,17 +29,14 @@ class MainActivity : AppCompatActivity() {
 
         drawerLayout = binding.drawerLayout
 
-        // Set up Toolbar
-        val toolbar: Toolbar = binding.topToolbar
-        setSupportActionBar(toolbar)
-
-        // Set up the ActionBarDrawerToggle for the navigation drawer
-        toggle = ActionBarDrawerToggle(
-            this, drawerLayout, toolbar,
-            R.string.navigation_drawer_open, R.string.navigation_drawer_close
-        )
-        drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
+        // Set up the click listener for the logo (chatToolBar_img)
+        val logoImageView: ImageView = binding.chatToolBarImgFrame.findViewById(R.id.chatToolBar_img)
+        logoImageView.setOnClickListener {
+            // Open the navigation drawer when the logo is clicked
+            if (!drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.openDrawer(GravityCompat.START)
+            }
+        }
 
         // Set up the BottomNavigationView with NavController
         val navHostFragment = supportFragmentManager
@@ -51,7 +46,6 @@ class MainActivity : AppCompatActivity() {
         val bottomNavigationView: BottomNavigationView = binding.bottomNavigationView
 
         // Handle manual navigation for FriendsFragment
-// Handle manual navigation for FriendsFragment
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_friends -> {
@@ -60,7 +54,6 @@ class MainActivity : AppCompatActivity() {
                     startActivity(intent)
                     true
                 }
-                // other cases
                 else -> {
                     NavigationUI.onNavDestinationSelected(item, navController)
                     drawerLayout.closeDrawer(GravityCompat.START)
