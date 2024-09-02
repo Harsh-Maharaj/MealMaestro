@@ -10,7 +10,11 @@ import com.example.mealmaestro.users.FriendsAdapter
 import com.example.mealmaestro.users.Users
 import com.example.mealmaestro.users.UsersAdapter
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.GenericTypeIndicator
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import java.util.UUID
@@ -20,33 +24,29 @@ class DataBase(private val context: Context?) {
 
     private val auth = FirebaseAuth.getInstance()
     private val storageRef: StorageReference = FirebaseStorage.getInstance().reference
-    private val firestore = FirebaseFirestore.getInstance()
+    private val dataBaseRef =
+        FirebaseDatabase.getInstance("https://mealmaestro-46c0d-default-rtdb.asia-southeast1.firebasedatabase.app/")
+            .getReference()
 
     fun addUserToDataBase(email: String, uid: String) {
-        val user = Users(username = null, name = null, email, uid, icon = null)
-        firestore.collection("users").document(uid)
-            .set(user)
-            .addOnSuccessListener {
-                Toast.makeText(context, "User added successfully!", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(context, "Failed to add user: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+        dataBaseRef.child("user").child(uid)
+            .setValue(Users(username = null, name = null, email, uid, icon = null))
     }
 
     fun addUserIcon(uid: String, iconUri: Uri) {
+        // Extract the file extension from the URI
         val contentResolver = context?.contentResolver
         val mimeType = contentResolver?.getType(iconUri)
         val extension = when (mimeType) {
             "image/jpeg" -> "jpg"
             "image/png" -> "png"
-            else -> "jpg"
+            else -> "jpg" // Default to jpg if unknown
         }
 
         val iconRef = storageRef.child("userImages/$uid/${UUID.randomUUID()}.$extension")
         iconRef.putFile(iconUri).addOnSuccessListener {
             iconRef.downloadUrl.addOnSuccessListener { uri ->
-                firestore.collection("users").document(uid).update("icon", uri.toString())
+                dataBaseRef.child("user").child(uid).child("icon").setValue(uri.toString())
             }.addOnFailureListener {
                 Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
             }
@@ -56,145 +56,159 @@ class DataBase(private val context: Context?) {
     }
 
     fun getUsersFromDataBase(userList: ArrayList<Users>, adapter: UsersAdapter) {
-        firestore.collection("users").addSnapshotListener { snapshots, error ->
-            if (error != null) {
-                Toast.makeText(context, "Error fetching users: ${error.message}", Toast.LENGTH_SHORT).show()
-                return@addSnapshotListener
-            }
-
-            if (snapshots != null) {
+        dataBaseRef.child("user").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
                 userList.clear()
-                for (document in snapshots.documents) {
-                    val currentUser = document.toObject(Users::class.java)
-                    if (currentUser != null && currentUser.uid != auth.currentUser?.uid) {
+                for (user in snapshot.children) {
+                    val currentUser = user.getValue(Users::class.java)
+                    if (currentUser!!.uid != auth.currentUser!!.uid) {
                         userList.add(currentUser)
                     }
                 }
                 adapter.notifyDataSetChanged()
             }
-        }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+
+        })
     }
 
     fun getFriendsList(friendList: ArrayList<Users>, adapter: FriendsAdapter) {
-        val currentUser = auth.currentUser?.uid ?: return
 
-        firestore.collection("users").document(currentUser)
-            .get().addOnSuccessListener { snapshot ->
-                val friendsIds = snapshot.toObject(Users::class.java)?.friends ?: listOf()
-
+        dataBaseRef.child("user").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
                 friendList.clear()
+
+                val friendsIds =
+                    snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {})
+                        ?: arrayListOf<String>()
+
                 for (friendId in friendsIds) {
-                    firestore.collection("users").document(friendId).get()
+                    dataBaseRef.child("users").child(friendId).get()
                         .addOnSuccessListener { userSnapshot ->
-                            val user = userSnapshot.toObject(Users::class.java)
+                            val user = userSnapshot.getValue(Users::class.java)
                             if (user != null) {
                                 friendList.add(user)
                             }
                             adapter.notifyDataSetChanged()
                         }
                 }
-            }.addOnFailureListener {
-                Toast.makeText(context, "Failed to fetch friends list", Toast.LENGTH_SHORT).show()
             }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+        })
     }
 
+
     fun addFriendToDataBase(currentUserId: String, newFriendId: String?) {
+
         if (newFriendId == null) return
+        // Reference to the current user's friends array
+        val currentUserRef = dataBaseRef.child("user").child(currentUserId).child("friends")
 
-        firestore.collection("users").document(currentUserId)
-            .get().addOnSuccessListener { snapshot ->
-                val friendsList = snapshot.toObject(Users::class.java)?.friends ?: mutableListOf()
-
-                if (!friendsList.contains(newFriendId)) {
-                    friendsList.add(newFriendId)
-                    firestore.collection("users").document(currentUserId)
-                        .update("friends", friendsList)
-                        .addOnSuccessListener {
-                            Toast.makeText(context, "Friend added successfully!", Toast.LENGTH_SHORT).show()
-                        }
-                        .addOnFailureListener { e ->
-                            Toast.makeText(context, "Error adding friend: ${e.message}", Toast.LENGTH_SHORT).show()
-                        }
-                } else {
-                    Toast.makeText(context, "Friend already in the list!", Toast.LENGTH_SHORT).show()
-                }
-            }.addOnFailureListener {
-                Toast.makeText(context, "Error fetching friends list", Toast.LENGTH_SHORT).show()
+        currentUserRef.get().addOnSuccessListener { snapshot ->
+            val friendsList =
+                snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {})
+                    ?: arrayListOf()
+            if (!friendsList.contains(newFriendId)) {
+                friendsList.add(newFriendId)
+                currentUserRef.setValue(friendsList)
+                    .addOnSuccessListener {
+                        // Friend added successfully
+                        Toast.makeText(
+                            context,
+                            "Friend added successfully!",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                    .addOnFailureListener { e ->
+                        // Handle failure
+                        Toast.makeText(
+                            context,
+                            "Error adding friend: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+            } else {
+                // Friend already exists in the list
+                Toast.makeText(context, "Friend already in the list!", Toast.LENGTH_SHORT)
+                    .show()
             }
+        }.addOnFailureListener { e ->
+            // Handle failure to get the friends list
+            println("Error fetching friends list: ${e.message}")
+        }
     }
 
     fun removeFriendFromDataBase(currentUserId: String, friendToRemove: String) {
-        firestore.collection("users").document(currentUserId)
-            .get().addOnSuccessListener { snapshot ->
-                val friendsList = snapshot.toObject(Users::class.java)?.friends ?: mutableListOf()
+        // Reference to the current user's friends array
+        val currentUserRef =
+            dataBaseRef.child("user").child(currentUserId).child("friends")
 
-                if (friendsList.contains(friendToRemove)) {
-                    friendsList.remove(friendToRemove)
-                    firestore.collection("users").document(currentUserId)
-                        .update("friends", friendsList)
-                        .addOnSuccessListener {
-                            Toast.makeText(context, "Friend removed successfully!", Toast.LENGTH_SHORT).show()
-                        }
-                        .addOnFailureListener { e ->
-                            Toast.makeText(context, "Error removing friend: ${e.message}", Toast.LENGTH_SHORT).show()
-                        }
-                } else {
-                    Toast.makeText(context, "Friend not in your list!", Toast.LENGTH_SHORT).show()
-                }
-            }.addOnFailureListener {
-                Toast.makeText(context, "Error fetching friends list", Toast.LENGTH_SHORT).show()
+        currentUserRef.get().addOnSuccessListener { snapshot ->
+            val friendsList =
+                snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {})
+                    ?: arrayListOf()
+            if (friendsList.contains(friendToRemove)) {
+                friendsList.remove(friendToRemove)
+                currentUserRef.setValue(friendsList)
+                    .addOnSuccessListener {
+                        // Friend removed successfully
+                        Toast.makeText(
+                            context, "Friend removed successfully!", Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    .addOnFailureListener { e ->
+                        // Handle failure
+                        Toast.makeText(
+                            context, "Error removing friend: ${e.message}", Toast.LENGTH_SHORT
+                        ).show()
+                    }
+            } else {
+                // Friend already exists in the list
+                Toast.makeText(context, "Friend not your list!", Toast.LENGTH_SHORT).show()
             }
+        }.addOnFailureListener { e ->
+            // Handle failure to get the friends list
+            println("Error fetching friends list: ${e.message}")
+        }
     }
 
-    fun addFriendChatMessage(senderId: String, receiverId: String, messageObject: Message) {
-        val chatRoomId = if (senderId < receiverId) {
-            "$senderId$receiverId"
-        } else {
-            "$receiverId$senderId"
-        }
-
-        firestore.collection("friendChat").document(chatRoomId)
-            .collection("messages").add(messageObject)
-            .addOnSuccessListener {
-                Toast.makeText(context, "Message sent!", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener {
-                Toast.makeText(context, "Failed to send message.", Toast.LENGTH_SHORT).show()
+    fun addFriendChatMessage(senderRoom: String, receiverRoom: String, messageObject: Message) {
+        dataBaseRef.child("friendChat").child(senderRoom).child("messages").push()
+            .setValue(messageObject).addOnSuccessListener {
+                dataBaseRef.child("friendChat").child(receiverRoom).child("messages").push()
+                    .setValue(messageObject)
             }
     }
 
     fun getFriendMessage(
-        senderId: String,
-        receiverId: String,
+        senderRoom: String,
         messageList: ArrayList<Message>,
         adapter: MessageAdapter
     ) {
-        val chatRoomId = if (senderId < receiverId) {
-            "$senderId$receiverId"
-        } else {
-            "$receiverId$senderId"
-        }
-
-        firestore.collection("friendChat").document(chatRoomId)
-            .collection("messages").addSnapshotListener { snapshots, error ->
-                if (error != null) {
-                    Toast.makeText(context, "Error fetching messages: ${error.message}", Toast.LENGTH_SHORT).show()
-                    return@addSnapshotListener
-                }
-
-                if (snapshots != null) {
+        dataBaseRef.child("friendChat").child(senderRoom).child("messages")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
                     messageList.clear()
-                    for (document in snapshots.documents) {
-                        val message = document.toObject(Message::class.java)
-                        if (message != null) {
-                            messageList.add(message)
-                        }
+                    for (postSnap in snapshot.children) {
+                        val message = postSnap.getValue(Message::class.java)
+                        messageList.add(message!!)
                     }
                     adapter.notifyDataSetChanged()
                 }
-            }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+
+            })
     }
 
+    // to save URL of files uploaded
     fun saveFileMetadata(uid: String, fileUrl: String, mimeType: String?, folder: String) {
         val metadata = mapOf(
             "url" to fileUrl,
@@ -202,13 +216,12 @@ class DataBase(private val context: Context?) {
             "folder" to folder,
             "timestamp" to System.currentTimeMillis()
         )
-        firestore.collection("users").document(uid)
-            .collection("files").add(metadata)
+        dataBaseRef.child("user").child(uid).child("files").push().setValue(metadata)
     }
 
     // ---------------------- New Methods for Posts ----------------------
 
-    fun addPostToFirestore(uid: String, imageUri: Uri, caption: String) {
+    fun addPostToDataBase(uid: String, imageUri: Uri, caption: String) {
         val postId = UUID.randomUUID().toString()
         val postImageRef = storageRef.child("postImages/$postId.jpg")
 
@@ -221,10 +234,7 @@ class DataBase(private val context: Context?) {
                     caption = caption,
                     likes = mapOf()
                 )
-
-                firestore.collection("posts")
-                    .document(postId)
-                    .set(post)
+                dataBaseRef.child("posts").child(postId).setValue(post)
                     .addOnSuccessListener {
                         Toast.makeText(context, "Post added successfully!", Toast.LENGTH_SHORT).show()
                     }.addOnFailureListener { e ->
@@ -239,8 +249,8 @@ class DataBase(private val context: Context?) {
     }
 
     fun likePost(postId: String, userId: String) {
-        val postRef = firestore.collection("posts").document(postId)
-        postRef.update("likes.$userId", true)
+        val postRef = dataBaseRef.child("posts").child(postId)
+        postRef.child("likes").child(userId).setValue(true)
             .addOnSuccessListener {
                 Toast.makeText(context, "Post liked!", Toast.LENGTH_SHORT).show()
             }
@@ -250,8 +260,8 @@ class DataBase(private val context: Context?) {
     }
 
     fun savePostToFavorites(postId: String, userId: String) {
-        val favoritesRef = firestore.collection("favorites").document(userId).collection("posts")
-        favoritesRef.document(postId).set(mapOf("saved" to true))
+        val favoritesRef = dataBaseRef.child("favorites").child(userId).child(postId)
+        favoritesRef.setValue(true)
             .addOnSuccessListener {
                 Toast.makeText(context, "Post saved to favorites!", Toast.LENGTH_SHORT).show()
             }
@@ -260,22 +270,22 @@ class DataBase(private val context: Context?) {
             }
     }
 
-    fun getPostsFromFirestore(postList: ArrayList<Post>, adapter: PostAdapter) {
-        firestore.collection("posts")
-            .addSnapshotListener { snapshots, error ->
-                if (error != null) {
-                    Toast.makeText(context, "Error fetching posts: ${error.message}", Toast.LENGTH_SHORT).show()
-                    return@addSnapshotListener
-                }
-
-                if (snapshots != null) {
-                    postList.clear()
-                    for (document in snapshots.documents) {
-                        val post = document.toObject(Post::class.java)
-                        post?.let { postList.add(it) }  // Ensure the post is non-null before adding
+    fun getPostsFromDataBase(postList: ArrayList<Post>, adapter: PostAdapter) {
+        dataBaseRef.child("posts").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                postList.clear()
+                for (postSnap in snapshot.children) {
+                    val post = postSnap.getValue(Post::class.java)
+                    if (post != null) {
+                        postList.add(post)
                     }
-                    adapter.notifyDataSetChanged()
                 }
+                adapter.notifyDataSetChanged()
             }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(context, "Failed to fetch posts.", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }
