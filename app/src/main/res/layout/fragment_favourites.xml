@@ -4,8 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/green">
+    android:padding="16dp">
 
     <!-- Header Layout -->
     <RelativeLayout
@@ -46,75 +45,13 @@
             app:tint="@color/purple"/>
     </RelativeLayout>
 
-    <!-- Recipe List -->
-    <ScrollView
+    <!-- RecyclerView for Favorites -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_favorites"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="8dp">
-
-            <!-- Recipe Item 1 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="8dp"
-                android:layout_marginBottom="16dp">
-
-                <ImageView
-                    android:id="@+id/recipe_image_1"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:scaleType="centerCrop"
-                    android:contentDescription="Recipe Image 1"/>
-
-                <Button
-                    android:id="@+id/btn_view_recipe_1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="View Recipe"
-                    android:textColor="@android:color/white"
-                    android:backgroundTint="@color/purple"
-                    android:layout_marginTop="8dp"/>
-            </LinearLayout>
-
-            <!-- Recipe Item 2 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="8dp"
-                android:layout_marginBottom="16dp">
-
-                <ImageView
-                    android:id="@+id/recipe_image_2"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:scaleType="centerCrop"
-                    android:contentDescription="Recipe Image 2"/>
-
-                <Button
-                    android:id="@+id/btn_view_recipe_2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="View Recipe"
-                    android:textColor="@android:color/white"
-                    android:backgroundTint="@color/purple"
-                    android:layout_marginTop="8dp"/>
-            </LinearLayout>
-
-            <!-- Additional Recipe Items -->
-            <!-- Repeat the structure for more items as needed -->
-
-        </LinearLayout>
-    </ScrollView>
+        android:layout_weight="1"
+        android:padding="8dp"/>
 
     <!-- Bottom Navigation Bar -->
     <LinearLayout
