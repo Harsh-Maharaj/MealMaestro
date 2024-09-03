@@ -75,32 +75,39 @@ class DataBase(private val context: Context?) {
     }
 
     fun getFriendsList(friendList: ArrayList<Users>, adapter: FriendsAdapter) {
+        val currentUserId = auth.currentUser?.uid ?: return // Ensure current user ID is available
 
-        dataBaseRef.child("user").addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                friendList.clear()
+        // Get the current user's friends list
+        dataBaseRef.child("user").child(currentUserId).child("friends")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    friendList.clear()
 
-                val friendsIds =
-                    snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {})
-                        ?: arrayListOf<String>()
+                    // Retrieve the list of friend IDs
+                    val friendsIds = snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {}) ?: arrayListOf()
 
-                for (friendId in friendsIds) {
-                    dataBaseRef.child("users").child(friendId).get()
-                        .addOnSuccessListener { userSnapshot ->
-                            val user = userSnapshot.getValue(Users::class.java)
-                            if (user != null) {
-                                friendList.add(user)
+                    for (friendId in friendsIds) {
+                        // Retrieve each friend's user data
+                        dataBaseRef.child("user").child(friendId).get()
+                            .addOnSuccessListener { userSnapshot ->
+                                val user = userSnapshot.getValue(Users::class.java)
+                                if (user != null) {
+                                    friendList.add(user)
+                                }
+                                adapter.notifyDataSetChanged()
                             }
-                            adapter.notifyDataSetChanged()
-                        }
+                            .addOnFailureListener {
+                                Toast.makeText(context, "Failed to retrieve friend: $friendId", Toast.LENGTH_SHORT).show()
+                            }
+                    }
                 }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-
-            }
-        })
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(context, "Failed to retrieve friends list.", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
+
 
 
     fun addFriendToDataBase(currentUserId: String, newFriendId: String?) {

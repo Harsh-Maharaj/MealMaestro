@@ -18,13 +18,11 @@ class FriendsAdapter(val context: Context, val friendsList: ArrayList<Users>) :
     RecyclerView.Adapter<FriendsAdapter.FriendsViewHolder>() {
 
     class FriendsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val textName = itemView.findViewById<TextView>(R.id.friend_id)
-
+        val textName: TextView = itemView.findViewById(R.id.friend_id)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendsViewHolder {
-        val view: View =
-            LayoutInflater.from(context).inflate(R.layout.friends_layout, parent, false)
+        val view: View = LayoutInflater.from(context).inflate(R.layout.friends_layout, parent, false)
         return FriendsViewHolder(view)
     }
 
@@ -33,30 +31,32 @@ class FriendsAdapter(val context: Context, val friendsList: ArrayList<Users>) :
     }
 
     override fun onBindViewHolder(holder: FriendsViewHolder, position: Int) {
-
         val currentFriend = friendsList[position]
         holder.textName.text = currentFriend.name
 
+        // Find the ImageViews from the layout
         val chat = holder.itemView.findViewById<ImageView>(R.id.friend_message)
         val removeFriend = holder.itemView.findViewById<ImageView>(R.id.remove_friend)
         val openUsers = holder.itemView.findViewById<ImageView>(R.id.friends_to_users)
         val friendsBack = holder.itemView.findViewById<ImageView>(R.id.friend_back)
+
         val dataBase = DataBase(context)
         val auth = FirebaseAuth.getInstance()
 
-        // go back
-        friendsBack.setOnClickListener {
+        // Go back to the previous activity
+        friendsBack?.setOnClickListener {
             if (context is Activity) {
                 context.finish()
             }
         }
-        // open users
-        openUsers.setOnClickListener {
+
+        // Open the users list
+        openUsers?.setOnClickListener {
             context.startActivity(Intent(context, RecycleUserView::class.java))
         }
 
-        // open friend chat
-        chat.setOnClickListener {
+        // Open the chat with the current friend
+        chat?.setOnClickListener {
             val intent = Intent(context, ChatFriendsActivity::class.java)
             intent.putExtra("name", currentFriend.name)
             intent.putExtra("uid", currentFriend.uid)
@@ -64,10 +64,13 @@ class FriendsAdapter(val context: Context, val friendsList: ArrayList<Users>) :
             context.startActivity(intent)
         }
 
-        // remove friend
-        removeFriend.setOnClickListener {
-            dataBase.removeFriendFromDataBase(auth.currentUser!!.uid, currentFriend.uid!!)
+        // Remove the current friend from the user's friend list
+        removeFriend?.setOnClickListener {
+            auth.currentUser?.uid?.let { userId ->
+                currentFriend.uid?.let { friendId ->
+                    dataBase.removeFriendFromDataBase(userId, friendId)
+                }
+            }
         }
-
     }
 }
