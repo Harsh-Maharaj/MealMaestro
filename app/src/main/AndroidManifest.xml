@@ -46,6 +46,10 @@
             android:name=".SplashActivity"
             android:exported="true" />
 
+        <activity
+            android:name=".TimerActivity"
+            android:exported="false" />
+
         <!-- FACEBOOK -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
