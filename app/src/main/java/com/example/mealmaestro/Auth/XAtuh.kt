@@ -5,13 +5,16 @@ import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import com.example.mealmaestro.MainActivity
+import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.OAuthProvider
 
 class XAuth(private val activity: Activity) {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val provider = OAuthProvider.newBuilder("twitter.com")
+        .addCustomParameter("lang", "en")
 
     init {
         // Set the language code for Firebase (optional)
@@ -29,7 +32,7 @@ class XAuth(private val activity: Activity) {
                 }
                 .addOnFailureListener { e ->
                     Log.e("XAuth", "Pending authentication failed", e)
-                    onFailure(e)
+                    handleAuthFailure(e)
                 }
         } else {
             // No pending result, start a new authentication process
@@ -40,11 +43,7 @@ class XAuth(private val activity: Activity) {
                 }
                 .addOnFailureListener { e ->
                     Log.e("XAuth", "Authentication failed", e)
-                    // Log additional details if it's an auth/invalid-credential error
-                    if (e.message?.contains("auth/invalid-credential") == true) {
-                        Log.e("XAuth", "Invalid credential error: Check your Twitter API key/secret and Firebase configuration")
-                    }
-                    onFailure(e)
+                    handleAuthFailure(e)
                 }
         }
     }
@@ -55,7 +54,11 @@ class XAuth(private val activity: Activity) {
         activity.finish()
     }
 
-    private fun onFailure(e: Exception) {
-        Toast.makeText(activity, "Login failed, please try again: ${e.message}", Toast.LENGTH_LONG).show()
+    private fun handleAuthFailure(e: Exception) {
+        Log.e("XAuth", "Error: ${e.message}")
+        if (e is FirebaseAuthException) {
+            Log.e("XAuth", "Firebase Auth Error: ${e.errorCode} - ${e.message}")
+        }
+        Toast.makeText(activity, "Login failed: ${e.message}", Toast.LENGTH_LONG).show()
     }
 }

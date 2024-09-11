@@ -55,11 +55,13 @@ dependencies {
     // Additional dependencies
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.android.gms:play-services-auth:21.2.0")
-    implementation("com.facebook.android:facebook-login:latest.release")
     implementation("com.github.bumptech.glide:glide:4.12.0")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("org.json:json:20210307")
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.functions)
+    implementation(libs.firebase.analytics)
 
 
 

@@ -1,6 +1,5 @@
 package com.example.mealmaestro
 
-import com.example.mealmaestro.Auth.FacebookAuth
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -13,7 +12,6 @@ import com.example.mealmaestro.Auth.GoogleAuth
 import com.example.mealmaestro.Auth.XAuth
 import com.example.mealmaestro.Helper.DataBase
 import com.example.mealmaestro.databinding.ActivitySignUpBinding
-import com.facebook.CallbackManager
 import com.google.firebase.auth.FirebaseAuth
 
 
@@ -22,10 +20,22 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignUpBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var googleAuth: GoogleAuth
-    private lateinit var callbackManager: CallbackManager
-    private lateinit var facebookAuth: FacebookAuth
     private lateinit var xAuth: XAuth
     private val dataBase: DataBase = DataBase()
+
+    // ========================== GOOGLE ===========================================================
+    private val launcher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            googleAuth.handleSignInResult(GoogleAuth.REQ_ONE_TAP, result.data)
+        }
+
+    // Handle activity result here (or use the launcher)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        // Forward result to GoogleAuth class
+        googleAuth.handleSignInResult(requestCode, data)
+    }
+    //==============================================================================================
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,24 +55,10 @@ class SignUpActivity : AppCompatActivity() {
             startActivity(intent)
         }
         // ========================= GOOGLE ========================================================
-        val getResult = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            googleAuth.handleSignInResult(result.data, auth)
-        }
-
-        googleAuth = GoogleAuth(this, getResult)
-
         binding.googleBtn.setOnClickListener {
             googleAuth.launchSignIn()
         }
-
-        // ======================= FACEBOOK ========================================================
-        facebookAuth = FacebookAuth(this@SignUpActivity)
-
-        binding.facebookBtn.setOnClickListener {
-            facebookAuth.logInWithFacebook()
-        }
+        googleAuth = GoogleAuth(this, launcher)
 
         // =============================  X ========================================================
 
@@ -109,11 +105,5 @@ class SignUpActivity : AppCompatActivity() {
                     }
             }
         }
-    }
-    //===================== FACEBOOK ===============================================================
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        facebookAuth.onActivityResult(requestCode, resultCode, data)
     }
 }

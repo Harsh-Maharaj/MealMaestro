@@ -22,6 +22,10 @@ import java.util.UUID
 class DataBase(private val context: Context?) {
     constructor() : this(null)
 
+    interface DataFetchCallback {
+        fun onDataFetched()
+    }
+
     private val auth = FirebaseAuth.getInstance()
     private val storageRef: StorageReference = FirebaseStorage.getInstance().reference
     private val dataBaseRef =
@@ -36,13 +40,12 @@ class DataBase(private val context: Context?) {
     }
 
     fun addUserIcon(uid: String, iconUri: Uri) {
-        // Extract the file extension from the URI
         val contentResolver = context?.contentResolver
         val mimeType = contentResolver?.getType(iconUri)
         val extension = when (mimeType) {
             "image/jpeg" -> "jpg"
             "image/png" -> "png"
-            else -> "jpg" // Default to jpg if unknown
+            else -> "jpg"
         }
 
         val iconRef = storageRef.child("userImages/$uid/${UUID.randomUUID()}.$extension")
@@ -57,7 +60,11 @@ class DataBase(private val context: Context?) {
         }
     }
 
-    fun getUsersFromDataBase(userList: ArrayList<Users>, adapter: UsersAdapter) {
+    fun getUsersFromDataBase(
+        userList: ArrayList<Users>,
+        adapter: UsersAdapter,
+        callback: DataFetchCallback
+    ) {
         dataBaseRef.child("user").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 userList.clear()
@@ -68,40 +75,42 @@ class DataBase(private val context: Context?) {
                     }
                 }
                 adapter.notifyDataSetChanged()
+                callback.onDataFetched()
             }
 
-            override fun onCancelled(error: DatabaseError) {
-            }
-
+            override fun onCancelled(error: DatabaseError) {}
         })
     }
 
     // -------------------- Friends Methods --------------------------
 
     fun getFriendsList(friendList: ArrayList<Users>, adapter: FriendsAdapter) {
-        val currentUserId = auth.currentUser?.uid ?: return // Ensure current user ID is available
-
-        // Get the current user's friends list
+        val currentUserId = auth.currentUser?.uid ?: return
         dataBaseRef.child("user").child(currentUserId).child("friends")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     friendList.clear()
-
-                    // Retrieve the list of friend IDs
-                    val friendsIds = snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {}) ?: arrayListOf()
+                    var friendsRetrieved = 0
+                    val friendsIds =
+                        snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {}) ?: arrayListOf()
 
                     for (friendId in friendsIds) {
-                        // Retrieve each friend's user data
                         dataBaseRef.child("user").child(friendId).get()
                             .addOnSuccessListener { userSnapshot ->
                                 val user = userSnapshot.getValue(Users::class.java)
                                 if (user != null) {
                                     friendList.add(user)
                                 }
-                                adapter.notifyDataSetChanged()
-                            }
-                            .addOnFailureListener {
-                                Toast.makeText(context, "Failed to retrieve friend: $friendId", Toast.LENGTH_SHORT).show()
+                                friendsRetrieved++
+                                if (friendsRetrieved == friendsIds.size) {
+                                    adapter.notifyDataSetChanged()
+                                }
+                            }.addOnFailureListener {
+                                Toast.makeText(
+                                    context,
+                                    "Failed to retrieve friend: $friendId",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                     }
                 }
@@ -123,8 +132,7 @@ class DataBase(private val context: Context?) {
                 currentUserRef.setValue(friendsList)
                     .addOnSuccessListener {
                         Toast.makeText(context, "Friend added successfully!", Toast.LENGTH_SHORT).show()
-                    }
-                    .addOnFailureListener { e ->
+                    }.addOnFailureListener { e ->
                         Toast.makeText(context, "Error adding friend: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             } else {
@@ -145,8 +153,7 @@ class DataBase(private val context: Context?) {
                 currentUserRef.setValue(friendsList)
                     .addOnSuccessListener {
                         Toast.makeText(context, "Friend removed successfully!", Toast.LENGTH_SHORT).show()
-                    }
-                    .addOnFailureListener { e ->
+                    }.addOnFailureListener { e ->
                         Toast.makeText(context, "Error removing friend: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             } else {
@@ -183,8 +190,7 @@ class DataBase(private val context: Context?) {
                     adapter.notifyDataSetChanged()
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                }
+                override fun onCancelled(error: DatabaseError) {}
 
             })
     }

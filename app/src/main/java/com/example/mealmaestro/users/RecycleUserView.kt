@@ -3,8 +3,10 @@ package com.example.mealmaestro.users
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.IntentCompat.getSerializableExtra
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mealmaestro.Helper.DataBase
 import com.example.mealmaestro.databinding.ActivityRecycleUserViewBinding
 
-class RecycleUserView : AppCompatActivity() {
+class RecycleUserView : AppCompatActivity(){
 
     private lateinit var binding: ActivityRecycleUserViewBinding
     private lateinit var userList: ArrayList<Users>
@@ -33,25 +35,37 @@ class RecycleUserView : AppCompatActivity() {
 
 
         userList = ArrayList()
-        adapter = UsersAdapter(this@RecycleUserView, userList)
+
+        adapter = UsersAdapter(this@RecycleUserView, userList)/*, object : AddOrRemoveFriend{
+            override fun refreshFriendList() {
+                setResult(RESULT_OK) // Notify the calling activity that a friend has been added
+                finish() // Close this activity and return to RecycleUserFriends
+            }
+        })*/
         userRecyclerView = binding.recyclingUserView
         userRecyclerView.layoutManager = LinearLayoutManager(this@RecycleUserView)
         userRecyclerView.adapter = adapter
         dataBase = DataBase(this)
-        dataBase.getUsersFromDataBase(userList,adapter) // call the database for the information
-
-        binding.searchBar.addTextChangedListener(object : TextWatcher{
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+        dataBase.getUsersFromDataBase(userList,adapter, object: DataBase.DataFetchCallback {
+            override fun onDataFetched() {
+                // Once data is fetched from the database, update userListFull
+                adapter.updateUserListFull(ArrayList(userList))
+                // Notify the adapter that data has changed
+                adapter.notifyDataSetChanged()
             }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                adapter.filter.filter(p0)
-            }
-
-            override fun afterTextChanged(p0: Editable?) {
-            }
-
         })
 
+        binding.userBack.setOnClickListener {
+            finish()
+        }
+
+        binding.searchBar.addTextChangedListener(object : TextWatcher{
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) { }
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                Log.d("SearchBar", "Text changed: $p0")
+                adapter.filter.filter(p0)
+            }
+            override fun afterTextChanged(p0: Editable?) {}
+        })
     }
 }

@@ -48,7 +48,18 @@
             android:name=".SplashActivity"
             android:exported="true" />
 
-        <!-- FACEBOOK -->
+        <!-- Add both service and activity here -->
+        <service android:name=".Helper.FCMNotificationService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".TimerActivity"
+            android:exported="false" />
+
+        <!-- FACEBOOK Metadata -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
@@ -61,18 +72,10 @@
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation" />
         <activity
             android:name="com.facebook.CustomTabActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
+            android:exported="true"/>
 
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="@string/fb_login_protocol_scheme" />
-            </intent-filter>
-
-            <!-- END FACEBOOK -->
-        </activity>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="default_channel_id"/>
     </application>
-
 </manifest>

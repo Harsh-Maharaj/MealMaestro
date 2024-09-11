@@ -1,5 +1,6 @@
 package com.example.mealmaestro.Chats
 
+import android.app.Activity
 import android.os.Bundle
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
@@ -74,6 +75,10 @@ class ChatFriendsActivity : AppCompatActivity() {
 
         // display message in recycler
         dataBase.getFriendMessage(senderRoom!!,messageList, adapter)
+
+        binding.chatBack.setOnClickListener {
+            finish()
+        }
 
     }
 }
