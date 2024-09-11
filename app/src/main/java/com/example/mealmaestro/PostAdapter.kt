@@ -20,7 +20,7 @@ data class Post(
     val likes: Map<String, Boolean> = mapOf()
 )
 
-class PostAdapter(private val context: Context, private val postList: List<Post>) :
+class PostAdapter(private val context: Context, private val postList: MutableList<Post>) :
     RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -47,12 +47,23 @@ class PostAdapter(private val context: Context, private val postList: List<Post>
             Glide.with(context).load(post.image_url).into(imageView)
             textViewCaption.text = post.caption
 
-            buttonLike.setOnClickListener {
-                likePost(post)
+            // Check if the post is already saved
+            isPostSaved(post) { isSaved ->
+                if (isSaved) {
+                    buttonSave.text = "Unsave"
+                    buttonSave.setOnClickListener {
+                        unsavePost(post)
+                    }
+                } else {
+                    buttonSave.text = "Save"
+                    buttonSave.setOnClickListener {
+                        savePost(post)
+                    }
+                }
             }
 
-            buttonSave.setOnClickListener {
-                savePost(post)
+            buttonLike.setOnClickListener {
+                likePost(post)
             }
 
             updateLikeButton(post)
@@ -80,6 +91,49 @@ class PostAdapter(private val context: Context, private val postList: List<Post>
                 .collection("posts")
 
             favoritesRef.document(post.id).set(post)
+                .addOnSuccessListener {
+                    buttonSave.text = "Unsave"
+                }
+                .addOnFailureListener {
+                    // Handle the error
+                }
+        }
+
+        private fun unsavePost(post: Post) {
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+            val favoritesRef = FirebaseFirestore.getInstance()
+                .collection("favorites")
+                .document(currentUserId)
+                .collection("posts")
+
+            favoritesRef.document(post.id).delete()
+                .addOnSuccessListener {
+                    buttonSave.text = "Save"
+                    // Remove the post from the local list and notify adapter
+                    val position = adapterPosition  // Replacing bindingAdapterPosition with adapterPosition
+                    if (position != RecyclerView.NO_POSITION) {
+                        postList.removeAt(position)  // Removing by position to avoid issues
+                        notifyItemRemoved(position)
+                    }
+                }
+                .addOnFailureListener {
+                    // Handle the error
+                }
+        }
+
+        private fun isPostSaved(post: Post, callback: (Boolean) -> Unit) {
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+            val favoritesRef = FirebaseFirestore.getInstance()
+                .collection("favorites")
+                .document(currentUserId)
+                .collection("posts")
+                .document(post.id)
+
+            favoritesRef.get().addOnSuccessListener { document ->
+                callback(document.exists())
+            }.addOnFailureListener {
+                callback(false)
+            }
         }
 
         private fun updateLikeButton(post: Post) {
