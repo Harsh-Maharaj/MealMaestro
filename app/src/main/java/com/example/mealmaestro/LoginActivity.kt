@@ -12,7 +12,6 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.mealmaestro.Auth.GoogleAuth
 import com.example.mealmaestro.Auth.XAuth
 import com.example.mealmaestro.databinding.ActivityLoginBinding
-import com.facebook.CallbackManager
 import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : AppCompatActivity() {
@@ -20,7 +19,6 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var googleAuth: GoogleAuth
     private lateinit var auth: FirebaseAuth
-    private lateinit var callbackManager: CallbackManager
     private lateinit var xAuth: XAuth
 
     // ========================== GOOGLE ===========================================================
