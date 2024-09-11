@@ -9,11 +9,11 @@
     <RelativeLayout
         android:id="@+id/topAppBar"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="140dp"
         android:orientation="horizontal">
         <View
             android:layout_width="match_parent"
-            android:layout_height="110dp"
+            android:layout_height="120dp"
             android:layout_gravity="top"
             android:background="@drawable/wave_bottom"
             android:layout_weight="1"/>
@@ -48,21 +48,30 @@
 
         <ImageView
             android:id="@+id/user_back"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/back"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_above="@+id/linearLayout"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
             android:layout_marginEnd="5dp"
-            android:paddingBottom="10dp"/>
+            android:layout_marginBottom="9dp"
+            android:alpha="1.0"
+            android:clickable="true"
+            android:contentDescription="@string/back_button_description"
+            android:elevation="4dp"
+            android:focusable="true"
+            android:padding="10dp"
+            android:src="@drawable/back"
+            android:visibility="visible" />
 
         <LinearLayout
+            android:id="@+id/linearLayout"
             android:layout_width="180dp"
             android:layout_height="50dp"
-            android:background="@drawable/round_border"
-            android:backgroundTint="@color/lightGrey"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true">
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="-5dp"
+            android:background="@drawable/round_border"
+            android:backgroundTint="@color/lightGrey">
 
             <EditText
                 android:id="@+id/search_bar"
@@ -74,11 +83,12 @@
                 android:paddingLeft="10dp"
                 android:textColor="@color/darkGrey"
                 android:textColorHint="@color/darkGrey" />
+
             <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:src="@drawable/search"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center"
+                android:src="@drawable/search" />
 
         </LinearLayout>
     </RelativeLayout>

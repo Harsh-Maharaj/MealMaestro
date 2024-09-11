@@ -10,7 +10,7 @@
     <RelativeLayout
         android:id="@+id/topAppBar"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="120dp"
         android:background="@drawable/wave_bottom"
         android:orientation="horizontal">
 
@@ -35,6 +35,22 @@
             android:textSize="25sp"
             android:textStyle="bold"
             android:layout_centerVertical="true"/>
+
+        <ImageView
+            android:id="@+id/chat_back"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="5dp"
+            android:alpha="1.0"
+            android:clickable="true"
+            android:elevation="4dp"
+            android:focusable="true"
+            android:padding="10dp"
+            android:src="@drawable/back"
+            android:visibility="visible"
+            android:contentDescription="@string/back_button_description"/>
     </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView

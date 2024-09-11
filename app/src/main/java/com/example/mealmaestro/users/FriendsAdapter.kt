@@ -1,11 +1,13 @@
 package com.example.mealmaestro.users
 
 import android.app.Activity
+import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Adapter
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -14,15 +16,19 @@ import com.example.mealmaestro.Helper.DataBase
 import com.example.mealmaestro.R
 import com.google.firebase.auth.FirebaseAuth
 
-class FriendsAdapter(val context: Context, val friendsList: ArrayList<Users>) :
-    RecyclerView.Adapter<FriendsAdapter.FriendsViewHolder>() {
+class FriendsAdapter(
+    val context: Context,
+    val friendsList: ArrayList<Users>,
+ //   private val addOrRemoveFriend: AddOrRemoveFriend // interface to update friends view
+) : RecyclerView.Adapter<FriendsAdapter.FriendsViewHolder>() {
 
     class FriendsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textName: TextView = itemView.findViewById(R.id.friend_id)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendsViewHolder {
-        val view: View = LayoutInflater.from(context).inflate(R.layout.friends_layout, parent, false)
+        val view: View =
+            LayoutInflater.from(context).inflate(R.layout.friends_layout, parent, false)
         return FriendsViewHolder(view)
     }
 
@@ -37,23 +43,9 @@ class FriendsAdapter(val context: Context, val friendsList: ArrayList<Users>) :
         // Find the ImageViews from the layout
         val chat = holder.itemView.findViewById<ImageView>(R.id.friend_message)
         val removeFriend = holder.itemView.findViewById<ImageView>(R.id.remove_friend)
-        val openUsers = holder.itemView.findViewById<ImageView>(R.id.friends_to_users)
-        val friendsBack = holder.itemView.findViewById<ImageView>(R.id.friend_back)
 
         val dataBase = DataBase(context)
         val auth = FirebaseAuth.getInstance()
-
-        // Go back to the previous activity
-        friendsBack?.setOnClickListener {
-            if (context is Activity) {
-                context.finish()
-            }
-        }
-
-        // Open the users list
-        openUsers?.setOnClickListener {
-            context.startActivity(Intent(context, RecycleUserView::class.java))
-        }
 
         // Open the chat with the current friend
         chat?.setOnClickListener {
@@ -70,6 +62,13 @@ class FriendsAdapter(val context: Context, val friendsList: ArrayList<Users>) :
                 currentFriend.uid?.let { friendId ->
                     dataBase.removeFriendFromDataBase(userId, friendId)
                 }
+            }
+            // refresh friends view after remove friend
+            val options = ActivityOptions.makeCustomAnimation(context, 0, 0) // remove animation
+            context.startActivity(Intent(context, RecycleUserFriends::class.java), options.toBundle())
+            if (context is RecycleUserFriends){
+                context.overridePendingTransition(0, 0) // No animation older android version
+                context.finish()
             }
         }
     }

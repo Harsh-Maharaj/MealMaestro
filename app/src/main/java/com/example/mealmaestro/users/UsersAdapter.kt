@@ -3,6 +3,7 @@ package com.example.mealmaestro.users
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,9 +16,12 @@ import com.example.mealmaestro.R
 import com.google.firebase.auth.FirebaseAuth
 import android.widget.Filter
 import android.widget.Filterable
+import java.util.Locale
 
-class UsersAdapter(val context: Context, private var userList: ArrayList<Users>) :
-    RecyclerView.Adapter<UsersAdapter.UserViewHolder>(), Filterable {
+class UsersAdapter(
+    val context: Context,
+    private var userList: ArrayList<Users>,
+) : RecyclerView.Adapter<UsersAdapter.UserViewHolder>(), Filterable {
 
     private var userListFull: ArrayList<Users> = ArrayList(userList)
 
@@ -37,7 +41,6 @@ class UsersAdapter(val context: Context, private var userList: ArrayList<Users>)
         // Fetch views by IDs and ensure they are found
         val chat = holder.itemView.findViewById<ImageView>(R.id.user_message)
         val addFriend = holder.itemView.findViewById<ImageView>(R.id.add_friend)
-        val goBack = holder.itemView.findViewById<ImageView>(R.id.user_back)
 
         // Verify that the views are not null before attaching click listeners
         chat?.setOnClickListener {
@@ -52,13 +55,12 @@ class UsersAdapter(val context: Context, private var userList: ArrayList<Users>)
             val auth = FirebaseAuth.getInstance()
             val dataBase = DataBase(context)
             dataBase.addFriendToDataBase(auth.currentUser!!.uid, currentUser.uid)
+
+            // Notify RecycleUserView that a friend was added and finish the activity
+            (context as Activity).setResult(Activity.RESULT_OK)
+            context.finish()
         }
 
-        goBack?.setOnClickListener {
-            if (context is Activity) {
-                context.finish()
-            }
-        }
     }
 
     class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -69,18 +71,28 @@ class UsersAdapter(val context: Context, private var userList: ArrayList<Users>)
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence?): FilterResults {
                 val filteredList = ArrayList<Users>()
+                Log.d("AdapterInit", "UserListFull size: ${userListFull.size}")
+                Log.d("PerformFiltering", "Constraint: $constraint")
 
-                if (constraint == null || constraint.isEmpty()) {
+
+
+                if (constraint.isNullOrEmpty()) {
                     filteredList.addAll(userListFull)
+                    Log.d("UserListFullCheck", "User list full size: ${userListFull.size}")
+
                 } else {
-                    val filterPattern = constraint.toString().toLowerCase().trim()
+                    val filterPattern = constraint.toString().lowercase().trim()
 
                     for (user in userListFull) {
-                        if (user.name?.toLowerCase()?.contains(filterPattern) == true) {
+                        Log.d("UserListFull", "User name: ${user.name}")
+                        Log.d("PerformFiltering", "User name: ${user.name}")
+                        if (user.name?.lowercase()?.contains(filterPattern) == true) {
                             filteredList.add(user)
                         }
                     }
                 }
+
+                Log.d("FilterResults", "Filtered list size: ${filteredList.size}")
 
                 val results = FilterResults()
                 results.values = filteredList
@@ -91,8 +103,14 @@ class UsersAdapter(val context: Context, private var userList: ArrayList<Users>)
             override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
                 userList.clear()
                 userList.addAll(results?.values as ArrayList<Users>)
+                Log.d("PublishResults", "Updated list size: ${userList.size}")
                 notifyDataSetChanged()
             }
         }
     }
+
+    fun updateUserListFull(newUserList: ArrayList<Users>) {
+        userListFull = newUserList
+    }
+
 }
