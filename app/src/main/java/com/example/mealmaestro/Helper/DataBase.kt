@@ -28,6 +28,8 @@ class DataBase(private val context: Context?) {
         FirebaseDatabase.getInstance("https://mealmaestro-46c0d-default-rtdb.asia-southeast1.firebasedatabase.app/")
             .getReference()
 
+    // -------------------- User Methods --------------------------
+
     fun addUserToDataBase(email: String, uid: String) {
         dataBaseRef.child("user").child(uid)
             .setValue(Users(username = null, name = null, email, uid, icon = null))
@@ -74,6 +76,8 @@ class DataBase(private val context: Context?) {
         })
     }
 
+    // -------------------- Friends Methods --------------------------
+
     fun getFriendsList(friendList: ArrayList<Users>, adapter: FriendsAdapter) {
         val currentUserId = auth.currentUser?.uid ?: return // Ensure current user ID is available
 
@@ -108,82 +112,52 @@ class DataBase(private val context: Context?) {
             })
     }
 
-
-
     fun addFriendToDataBase(currentUserId: String, newFriendId: String?) {
-
         if (newFriendId == null) return
-        // Reference to the current user's friends array
         val currentUserRef = dataBaseRef.child("user").child(currentUserId).child("friends")
 
         currentUserRef.get().addOnSuccessListener { snapshot ->
-            val friendsList =
-                snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {})
-                    ?: arrayListOf()
+            val friendsList = snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {}) ?: arrayListOf()
             if (!friendsList.contains(newFriendId)) {
                 friendsList.add(newFriendId)
                 currentUserRef.setValue(friendsList)
                     .addOnSuccessListener {
-                        // Friend added successfully
-                        Toast.makeText(
-                            context,
-                            "Friend added successfully!",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
+                        Toast.makeText(context, "Friend added successfully!", Toast.LENGTH_SHORT).show()
                     }
                     .addOnFailureListener { e ->
-                        // Handle failure
-                        Toast.makeText(
-                            context,
-                            "Error adding friend: ${e.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context, "Error adding friend: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             } else {
-                // Friend already exists in the list
-                Toast.makeText(context, "Friend already in the list!", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(context, "Friend already in the list!", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener { e ->
-            // Handle failure to get the friends list
             println("Error fetching friends list: ${e.message}")
         }
     }
 
     fun removeFriendFromDataBase(currentUserId: String, friendToRemove: String) {
-        // Reference to the current user's friends array
-        val currentUserRef =
-            dataBaseRef.child("user").child(currentUserId).child("friends")
+        val currentUserRef = dataBaseRef.child("user").child(currentUserId).child("friends")
 
         currentUserRef.get().addOnSuccessListener { snapshot ->
-            val friendsList =
-                snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {})
-                    ?: arrayListOf()
+            val friendsList = snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {}) ?: arrayListOf()
             if (friendsList.contains(friendToRemove)) {
                 friendsList.remove(friendToRemove)
                 currentUserRef.setValue(friendsList)
                     .addOnSuccessListener {
-                        // Friend removed successfully
-                        Toast.makeText(
-                            context, "Friend removed successfully!", Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context, "Friend removed successfully!", Toast.LENGTH_SHORT).show()
                     }
                     .addOnFailureListener { e ->
-                        // Handle failure
-                        Toast.makeText(
-                            context, "Error removing friend: ${e.message}", Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context, "Error removing friend: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             } else {
-                // Friend already exists in the list
-                Toast.makeText(context, "Friend not your list!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Friend not in your list!", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener { e ->
-            // Handle failure to get the friends list
             println("Error fetching friends list: ${e.message}")
         }
     }
+
+    // -------------------- Chat Methods --------------------------
 
     fun addFriendChatMessage(senderRoom: String, receiverRoom: String, messageObject: Message) {
         dataBaseRef.child("friendChat").child(senderRoom).child("messages").push()
@@ -215,7 +189,8 @@ class DataBase(private val context: Context?) {
             })
     }
 
-    // to save URL of files uploaded
+    // -------------------- File Metadata --------------------------
+
     fun saveFileMetadata(uid: String, fileUrl: String, mimeType: String?, folder: String) {
         val metadata = mapOf(
             "url" to fileUrl,
@@ -226,7 +201,7 @@ class DataBase(private val context: Context?) {
         dataBaseRef.child("user").child(uid).child("files").push().setValue(metadata)
     }
 
-    // ---------------------- New Methods for Posts ----------------------
+    // -------------------- Posts Methods --------------------------
 
     fun addPostToDataBase(uid: String, imageUri: Uri, caption: String) {
         val postId = UUID.randomUUID().toString()
@@ -239,7 +214,8 @@ class DataBase(private val context: Context?) {
                     user_id = uid,
                     image_url = downloadUri.toString(),
                     caption = caption,
-                    likes = mapOf()
+                    likes = mapOf(),
+                    isPublic = true // Set post visibility to public
                 )
                 dataBaseRef.child("posts").child(postId).setValue(post)
                     .addOnSuccessListener {
@@ -278,21 +254,22 @@ class DataBase(private val context: Context?) {
     }
 
     fun getPostsFromDataBase(postList: ArrayList<Post>, adapter: PostAdapter) {
-        dataBaseRef.child("posts").addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                postList.clear()
-                for (postSnap in snapshot.children) {
-                    val post = postSnap.getValue(Post::class.java)
-                    if (post != null) {
-                        postList.add(post)
+        dataBaseRef.child("posts").orderByChild("isPublic").equalTo(true)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    postList.clear()
+                    for (postSnap in snapshot.children) {
+                        val post = postSnap.getValue(Post::class.java)
+                        if (post != null) {
+                            postList.add(post)
+                        }
                     }
+                    adapter.notifyDataSetChanged()
                 }
-                adapter.notifyDataSetChanged()
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(context, "Failed to fetch posts.", Toast.LENGTH_SHORT).show()
-            }
-        })
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(context, "Failed to fetch posts.", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 }

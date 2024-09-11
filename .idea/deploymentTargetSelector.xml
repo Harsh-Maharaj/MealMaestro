@@ -4,6 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="Meal Maestro">
         <option name="selectionMode" value="DROPDOWN" />
+        <DialogSelection />
       </SelectionState>
     </selectionStates>
   </component>
