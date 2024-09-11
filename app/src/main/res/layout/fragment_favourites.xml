@@ -55,12 +55,11 @@
 
     <!-- Bottom Navigation Bar -->
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp"
+        android:layout_width="398dp"
+        android:layout_height="54dp"
         android:gravity="center"
-        android:background="@color/purple">
+        android:orientation="horizontal"
+        android:padding="8dp">
 
         <!-- Navigation Buttons -->
         <ImageButton
@@ -70,7 +69,7 @@
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="Home"
-            app:tint="@android:color/white"/>
+            app:tint="@android:color/white" />
 
         <ImageButton
             android:id="@+id/btn_nav_add"
@@ -79,7 +78,7 @@
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="Add"
-            app:tint="@android:color/white"/>
+            app:tint="@android:color/white" />
 
         <ImageButton
             android:id="@+id/btn_nav_favorites"
@@ -88,7 +87,7 @@
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="Favorites"
-            app:tint="@android:color/white"/>
+            app:tint="@android:color/white" />
 
         <ImageButton
             android:id="@+id/btn_nav_leaf"
@@ -97,6 +96,6 @@
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="Leaf"
-            app:tint="@android:color/white"/>
+            app:tint="@android:color/white" />
     </LinearLayout>
 </LinearLayout>

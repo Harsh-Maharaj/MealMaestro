@@ -1,5 +1,6 @@
 package com.example.mealmaestro.Helper
 
+import com.google.firebase.Timestamp
 import java.util.UUID
 
 data class Post(
@@ -8,5 +9,6 @@ data class Post(
     val image_url: String = "",
     val caption: String = "",
     val likes: Map<String, Boolean> = emptyMap(),
-    val isPublic: Boolean = true // Add this field to the Post class
+    val isPublic: Boolean = true, // Add this field to the Post class
+    val created_at: Timestamp? = null  // Add this field to store the creation time
 )

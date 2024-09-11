@@ -1,17 +1,19 @@
 package com.example.mealmaestro
-
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
+import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.mealmaestro.Helper.Post
+import com.example.mealmaestro.R
 
 data class Post(
     val user_id: String = "",
@@ -40,26 +42,27 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageView: ImageView = itemView.findViewById(R.id.image_view_post)
         private val textViewCaption: TextView = itemView.findViewById(R.id.text_view_caption)
-        private val buttonLike: Button = itemView.findViewById(R.id.button_like)
-        private val buttonSave: Button = itemView.findViewById(R.id.button_save)
+        private val buttonLike: ImageButton = itemView.findViewById(R.id.button_like)
+        private val buttonSave: ImageButton = itemView.findViewById(R.id.button_save)
+        private val buttonComment: ImageButton = itemView.findViewById(R.id.button_comment)
 
         fun bind(post: Post) {
             // Load the image using Glide
             Glide.with(context).load(post.image_url).into(imageView)
             textViewCaption.text = post.caption
 
-            // **Always reset the save button to default state** to avoid old state being shown
-            buttonSave.text = "Save"
+            // Reset save button to light purple by default
+            buttonSave.setColorFilter(ContextCompat.getColor(context, R.color.light_purple))
 
             // Check if the post is already saved asynchronously
             isPostSaved(post) { isSaved ->
                 if (isSaved) {
-                    buttonSave.text = "Unsave"
+                    buttonSave.setColorFilter(ContextCompat.getColor(context, R.color.yellow)) // Set to yellow when saved
                     buttonSave.setOnClickListener {
                         unsavePost(post)
                     }
                 } else {
-                    buttonSave.text = "Save"
+                    buttonSave.setColorFilter(ContextCompat.getColor(context, R.color.light_purple)) // Light purple (unsaved state)
                     buttonSave.setOnClickListener {
                         savePost(post)
                     }
@@ -88,6 +91,10 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
             }
 
             postRef.update("likes", likes)
+                .addOnSuccessListener {
+                    // Update like button color
+                    updateLikeButton(post.copy(likes = likes))
+                }
         }
 
         private fun savePost(post: Post) {
@@ -100,7 +107,7 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
             // Save the post in the user's favorites
             favoritesRef.document(post.user_id).set(post)
                 .addOnSuccessListener {
-                    buttonSave.text = "Unsave"
+                    buttonSave.setColorFilter(ContextCompat.getColor(context, R.color.yellow)) // Set to yellow when saved
                 }
                 .addOnFailureListener {
                     // Handle the error
@@ -117,7 +124,7 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
             // Unsave the post from the user's favorites
             favoritesRef.document(post.user_id).delete()
                 .addOnSuccessListener {
-                    buttonSave.text = "Save"
+                    buttonSave.setColorFilter(ContextCompat.getColor(context, R.color.light_purple)) // Set back to light purple when unsaved
                 }
                 .addOnFailureListener {
                     // Handle the error
@@ -143,9 +150,9 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
         private fun updateLikeButton(post: Post) {
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
             if (post.likes.containsKey(currentUserId)) {
-                buttonLike.text = "Liked"
+                buttonLike.setColorFilter(ContextCompat.getColor(context, R.color.red)) // Set to red when liked
             } else {
-                buttonLike.text = "Like"
+                buttonLike.setColorFilter(ContextCompat.getColor(context, R.color.light_purple)) // Set to light purple when not liked
             }
         }
     }

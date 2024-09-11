@@ -8,4 +8,9 @@
     <color name="greenLight">#B8F2B1</color>
     <color name="darkGrey">#6B6B6B</color>
     <color name="lightGrey">#D9D9D9</color>
+    <color name="light_purple">#D1C4E9</color> <!-- Light Purple -->
+    <color name="red">#FF0000</color> <!-- Red for liked state -->
+    <color name="yellow">#FFFF00</color> <!-- Yellow for saved state -->
+
+
 </resources>
