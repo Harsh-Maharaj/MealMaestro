@@ -1,12 +1,12 @@
 package com.example.mealmaestro
 
-import com.example.mealmaestro.Auth.FacebookAuth
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.mealmaestro.Auth.GoogleAuth
@@ -21,8 +21,21 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var googleAuth: GoogleAuth
     private lateinit var auth: FirebaseAuth
     private lateinit var callbackManager: CallbackManager
-    private lateinit var facebookAuth: FacebookAuth
     private lateinit var xAuth: XAuth
+
+    // ========================== GOOGLE ===========================================================
+    private val launcher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            googleAuth.handleSignInResult(GoogleAuth.REQ_ONE_TAP, result.data)
+        }
+
+    // Handle activity result here (or use the launcher)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        // Forward result to GoogleAuth class
+        googleAuth.handleSignInResult(requestCode, data)
+    }
+    //==============================================================================================
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,22 +59,11 @@ class LoginActivity : AppCompatActivity() {
         }
 
         // ========================= GOOGLE ========================================================
-        val getResult = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            googleAuth.handleSignInResult(result.data, auth)
-        }
-
-        googleAuth = GoogleAuth(this, getResult)
         binding.googleBtn.setOnClickListener {
             googleAuth.launchSignIn()
         }
-        // ======================= FACEBOOK ========================================================
-        facebookAuth = FacebookAuth(this@LoginActivity)
+        googleAuth = GoogleAuth(this, launcher)
 
-        binding.facebookBtn.setOnClickListener {
-            facebookAuth.logInWithFacebook()
-        }
         // =========================== X ===========================================================
 
         xAuth = XAuth(this)

@@ -2,6 +2,7 @@ package com.example.mealmaestro
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -13,7 +14,11 @@ import androidx.navigation.ui.NavigationUI
 import com.example.mealmaestro.databinding.ActivityMainBinding
 import com.example.mealmaestro.users.RecycleUserFriends
 import com.example.mealmaestro.users.RecycleUserView
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.messaging.FirebaseMessaging
+import javax.annotation.Nonnull
 
 class MainActivity : AppCompatActivity() {
 
@@ -62,6 +67,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        getFCMToken()
     }
 
     override fun onBackPressed() {
@@ -69,6 +75,18 @@ class MainActivity : AppCompatActivity() {
             drawerLayout.closeDrawer(GravityCompat.START)
         } else {
             super.onBackPressed()
+        }
+    }
+
+    // ================ FOR MESSAGE NOTIFICATIONS ==================================================
+    fun getFCMToken(){
+        FirebaseMessaging.getInstance().token.addOnCompleteListener {task ->
+            if(task.isSuccessful){
+                val token = task.result
+                Log.i("My Token", token)
+            } else {
+                Log.e("Token error", "fail to retrive FCM token", task.exception)
+            }
         }
     }
 }

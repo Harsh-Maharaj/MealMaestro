@@ -22,6 +22,10 @@ import java.util.UUID
 class DataBase(private val context: Context?) {
     constructor() : this(null)
 
+    interface DataFetchCallback {
+        fun onDataFetched()
+    }
+
     private val auth = FirebaseAuth.getInstance()
     private val storageRef: StorageReference = FirebaseStorage.getInstance().reference
     private val dataBaseRef =
@@ -55,7 +59,11 @@ class DataBase(private val context: Context?) {
         }
     }
 
-    fun getUsersFromDataBase(userList: ArrayList<Users>, adapter: UsersAdapter) {
+    fun getUsersFromDataBase(
+        userList: ArrayList<Users>,
+        adapter: UsersAdapter,
+        callback: DataFetchCallback
+    ) {
         dataBaseRef.child("user").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 userList.clear()
@@ -66,6 +74,7 @@ class DataBase(private val context: Context?) {
                     }
                 }
                 adapter.notifyDataSetChanged()
+                callback.onDataFetched()
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -82,9 +91,12 @@ class DataBase(private val context: Context?) {
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     friendList.clear()
+                    var friendsRetrieved = 0
 
                     // Retrieve the list of friend IDs
-                    val friendsIds = snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {}) ?: arrayListOf()
+                    val friendsIds =
+                        snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {})
+                            ?: arrayListOf()
 
                     for (friendId in friendsIds) {
                         // Retrieve each friend's user data
@@ -94,20 +106,28 @@ class DataBase(private val context: Context?) {
                                 if (user != null) {
                                     friendList.add(user)
                                 }
-                                adapter.notifyDataSetChanged()
+                                friendsRetrieved++
+                                // Once all friends have been retrieved, update the adapter
+                                if (friendsRetrieved == friendsIds.size) {
+                                    adapter.notifyDataSetChanged() // Update the adapter after all friends are loaded
+                                }
                             }
                             .addOnFailureListener {
-                                Toast.makeText(context, "Failed to retrieve friend: $friendId", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Failed to retrieve friend: $friendId",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(context, "Failed to retrieve friends list.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Failed to retrieve friends list.", Toast.LENGTH_SHORT)
+                        .show()
                 }
             })
     }
-
 
 
     fun addFriendToDataBase(currentUserId: String, newFriendId: String?) {
@@ -243,9 +263,14 @@ class DataBase(private val context: Context?) {
                 )
                 dataBaseRef.child("posts").child(postId).setValue(post)
                     .addOnSuccessListener {
-                        Toast.makeText(context, "Post added successfully!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Post added successfully!", Toast.LENGTH_SHORT)
+                            .show()
                     }.addOnFailureListener { e ->
-                        Toast.makeText(context, "Failed to add post: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Failed to add post: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
             }.addOnFailureListener {
                 Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
@@ -262,7 +287,8 @@ class DataBase(private val context: Context?) {
                 Toast.makeText(context, "Post liked!", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
-                Toast.makeText(context, "Failed to like post: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Failed to like post: ${e.message}", Toast.LENGTH_SHORT)
+                    .show()
             }
     }
 
@@ -273,7 +299,8 @@ class DataBase(private val context: Context?) {
                 Toast.makeText(context, "Post saved to favorites!", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
-                Toast.makeText(context, "Failed to save post: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Failed to save post: ${e.message}", Toast.LENGTH_SHORT)
+                    .show()
             }
     }
 
