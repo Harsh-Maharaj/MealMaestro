@@ -11,6 +11,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import com.example.mealmaestro.databinding.ActivityMainBinding
+import com.example.mealmaestro.users.RecycleUserFriends
 import com.example.mealmaestro.users.RecycleUserView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -50,7 +51,7 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.nav_friends -> {
                     // Start the RecycleUserView Activity
-                    val intent = Intent(this, RecycleUserView::class.java)
+                    val intent = Intent(this, RecycleUserFriends::class.java)
                     startActivity(intent)
                     true
                 }
