@@ -44,10 +44,14 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
         private val buttonSave: Button = itemView.findViewById(R.id.button_save)
 
         fun bind(post: Post) {
+            // Load the image using Glide
             Glide.with(context).load(post.image_url).into(imageView)
             textViewCaption.text = post.caption
 
-            // Check if the post is already saved
+            // **Always reset the save button to default state** to avoid old state being shown
+            buttonSave.text = "Save"
+
+            // Check if the post is already saved asynchronously
             isPostSaved(post) { isSaved ->
                 if (isSaved) {
                     buttonSave.text = "Unsave"
@@ -62,18 +66,21 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
                 }
             }
 
+            // Like button functionality
             buttonLike.setOnClickListener {
                 likePost(post)
             }
 
+            // Update the like button state
             updateLikeButton(post)
         }
 
         private fun likePost(post: Post) {
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-            val postRef = FirebaseFirestore.getInstance().collection("posts").document(post.id)
+            val postRef = FirebaseFirestore.getInstance().collection("posts").document(post.user_id)
             val likes = post.likes.toMutableMap()
 
+            // Toggle like status
             if (likes.containsKey(currentUserId)) {
                 likes.remove(currentUserId)
             } else {
@@ -90,7 +97,8 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
                 .document(currentUserId)
                 .collection("posts")
 
-            favoritesRef.document(post.id).set(post)
+            // Save the post in the user's favorites
+            favoritesRef.document(post.user_id).set(post)
                 .addOnSuccessListener {
                     buttonSave.text = "Unsave"
                 }
@@ -106,15 +114,10 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
                 .document(currentUserId)
                 .collection("posts")
 
-            favoritesRef.document(post.id).delete()
+            // Unsave the post from the user's favorites
+            favoritesRef.document(post.user_id).delete()
                 .addOnSuccessListener {
                     buttonSave.text = "Save"
-                    // Remove the post from the local list and notify adapter
-                    val position = adapterPosition  // Replacing bindingAdapterPosition with adapterPosition
-                    if (position != RecyclerView.NO_POSITION) {
-                        postList.removeAt(position)  // Removing by position to avoid issues
-                        notifyItemRemoved(position)
-                    }
                 }
                 .addOnFailureListener {
                     // Handle the error
@@ -127,8 +130,9 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
                 .collection("favorites")
                 .document(currentUserId)
                 .collection("posts")
-                .document(post.id)
+                .document(post.user_id)
 
+            // Check if the post exists in the user's favorites collection
             favoritesRef.get().addOnSuccessListener { document ->
                 callback(document.exists())
             }.addOnFailureListener {
