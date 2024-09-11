@@ -12,7 +12,6 @@ import com.example.mealmaestro.Auth.GoogleAuth
 import com.example.mealmaestro.Auth.XAuth
 import com.example.mealmaestro.Helper.DataBase
 import com.example.mealmaestro.databinding.ActivitySignUpBinding
-import com.facebook.CallbackManager
 import com.google.firebase.auth.FirebaseAuth
 
 
@@ -21,7 +20,6 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignUpBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var googleAuth: GoogleAuth
-    private lateinit var callbackManager: CallbackManager
     private lateinit var xAuth: XAuth
     private val dataBase: DataBase = DataBase()
 

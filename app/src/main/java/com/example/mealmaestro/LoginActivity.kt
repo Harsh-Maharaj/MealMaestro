@@ -20,10 +20,6 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var googleAuth: GoogleAuth
     private lateinit var auth: FirebaseAuth
     private lateinit var xAuth: XAuth
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 
     // ========================== GOOGLE ===========================================================
     private val launcher =
