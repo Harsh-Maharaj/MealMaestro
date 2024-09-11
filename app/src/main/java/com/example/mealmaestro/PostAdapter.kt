@@ -20,7 +20,7 @@ data class Post(
     val likes: Map<String, Boolean> = mapOf()
 )
 
-class PostAdapter(private val context: Context, private val postList: List<Post>) :
+class PostAdapter(private val context: Context, private val postList: MutableList<Post>) :
     RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -44,25 +44,43 @@ class PostAdapter(private val context: Context, private val postList: List<Post>
         private val buttonSave: Button = itemView.findViewById(R.id.button_save)
 
         fun bind(post: Post) {
+            // Load the image using Glide
             Glide.with(context).load(post.image_url).into(imageView)
             textViewCaption.text = post.caption
 
+            // **Always reset the save button to default state** to avoid old state being shown
+            buttonSave.text = "Save"
+
+            // Check if the post is already saved asynchronously
+            isPostSaved(post) { isSaved ->
+                if (isSaved) {
+                    buttonSave.text = "Unsave"
+                    buttonSave.setOnClickListener {
+                        unsavePost(post)
+                    }
+                } else {
+                    buttonSave.text = "Save"
+                    buttonSave.setOnClickListener {
+                        savePost(post)
+                    }
+                }
+            }
+
+            // Like button functionality
             buttonLike.setOnClickListener {
                 likePost(post)
             }
 
-            buttonSave.setOnClickListener {
-                savePost(post)
-            }
-
+            // Update the like button state
             updateLikeButton(post)
         }
 
         private fun likePost(post: Post) {
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-            val postRef = FirebaseFirestore.getInstance().collection("posts").document(post.id)
+            val postRef = FirebaseFirestore.getInstance().collection("posts").document(post.user_id)
             val likes = post.likes.toMutableMap()
 
+            // Toggle like status
             if (likes.containsKey(currentUserId)) {
                 likes.remove(currentUserId)
             } else {
@@ -79,7 +97,47 @@ class PostAdapter(private val context: Context, private val postList: List<Post>
                 .document(currentUserId)
                 .collection("posts")
 
-            favoritesRef.document(post.id).set(post)
+            // Save the post in the user's favorites
+            favoritesRef.document(post.user_id).set(post)
+                .addOnSuccessListener {
+                    buttonSave.text = "Unsave"
+                }
+                .addOnFailureListener {
+                    // Handle the error
+                }
+        }
+
+        private fun unsavePost(post: Post) {
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+            val favoritesRef = FirebaseFirestore.getInstance()
+                .collection("favorites")
+                .document(currentUserId)
+                .collection("posts")
+
+            // Unsave the post from the user's favorites
+            favoritesRef.document(post.user_id).delete()
+                .addOnSuccessListener {
+                    buttonSave.text = "Save"
+                }
+                .addOnFailureListener {
+                    // Handle the error
+                }
+        }
+
+        private fun isPostSaved(post: Post, callback: (Boolean) -> Unit) {
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+            val favoritesRef = FirebaseFirestore.getInstance()
+                .collection("favorites")
+                .document(currentUserId)
+                .collection("posts")
+                .document(post.user_id)
+
+            // Check if the post exists in the user's favorites collection
+            favoritesRef.get().addOnSuccessListener { document ->
+                callback(document.exists())
+            }.addOnFailureListener {
+                callback(false)
+            }
         }
 
         private fun updateLikeButton(post: Post) {

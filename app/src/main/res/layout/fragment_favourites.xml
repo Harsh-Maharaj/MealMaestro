@@ -1,15 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
     android:padding="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Header Layout -->
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Favourites Page"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:padding="8dp">
+
+        <!-- Back Button -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="Back"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            app:tint="@color/purple"/>
+
+        <!-- Page Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Favorites"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_centerInParent="true"
+            android:textColor="@color/purple"/>
+
+        <!-- Search Button -->
+        <ImageButton
+            android:id="@+id/btn_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="Search"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            app:tint="@color/purple"/>
+    </RelativeLayout>
+
+    <!-- RecyclerView for Favorites -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_favorites"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"/>
+
+    <!-- Bottom Navigation Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center"
+        android:background="@color/purple">
+
+        <!-- Navigation Buttons -->
+        <ImageButton
+            android:id="@+id/btn_nav_home"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="Home"
+            app:tint="@android:color/white"/>
+
+        <ImageButton
+            android:id="@+id/btn_nav_add"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="Add"
+            app:tint="@android:color/white"/>
+
+        <ImageButton
+            android:id="@+id/btn_nav_favorites"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="Favorites"
+            app:tint="@android:color/white"/>
+
+        <ImageButton
+            android:id="@+id/btn_nav_leaf"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="Leaf"
+            app:tint="@android:color/white"/>
+    </LinearLayout>
 </LinearLayout>

@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mealmaestro.Helper.Post
-import com.example.mealmaestro.Helper.DataBase
 import com.google.firebase.firestore.FirebaseFirestore
 
 class HomeFragment : Fragment() {
@@ -56,6 +55,4 @@ class HomeFragment : Fragment() {
                 }
             }
     }
-
-
 }
