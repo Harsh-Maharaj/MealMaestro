@@ -29,17 +29,18 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         enableEdgeToEdge()
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+
+        // Clear the text fields when this activity is launched
+        binding.loginUsername.setText("")
+        binding.loginPassword.setText("")
 
         supportActionBar?.hide()
         auth = FirebaseAuth.getInstance()
+
         binding.loginBtn.setOnClickListener {
             UserLogin()
         }
+
         binding.loginSignupBtn.setOnClickListener {
             val intent = Intent(this@LoginActivity, SignUpActivity::class.java)
             startActivity(intent)
@@ -58,14 +59,11 @@ class LoginActivity : AppCompatActivity() {
         }
         // ======================= FACEBOOK ========================================================
         facebookAuth = FacebookAuth(this@LoginActivity)
-
         binding.facebookBtn.setOnClickListener {
             facebookAuth.logInWithFacebook()
         }
         // =========================== X ===========================================================
-
         xAuth = XAuth(this)
-
         binding.xBtn.setOnClickListener {
             xAuth.xAuth()
         }
@@ -79,7 +77,7 @@ class LoginActivity : AppCompatActivity() {
         if (userName.isEmpty() || password.isEmpty()) {
             Toast.makeText(
                 this@LoginActivity,
-                "please fill UserName and Password",
+                "Please fill in Username and Password",
                 Toast.LENGTH_SHORT
             ).show()
         } else {
