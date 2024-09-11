@@ -32,6 +32,8 @@
             android:name=".MainActivity"
             android:exported="false" /> <!-- No intent-filter here -->
 
+        <activity android:name=".users.RecycleUserFriends" />
+
         <activity
             android:name=".Chats.ChatFriendsActivity"
             android:exported="false" />
