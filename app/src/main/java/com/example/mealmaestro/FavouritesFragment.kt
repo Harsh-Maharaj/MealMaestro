@@ -1,59 +1,110 @@
 package com.example.mealmaestro
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.mealmaestro.Helper.Post
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [FavouritesFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class FavouritesFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var postAdapter: PostAdapter
+    private var favoriteList: MutableList<Post> = mutableListOf()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_favourites, container, false)
+        val view = inflater.inflate(R.layout.fragment_favourites, container, false)
+
+        // Initialize RecyclerView
+        recyclerView = view.findViewById(R.id.recycler_view_favorites)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        postAdapter = PostAdapter(requireContext(), favoriteList)
+        recyclerView.adapter = postAdapter
+
+        // Fetch favorite recipes
+        fetchFavorites()
+
+        // Handle header and bottom navigation button clicks
+        setupButtons(view)
+
+        return view
+    }
+
+    private fun fetchFavorites() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        FirebaseFirestore.getInstance()
+            .collection("favorites")
+            .document(currentUserId)
+            .collection("posts")
+            .addSnapshotListener { snapshots, error ->
+                if (error != null) {
+                    // Handle error
+                    return@addSnapshotListener
+                }
+
+                if (snapshots != null) {
+                    favoriteList.clear()
+                    for (document in snapshots.documents) {
+                        val post = document.toObject(Post::class.java)
+                        if (post != null) {
+                            favoriteList.add(post)
+                        }
+                    }
+                    postAdapter.notifyDataSetChanged()
+                }
+            }
+    }
+
+    private fun setupButtons(view: View) {
+        // Header buttons
+        val btnBack: ImageButton = view.findViewById(R.id.btn_back)
+        val btnSearch: ImageButton = view.findViewById(R.id.btn_search)
+
+        // Bottom navigation buttons
+        val btnNavHome: ImageButton = view.findViewById(R.id.btn_nav_home)
+        val btnNavAdd: ImageButton = view.findViewById(R.id.btn_nav_add)
+        val btnNavFavorites: ImageButton = view.findViewById(R.id.btn_nav_favorites)
+        val btnNavLeaf: ImageButton = view.findViewById(R.id.btn_nav_leaf)
+
+        // Set click listeners for header buttons
+        btnBack.setOnClickListener {
+            activity?.onBackPressed()
+        }
+
+        btnSearch.setOnClickListener {
+            Toast.makeText(context, "Search clicked", Toast.LENGTH_SHORT).show()
+        }
+
+        // Set click listeners for bottom navigation buttons
+        btnNavHome.setOnClickListener {
+            Toast.makeText(context, "Home clicked", Toast.LENGTH_SHORT).show()
+        }
+
+        btnNavAdd.setOnClickListener {
+            Toast.makeText(context, "Add clicked", Toast.LENGTH_SHORT).show()
+        }
+
+        btnNavFavorites.setOnClickListener {
+            Toast.makeText(context, "Favorites clicked", Toast.LENGTH_SHORT).show()
+        }
+
+        btnNavLeaf.setOnClickListener {
+            Toast.makeText(context, "Leaf clicked", Toast.LENGTH_SHORT).show()
+        }
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment FavouritesFragment.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            FavouritesFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        fun newInstance() = FavouritesFragment()
     }
 }

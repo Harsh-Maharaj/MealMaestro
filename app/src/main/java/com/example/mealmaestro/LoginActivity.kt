@@ -6,14 +6,12 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.startActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.mealmaestro.Auth.GoogleAuth
 import com.example.mealmaestro.Auth.XAuth
 import com.example.mealmaestro.databinding.ActivityLoginBinding
 import com.facebook.CallbackManager
 import com.google.firebase.auth.FirebaseAuth
+import com.example.mealmaestro.Auth.FacebookAuth
 
 class LoginActivity : AppCompatActivity() {
 
@@ -22,6 +20,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var callbackManager: CallbackManager
     private lateinit var xAuth: XAuth
+    private lateinit var facebookAuth: FacebookAuth
 
     // ========================== GOOGLE ===========================================================
     private val launcher =
@@ -32,8 +31,9 @@ class LoginActivity : AppCompatActivity() {
     // Handle activity result here (or use the launcher)
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        // Forward result to GoogleAuth class
+        // Forward result to GoogleAuth and FacebookAuth classes
         googleAuth.handleSignInResult(requestCode, data)
+        callbackManager.onActivityResult(requestCode, resultCode, data)
     }
     //==============================================================================================
 
@@ -42,17 +42,18 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         enableEdgeToEdge()
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+
+        // Clear the text fields when this activity is launched
+        binding.loginUsername.setText("")
+        binding.loginPassword.setText("")
 
         supportActionBar?.hide()
         auth = FirebaseAuth.getInstance()
+
         binding.loginBtn.setOnClickListener {
             UserLogin()
         }
+
         binding.loginSignupBtn.setOnClickListener {
             val intent = Intent(this@LoginActivity, SignUpActivity::class.java)
             startActivity(intent)
@@ -64,10 +65,14 @@ class LoginActivity : AppCompatActivity() {
         }
         googleAuth = GoogleAuth(this, launcher)
 
+        // ======================= FACEBOOK ========================================================
+        facebookAuth = FacebookAuth(this@LoginActivity)
+        binding.facebookBtn.setOnClickListener {
+            facebookAuth.logInWithFacebook()
+        }
+
         // =========================== X ===========================================================
-
         xAuth = XAuth(this)
-
         binding.xBtn.setOnClickListener {
             xAuth.xAuth()
         }
@@ -81,7 +86,7 @@ class LoginActivity : AppCompatActivity() {
         if (userName.isEmpty() || password.isEmpty()) {
             Toast.makeText(
                 this@LoginActivity,
-                "please fill UserName and Password",
+                "Please fill in Username and Password",
                 Toast.LENGTH_SHORT
             ).show()
         } else {

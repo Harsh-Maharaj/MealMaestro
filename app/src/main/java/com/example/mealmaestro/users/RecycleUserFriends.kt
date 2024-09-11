@@ -14,14 +14,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mealmaestro.Helper.DataBase
 import com.example.mealmaestro.databinding.ActivityRecycleUserFriendsBinding
-import com.facebook.appevents.codeless.internal.ViewHierarchy.setOnClickListener
 
 class RecycleUserFriends : AppCompatActivity() {
 
     private lateinit var binding: ActivityRecycleUserFriendsBinding
     private lateinit var friendList: ArrayList<Users>
     private lateinit var adapter: FriendsAdapter
-    private lateinit var friendRecyclerView: RecyclerView // bring the user and allocate them in the recycler viewer
+    private lateinit var friendRecyclerView: RecyclerView
     private lateinit var dataBase: DataBase
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,12 +28,15 @@ class RecycleUserFriends : AppCompatActivity() {
         binding = ActivityRecycleUserFriendsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         enableEdgeToEdge()
+
+        // Handle window insets for proper layout
         ViewCompat.setOnApplyWindowInsetsListener(binding.recyclingFriendsView) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
+        // Initialize the RecyclerView and database
         friendList = ArrayList()
         adapter = FriendsAdapter(this@RecycleUserFriends, friendList)
 
@@ -42,7 +44,7 @@ class RecycleUserFriends : AppCompatActivity() {
         friendRecyclerView.layoutManager = LinearLayoutManager(this@RecycleUserFriends)
         friendRecyclerView.adapter = adapter
         dataBase = DataBase(this@RecycleUserFriends)
-        dataBase.getFriendsList(friendList, adapter) // call the database for the information
+        dataBase.getFriendsList(friendList, adapter)
 
         // Open the users list
         binding.friendsToUsers.setOnClickListener {
@@ -50,19 +52,18 @@ class RecycleUserFriends : AppCompatActivity() {
             userActivityLauncher.launch(intent) // Launch the activity and expect a result
         }
 
-        // back button
+        // Back button
         binding.friendBack.setOnClickListener {
             finish()
         }
     }
 
-    // to refresh the friend view
+    // Refresh the friend list
     private fun refreshFriendList() {
-        dataBase.getFriendsList(friendList, adapter) // this refresh the friendList
-        //adapter.notifyDataSetChanged() // Notify adapter that data has changed
+        dataBase.getFriendsList(friendList, adapter)
     }
 
-    // Register the launcher
+    // Register the launcher for activity result
     private val userActivityLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
