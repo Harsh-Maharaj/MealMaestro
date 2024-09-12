@@ -12,12 +12,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mealmaestro.Helper.Post
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import android.widget.TextView
+import android.widget.LinearLayout
+
 
 class FavouritesFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var postAdapter: PostAdapter
-    private var favoriteList: MutableList<Post> = mutableListOf()
+    private lateinit var noFavouritesTextView: TextView
+    private lateinit var headerAndListContainer: LinearLayout  // Add a reference to the header and list container
+    private var favouriteList: MutableList<Post> = mutableListOf()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,14 +30,18 @@ class FavouritesFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_favourites, container, false)
 
-        // Initialize RecyclerView
-        recyclerView = view.findViewById(R.id.recycler_view_favorites)
+        // Initialize RecyclerView and Header-List Container
+        recyclerView = view.findViewById(R.id.recycler_view_favourites)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        postAdapter = PostAdapter(requireContext(), favoriteList)
+        postAdapter = PostAdapter(requireContext(), favouriteList)
         recyclerView.adapter = postAdapter
 
-        // Fetch favorite recipes
-        fetchFavorites()
+        // Initialize No Favorites TextView and header-list container
+        noFavouritesTextView = view.findViewById(R.id.tv_no_favourites)
+        headerAndListContainer = view.findViewById(R.id.header_and_list_container)
+
+        // Fetch favourite recipes
+        fetchFavourites()
 
         // Handle header and bottom navigation button clicks
         setupButtons(view)
@@ -40,7 +49,7 @@ class FavouritesFragment : Fragment() {
         return view
     }
 
-    private fun fetchFavorites() {
+    private fun fetchFavourites() {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         FirebaseFirestore.getInstance()
             .collection("favorites")
@@ -53,14 +62,24 @@ class FavouritesFragment : Fragment() {
                 }
 
                 if (snapshots != null) {
-                    favoriteList.clear()
+                    favouriteList.clear()
                     for (document in snapshots.documents) {
                         val post = document.toObject(Post::class.java)
                         if (post != null) {
-                            favoriteList.add(post)
+                            favouriteList.add(post)
                         }
                     }
+
                     postAdapter.notifyDataSetChanged()
+
+                    // Show or hide the RecyclerView, header, and "No favourites saved" message
+                    if (favouriteList.isEmpty()) {
+                        headerAndListContainer.visibility = View.GONE  // Hide header and RecyclerView
+                        noFavouritesTextView.visibility = View.VISIBLE  // Show 'No favourites saved'
+                    } else {
+                        headerAndListContainer.visibility = View.VISIBLE  // Show header and RecyclerView
+                        noFavouritesTextView.visibility = View.GONE  // Hide 'No favourites saved'
+                    }
                 }
             }
     }
@@ -73,7 +92,7 @@ class FavouritesFragment : Fragment() {
         // Bottom navigation buttons
         val btnNavHome: ImageButton = view.findViewById(R.id.btn_nav_home)
         val btnNavAdd: ImageButton = view.findViewById(R.id.btn_nav_add)
-        val btnNavFavorites: ImageButton = view.findViewById(R.id.btn_nav_favorites)
+        val btnNavFavorites: ImageButton = view.findViewById(R.id.btn_nav_favourites)
         val btnNavLeaf: ImageButton = view.findViewById(R.id.btn_nav_leaf)
 
         // Set click listeners for header buttons
