@@ -6,6 +6,7 @@ import android.widget.Toast
 import com.example.mealmaestro.Chats.Message
 import com.example.mealmaestro.Chats.MessageAdapter
 import com.example.mealmaestro.PostAdapter
+import com.example.mealmaestro.Helper.Post
 import com.example.mealmaestro.users.FriendsAdapter
 import com.example.mealmaestro.users.Users
 import com.example.mealmaestro.users.UsersAdapter
@@ -220,7 +221,7 @@ class DataBase(private val context: Context?) {
                     user_id = uid,
                     image_url = downloadUri.toString(),
                     caption = caption,
-                    likes = mapOf(),
+                    likes = mapOf(), // Initialize with an empty map
                     isPublic = true // Set post visibility to public
                 )
                 dataBaseRef.child("posts").child(postId).setValue(post)
@@ -239,13 +240,34 @@ class DataBase(private val context: Context?) {
 
     fun likePost(postId: String, userId: String) {
         val postRef = dataBaseRef.child("posts").child(postId)
-        postRef.child("likes").child(userId).setValue(true)
-            .addOnSuccessListener {
-                Toast.makeText(context, "Post liked!", Toast.LENGTH_SHORT).show()
+
+        postRef.child("likes").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.hasChild(userId)) {
+                    // User has already liked the post, so we remove the like
+                    postRef.child("likes").child(userId).removeValue()
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Post unliked!", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(context, "Failed to unlike post: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                } else {
+                    // User has not liked the post yet, so we add the like
+                    postRef.child("likes").child(userId).setValue(true)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Post liked!", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(context, "Failed to like post: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                }
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(context, "Failed to like post: ${e.message}", Toast.LENGTH_SHORT).show()
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(context, "Failed to check like status.", Toast.LENGTH_SHORT).show()
             }
+        })
     }
 
     fun savePostToFavorites(postId: String, userId: String) {
