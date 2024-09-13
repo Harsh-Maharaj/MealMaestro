@@ -14,8 +14,9 @@ import android.widget.LinearLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.Source
 import com.example.mealmaestro.Helper.Post
-
+import android.util.Log
 
 
 class FavouritesFragment : Fragment() {
@@ -40,21 +41,8 @@ class FavouritesFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         postAdapter = PostAdapter(requireContext(), favouriteList) { post: Post ->
-            // Find the index of the post in the list
-            val position = favouriteList.indexOf(post)
-
-            if (position != -1) {
-                // Remove the post from the list when it is unsaved
-                favouriteList.removeAt(position)
-                postAdapter.notifyItemRemoved(position)
-                postAdapter.notifyItemRangeChanged(position, favouriteList.size)
-            }
-
-            // Update UI to show 'No favourites' message if the list is empty
-            if (favouriteList.isEmpty()) {
-                headerAndListContainer.visibility = View.GONE
-                noFavouritesTextView.visibility = View.VISIBLE
-            }
+            // Remove the post from Firebase and the list when unsaved
+            unsavePostFromFirebase(post)
         }
 
         recyclerView.adapter = postAdapter
@@ -63,7 +51,7 @@ class FavouritesFragment : Fragment() {
         noFavouritesTextView = view.findViewById(R.id.tv_no_favourites)
         headerAndListContainer = view.findViewById(R.id.header_and_list_container)
 
-        // Fetch favourite recipes
+        // Fetch favourite recipes with real-time updates
         fetchFavourites()
 
         // Handle header and bottom navigation button clicks
@@ -95,22 +83,26 @@ class FavouritesFragment : Fragment() {
                 .document(currentUserId)
                 .collection("posts")
                 .limit(10)  // Limit the number of results for pagination
+                .get(Source.SERVER)  // Force fresh data from server
         } else {
             firestore.collection("favorites")
                 .document(currentUserId)
                 .collection("posts")
                 .startAfter(lastVisible!!)
                 .limit(10)
+                .get(Source.SERVER)  // Force fresh data from server
         }
 
-        query.get().addOnSuccessListener { snapshots ->
+        query.addOnSuccessListener { snapshots ->
             if (!snapshots.isEmpty) {
                 for (document in snapshots.documents) {
                     val post = document.toObject(Post::class.java)
                     if (post != null) {
                         post.isSaved = true  // Mark post as saved
-                        favouriteList.add(post)
-                        postAdapter.notifyItemInserted(favouriteList.size - 1)
+                        if (!favouriteList.contains(post)) {
+                            favouriteList.add(post)
+                            postAdapter.notifyItemInserted(favouriteList.size - 1)
+                        }
                     }
                 }
                 // Update lastVisible with the last document from the current batch
@@ -129,6 +121,36 @@ class FavouritesFragment : Fragment() {
         }.addOnFailureListener {
             isLoading = false  // Reset loading flag on error
         }
+    }
+
+
+    // Method to unsave the post from Firebase
+    private fun unsavePostFromFirebase(post: Post) {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val firestore = FirebaseFirestore.getInstance()
+
+        firestore.collection("favorites")
+            .document(currentUserId)
+            .collection("posts")
+            .document(post.postId)  // Use post.postId instead of post.id
+            .delete()
+            .addOnSuccessListener {
+                Toast.makeText(context, "Post unsaved successfully", Toast.LENGTH_SHORT).show()
+
+                // Remove the post from the local list as well
+                favouriteList.remove(post)
+                postAdapter.notifyDataSetChanged()
+
+                // Optionally refresh the list or UI
+                if (favouriteList.isEmpty()) {
+                    headerAndListContainer.visibility = View.GONE
+                    noFavouritesTextView.visibility = View.VISIBLE
+                }
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, "Failed to unsave post", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
     }
 
     private fun setupButtons(view: View) {
