@@ -13,6 +13,7 @@ import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.mealmaestro.Helper.Post
+import com.example.mealmaestro.Helper.DataBase
 
 class PostAdapter(
     private val context: Context,
@@ -39,7 +40,7 @@ class PostAdapter(
         private val textViewCaption: TextView = itemView.findViewById(R.id.text_view_caption)
         private val buttonSave: ImageButton = itemView.findViewById(R.id.button_save)
         private val buttonLike: ImageButton = itemView.findViewById(R.id.button_like)
-        private val buttonComment: ImageButton = itemView.findViewById(R.id.button_comment)
+        private val likeCount: TextView = itemView.findViewById(R.id.like_count)
 
         fun bind(post: Post) {
             Glide.with(context)
@@ -51,6 +52,9 @@ class PostAdapter(
             // Check and update the save button state
             checkSaveStatus(post)
 
+            // Update UI for likes
+            updateLikeButton(post)
+
             buttonSave.setOnClickListener {
                 if (post.isSaved) {
                     unsavePost(post)
@@ -60,10 +64,26 @@ class PostAdapter(
             }
 
             buttonLike.setOnClickListener {
-                likePost(post)
+                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@setOnClickListener
+                val dataBase = DataBase(context)
+
+                dataBase.likePost(post.postId, userId) { isLiked ->
+                    // Create a new Post instance with updated likes
+                    val updatedLikes = if (isLiked) {
+                        post.likes.toMutableMap().apply { put(userId, true) }
+                    } else {
+                        post.likes.toMutableMap().apply { remove(userId) }
+                    }
+
+                    // Update the Post in the database
+                    dataBase.dataBaseRef.child("posts").child(post.postId).setValue(post.copy(likes = updatedLikes))
+
+                    // Update the UI
+                    updateLikeButton(post.copy(likes = updatedLikes))
+                    likeCount.text = updatedLikes.size.toString()
+                }
             }
 
-            updateLikeButton(post)
         }
 
         private fun checkSaveStatus(post: Post) {
@@ -78,6 +98,9 @@ class PostAdapter(
                     val isPostSaved = document.exists()
                     post.isSaved = isPostSaved
                     updateSaveButton(isPostSaved)
+                }
+                .addOnFailureListener {
+                    // Handle the error
                 }
         }
 
@@ -118,28 +141,6 @@ class PostAdapter(
                 }
         }
 
-        private fun likePost(post: Post) {
-            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-            val postRef = FirebaseFirestore.getInstance().collection("posts").document(post.postId)
-            val likes = post.likes.toMutableMap()
-
-            // Toggle like status
-            if (likes.containsKey(currentUserId)) {
-                likes.remove(currentUserId)
-            } else {
-                likes[currentUserId] = true
-            }
-
-            postRef.update("likes", likes)
-                .addOnSuccessListener {
-                    // Update like button color
-                    updateLikeButton(post.copy(likes = likes))
-                }
-                .addOnFailureListener {
-                    // Handle the error
-                }
-        }
-
         private fun updateSaveButton(isSaved: Boolean) {
             val color = if (isSaved) R.color.yellow else R.color.standard_save
             buttonSave.setColorFilter(ContextCompat.getColor(context, color))
@@ -148,11 +149,11 @@ class PostAdapter(
 
         private fun updateLikeButton(post: Post) {
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-            if (post.likes.containsKey(currentUserId)) {
-                buttonLike.setColorFilter(ContextCompat.getColor(context, R.color.red)) // Set to red when liked
-            } else {
-                buttonLike.setColorFilter(ContextCompat.getColor(context, R.color.light_purple)) // Set to light purple when not liked
-            }
+            val color = if (post.likes.containsKey(currentUserId)) R.color.red else R.color.light_purple
+            buttonLike.setColorFilter(ContextCompat.getColor(context, color))
+            likeCount.text = post.likes.size.toString()
         }
     }
+
+
 }
