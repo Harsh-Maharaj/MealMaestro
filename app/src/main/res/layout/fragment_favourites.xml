@@ -6,56 +6,79 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Header Layout -->
-    <RelativeLayout
+    <!-- Container for header and RecyclerView -->
+    <LinearLayout
+        android:id="@+id/header_and_list_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp">
+        android:orientation="vertical"
+        android:visibility="gone"> <!-- Initially hidden -->
 
-        <!-- Back Button -->
-        <ImageButton
-            android:id="@+id/btn_back"
-            android:layout_width="wrap_content"
+        <!-- Header Layout -->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:contentDescription="Back"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            app:tint="@color/purple"/>
+            android:padding="8dp">
 
-        <!-- Page Title -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Favorites"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_centerInParent="true"
-            android:textColor="@color/purple"/>
+            <!-- Back Button -->
+            <ImageButton
+                android:id="@+id/btn_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:contentDescription="Back"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                app:tint="@color/purple" />
 
-        <!-- Search Button -->
-        <ImageButton
-            android:id="@+id/btn_search"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:contentDescription="Search"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            app:tint="@color/purple"/>
-    </RelativeLayout>
+            <!-- Page Title -->
+            <TextView
+                android:id="@+id/tv_header_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Favourites"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_centerInParent="true"
+                android:textColor="@color/purple" />
 
-    <!-- RecyclerView for Favorites -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view_favorites"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp"/>
+            <!-- Search Button -->
+            <ImageButton
+                android:id="@+id/btn_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:contentDescription="Search"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                app:tint="@color/purple" />
+        </RelativeLayout>
+
+        <!-- RecyclerView for Favourites -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_favourites"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="8dp" />
+    </LinearLayout>
+
+    <!-- TextView for 'No favourites saved' Message -->
+    <TextView
+        android:id="@+id/tv_no_favourites"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No favourites saved"
+        android:textColor="#808080"
+        android:textStyle="bold"
+        android:layout_gravity="center"
+        android:textSize="18sp"
+        android:visibility="gone"
+        android:layout_marginTop="150dp" /> <!-- Added margin to move it down -->
 
     <!-- Bottom Navigation Bar -->
     <LinearLayout
-        android:layout_width="398dp"
+        android:layout_width="match_parent"
         android:layout_height="54dp"
         android:gravity="center"
         android:orientation="horizontal"
@@ -81,12 +104,12 @@
             app:tint="@android:color/white" />
 
         <ImageButton
-            android:id="@+id/btn_nav_favorites"
+            android:id="@+id/btn_nav_favourites"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackground"
-            android:contentDescription="Favorites"
+            android:contentDescription="Favourites"
             app:tint="@android:color/white" />
 
         <ImageButton

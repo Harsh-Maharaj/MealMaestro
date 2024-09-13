@@ -216,7 +216,7 @@ class DataBase(private val context: Context?) {
         postImageRef.putFile(imageUri).addOnSuccessListener {
             postImageRef.downloadUrl.addOnSuccessListener { downloadUri ->
                 val post = Post(
-                    id = postId,
+                    postId = postId,
                     user_id = uid,
                     image_url = downloadUri.toString(),
                     caption = caption,
