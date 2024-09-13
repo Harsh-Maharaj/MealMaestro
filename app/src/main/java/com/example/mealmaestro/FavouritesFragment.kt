@@ -9,11 +9,13 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mealmaestro.Helper.Post
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import android.widget.TextView
 import android.widget.LinearLayout
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.DocumentSnapshot
+import com.example.mealmaestro.Helper.Post
+
 
 
 class FavouritesFragment : Fragment() {
@@ -21,8 +23,11 @@ class FavouritesFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var postAdapter: PostAdapter
     private lateinit var noFavouritesTextView: TextView
-    private lateinit var headerAndListContainer: LinearLayout  // Add a reference to the header and list container
+    private lateinit var headerAndListContainer: LinearLayout  // Header and list container
     private var favouriteList: MutableList<Post> = mutableListOf()
+
+    private var lastVisible: DocumentSnapshot? = null  // For pagination
+    private var isLoading = false  // Prevent multiple queries at the same time
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,7 +38,25 @@ class FavouritesFragment : Fragment() {
         // Initialize RecyclerView and Header-List Container
         recyclerView = view.findViewById(R.id.recycler_view_favourites)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        postAdapter = PostAdapter(requireContext(), favouriteList)
+
+        postAdapter = PostAdapter(requireContext(), favouriteList) { post: Post ->
+            // Find the index of the post in the list
+            val position = favouriteList.indexOf(post)
+
+            if (position != -1) {
+                // Remove the post from the list when it is unsaved
+                favouriteList.removeAt(position)
+                postAdapter.notifyItemRemoved(position)
+                postAdapter.notifyItemRangeChanged(position, favouriteList.size)
+            }
+
+            // Update UI to show 'No favourites' message if the list is empty
+            if (favouriteList.isEmpty()) {
+                headerAndListContainer.visibility = View.GONE
+                noFavouritesTextView.visibility = View.VISIBLE
+            }
+        }
+
         recyclerView.adapter = postAdapter
 
         // Initialize No Favorites TextView and header-list container
@@ -46,42 +69,66 @@ class FavouritesFragment : Fragment() {
         // Handle header and bottom navigation button clicks
         setupButtons(view)
 
+        // Add scroll listener for pagination
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                if (!isLoading && layoutManager.findLastCompletelyVisibleItemPosition() == favouriteList.size - 1) {
+                    fetchFavourites()  // Load more items when user reaches the bottom of the list
+                }
+            }
+        })
+
         return view
     }
 
     private fun fetchFavourites() {
+        if (isLoading) return
+        isLoading = true
+
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        FirebaseFirestore.getInstance()
-            .collection("favorites")
-            .document(currentUserId)
-            .collection("posts")
-            .addSnapshotListener { snapshots, error ->
-                if (error != null) {
-                    // Handle error
-                    return@addSnapshotListener
-                }
+        val firestore = FirebaseFirestore.getInstance()
 
-                if (snapshots != null) {
-                    favouriteList.clear()
-                    for (document in snapshots.documents) {
-                        val post = document.toObject(Post::class.java)
-                        if (post != null) {
-                            favouriteList.add(post)
-                        }
-                    }
+        val query = if (lastVisible == null) {
+            firestore.collection("favorites")
+                .document(currentUserId)
+                .collection("posts")
+                .limit(10)  // Limit the number of results for pagination
+        } else {
+            firestore.collection("favorites")
+                .document(currentUserId)
+                .collection("posts")
+                .startAfter(lastVisible!!)
+                .limit(10)
+        }
 
-                    postAdapter.notifyDataSetChanged()
-
-                    // Show or hide the RecyclerView, header, and "No favourites saved" message
-                    if (favouriteList.isEmpty()) {
-                        headerAndListContainer.visibility = View.GONE  // Hide header and RecyclerView
-                        noFavouritesTextView.visibility = View.VISIBLE  // Show 'No favourites saved'
-                    } else {
-                        headerAndListContainer.visibility = View.VISIBLE  // Show header and RecyclerView
-                        noFavouritesTextView.visibility = View.GONE  // Hide 'No favourites saved'
+        query.get().addOnSuccessListener { snapshots ->
+            if (!snapshots.isEmpty) {
+                for (document in snapshots.documents) {
+                    val post = document.toObject(Post::class.java)
+                    if (post != null) {
+                        post.isSaved = true  // Mark post as saved
+                        favouriteList.add(post)
+                        postAdapter.notifyItemInserted(favouriteList.size - 1)
                     }
                 }
+                // Update lastVisible with the last document from the current batch
+                lastVisible = snapshots.documents[snapshots.size() - 1]
             }
+
+            // Show or hide the RecyclerView and 'No favourites' message
+            if (favouriteList.isEmpty()) {
+                headerAndListContainer.visibility = View.GONE
+                noFavouritesTextView.visibility = View.VISIBLE
+            } else {
+                headerAndListContainer.visibility = View.VISIBLE
+                noFavouritesTextView.visibility = View.GONE
+            }
+            isLoading = false  // Done loading
+        }.addOnFailureListener {
+            isLoading = false  // Reset loading flag on error
+        }
     }
 
     private fun setupButtons(view: View) {

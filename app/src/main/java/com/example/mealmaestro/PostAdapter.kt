@@ -13,15 +13,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.mealmaestro.Helper.Post
 
-data class Post(
-    val user_id: String = "",
-    val image_url: String = "",
-    val caption: String = "",
-    val likes: Map<String, Boolean> = mapOf()
-)
-
-class PostAdapter(private val context: Context, private val postList: MutableList<Post>) :
-    RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+class PostAdapter(
+    private val context: Context,
+    private val postList: MutableList<Post>,
+    private val onUnsave: (Post) -> Unit  // Callback for unsaving
+) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.item_post, parent, false)
@@ -45,24 +41,22 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
 
         fun bind(post: Post) {
             // Load the image using Glide
-            Glide.with(context).load(post.image_url).into(imageView)
+            Glide.with(context)
+                .load(post.image_url)
+                .override(200, 200)  // Optional size limitation to optimize memory usage
+                .into(imageView)
             textViewCaption.text = post.caption
 
-            // **Always reset the save button to default state** to avoid old state being shown
-            buttonSave.text = "Save"
+            // Set the initial save/unsave state
+            buttonSave.text = if (post.isSaved) "Unsave" else "Save"
 
-            // Check if the post is already saved asynchronously
-            isPostSaved(post) { isSaved ->
-                if (isSaved) {
-                    buttonSave.text = "Unsave"
-                    buttonSave.setOnClickListener {
-                        unsavePost(post)
-                    }
+            // Save/Unsave functionality
+            buttonSave.setOnClickListener {
+                if (post.isSaved) {
+                    unsavePost(post)
+                    onUnsave(post)
                 } else {
-                    buttonSave.text = "Save"
-                    buttonSave.setOnClickListener {
-                        savePost(post)
-                    }
+                    savePost(post)
                 }
             }
 
@@ -77,7 +71,7 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
 
         private fun likePost(post: Post) {
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-            val postRef = FirebaseFirestore.getInstance().collection("posts").document(post.user_id)
+            val postRef = FirebaseFirestore.getInstance().collection("posts").document(post.postId)
             val likes = post.likes.toMutableMap()
 
             // Toggle like status
@@ -98,8 +92,9 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
                 .collection("posts")
 
             // Save the post in the user's favorites
-            favoritesRef.document(post.user_id).set(post)
+            favoritesRef.document(post.postId).set(post)
                 .addOnSuccessListener {
+                    post.isSaved = true  // Update the post's saved state
                     buttonSave.text = "Unsave"
                 }
                 .addOnFailureListener {
@@ -115,29 +110,14 @@ class PostAdapter(private val context: Context, private val postList: MutableLis
                 .collection("posts")
 
             // Unsave the post from the user's favorites
-            favoritesRef.document(post.user_id).delete()
+            favoritesRef.document(post.postId).delete()
                 .addOnSuccessListener {
+                    post.isSaved = false  // Update the post's saved state
                     buttonSave.text = "Save"
                 }
                 .addOnFailureListener {
                     // Handle the error
                 }
-        }
-
-        private fun isPostSaved(post: Post, callback: (Boolean) -> Unit) {
-            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-            val favoritesRef = FirebaseFirestore.getInstance()
-                .collection("favorites")
-                .document(currentUserId)
-                .collection("posts")
-                .document(post.user_id)
-
-            // Check if the post exists in the user's favorites collection
-            favoritesRef.get().addOnSuccessListener { document ->
-                callback(document.exists())
-            }.addOnFailureListener {
-                callback(false)
-            }
         }
 
         private fun updateLikeButton(post: Post) {
