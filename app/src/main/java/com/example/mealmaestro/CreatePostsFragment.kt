@@ -13,6 +13,7 @@ import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.example.mealmaestro.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import java.util.*
@@ -71,13 +72,14 @@ class CreatePostsFragment : Fragment() {
                             "user_id" to FirebaseAuth.getInstance().currentUser?.uid,
                             "image_url" to uri.toString(),
                             "caption" to editTextCaption.text.toString(),
-                            "likes" to mapOf<String, Boolean>()
+                            "likes" to mapOf<String, Boolean>(),
+                            "created_at" to FieldValue.serverTimestamp()  // Adding timestamp
                         )
 
                         FirebaseFirestore.getInstance().collection("posts")
                             .add(post)
                             .addOnSuccessListener {
-                                // Post was successful
+                                // Post was successful, you can finish or navigate
                                 requireActivity().finish()
                             }
                     }

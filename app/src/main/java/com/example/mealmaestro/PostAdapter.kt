@@ -1,12 +1,12 @@
 package com.example.mealmaestro
-
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
+import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
@@ -36,8 +36,9 @@ class PostAdapter(
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageView: ImageView = itemView.findViewById(R.id.image_view_post)
         private val textViewCaption: TextView = itemView.findViewById(R.id.text_view_caption)
-        private val buttonLike: Button = itemView.findViewById(R.id.button_like)
-        private val buttonSave: Button = itemView.findViewById(R.id.button_save)
+        private val buttonLike: ImageButton = itemView.findViewById(R.id.button_like)
+        private val buttonSave: ImageButton = itemView.findViewById(R.id.button_save)
+        private val buttonComment: ImageButton = itemView.findViewById(R.id.button_comment)
 
         fun bind(post: Post) {
             // Load the image using Glide
@@ -82,6 +83,10 @@ class PostAdapter(
             }
 
             postRef.update("likes", likes)
+                .addOnSuccessListener {
+                    // Update like button color
+                    updateLikeButton(post.copy(likes = likes))
+                }
         }
 
         private fun savePost(post: Post) {
@@ -123,9 +128,9 @@ class PostAdapter(
         private fun updateLikeButton(post: Post) {
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
             if (post.likes.containsKey(currentUserId)) {
-                buttonLike.text = "Liked"
+                buttonLike.setColorFilter(ContextCompat.getColor(context, R.color.red)) // Set to red when liked
             } else {
-                buttonLike.text = "Like"
+                buttonLike.setColorFilter(ContextCompat.getColor(context, R.color.light_purple)) // Set to light purple when not liked
             }
         }
     }
