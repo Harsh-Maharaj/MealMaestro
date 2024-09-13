@@ -11,6 +11,8 @@
     <color name="light_purple">#D1C4E9</color> <!-- Light Purple -->
     <color name="red">#FF0000</color> <!-- Red for liked state -->
     <color name="yellow">#FFFF00</color> <!-- Yellow for saved state -->
+    <color name="standard_save">#CCCCCC</color>
+
 
 
 </resources>

@@ -6,6 +6,7 @@ import android.widget.Toast
 import com.example.mealmaestro.Chats.Message
 import com.example.mealmaestro.Chats.MessageAdapter
 import com.example.mealmaestro.PostAdapter
+import com.example.mealmaestro.Helper.Post
 import com.example.mealmaestro.users.FriendsAdapter
 import com.example.mealmaestro.users.Users
 import com.example.mealmaestro.users.UsersAdapter
@@ -28,7 +29,7 @@ class DataBase(private val context: Context?) {
 
     private val auth = FirebaseAuth.getInstance()
     private val storageRef: StorageReference = FirebaseStorage.getInstance().reference
-    private val dataBaseRef =
+    val dataBaseRef =
         FirebaseDatabase.getInstance("https://mealmaestro-46c0d-default-rtdb.asia-southeast1.firebasedatabase.app/")
             .getReference()
 
@@ -220,7 +221,7 @@ class DataBase(private val context: Context?) {
                     user_id = uid,
                     image_url = downloadUri.toString(),
                     caption = caption,
-                    likes = mapOf(),
+                    likes = mapOf(), // Initialize with an empty map
                     isPublic = true // Set post visibility to public
                 )
                 dataBaseRef.child("posts").child(postId).setValue(post)
@@ -237,15 +238,40 @@ class DataBase(private val context: Context?) {
         }
     }
 
-    fun likePost(postId: String, userId: String) {
+    fun likePost(postId: String, userId: String, callback: (Boolean) -> Unit) {
         val postRef = dataBaseRef.child("posts").child(postId)
-        postRef.child("likes").child(userId).setValue(true)
-            .addOnSuccessListener {
-                Toast.makeText(context, "Post liked!", Toast.LENGTH_SHORT).show()
+
+        postRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val post = snapshot.getValue(Post::class.java) ?: return
+
+                if (post.likes.containsKey(userId)) {
+                    // User has already liked the post, so we remove the like
+                    postRef.child("likes").child(userId).removeValue()
+                        .addOnSuccessListener {
+                            callback(false) // Not liked
+                            Toast.makeText(context, "Post unliked!", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(context, "Failed to unlike post: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                } else {
+                    // User has not liked the post yet, so we add the like
+                    postRef.child("likes").child(userId).setValue(true)
+                        .addOnSuccessListener {
+                            callback(true) // Liked
+                            Toast.makeText(context, "Post liked!", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(context, "Failed to like post: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                }
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(context, "Failed to like post: ${e.message}", Toast.LENGTH_SHORT).show()
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(context, "Failed to check like status.", Toast.LENGTH_SHORT).show()
             }
+        })
     }
 
     fun savePostToFavorites(postId: String, userId: String) {
@@ -277,5 +303,28 @@ class DataBase(private val context: Context?) {
                     Toast.makeText(context, "Failed to fetch posts.", Toast.LENGTH_SHORT).show()
                 }
             })
+    }
+
+    // -------------------- Update Post Method --------------------------
+
+    fun updatePost(postId: String, newCaption: String?, newImageUri: Uri?) {
+        val postRef = dataBaseRef.child("posts").child(postId)
+
+        if (newCaption != null) {
+            postRef.child("caption").setValue(newCaption)
+        }
+
+        if (newImageUri != null) {
+            val postImageRef = storageRef.child("postImages/$postId.jpg")
+            postImageRef.putFile(newImageUri).addOnSuccessListener {
+                postImageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                    postRef.child("image_url").setValue(downloadUri.toString())
+                }.addOnFailureListener {
+                    Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
+                }
+            }.addOnFailureListener {
+                Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

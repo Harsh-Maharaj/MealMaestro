@@ -10,6 +10,6 @@ data class Post(
     val caption: String = "",
     val likes: Map<String, Boolean> = emptyMap(),  // Initialize likes as an empty map
     val isPublic: Boolean = true,  // Optional field with a default value
-    val isSaved: Boolean = false,  // Track saved state with default value of false
+    var isSaved: Boolean = false,  // Track saved state with default value of false
     val created_at: Timestamp? = null  // Add this field to store the creation time
 )

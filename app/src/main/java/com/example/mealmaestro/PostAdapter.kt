@@ -1,10 +1,11 @@
 package com.example.mealmaestro
+
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -12,11 +13,12 @@ import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.mealmaestro.Helper.Post
+import com.example.mealmaestro.Helper.DataBase
 
 class PostAdapter(
     private val context: Context,
     private val postList: MutableList<Post>,
-    private val onUnsave: (Post) -> Unit  // Callback for unsaving
+    private val onUnsave: (Post) -> Unit
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -36,56 +38,69 @@ class PostAdapter(
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageView: ImageView = itemView.findViewById(R.id.image_view_post)
         private val textViewCaption: TextView = itemView.findViewById(R.id.text_view_caption)
-        private val buttonLike: ImageButton = itemView.findViewById(R.id.button_like)
         private val buttonSave: ImageButton = itemView.findViewById(R.id.button_save)
-        private val buttonComment: ImageButton = itemView.findViewById(R.id.button_comment)
+        private val buttonLike: ImageButton = itemView.findViewById(R.id.button_like)
+        private val likeCount: TextView = itemView.findViewById(R.id.like_count)
 
         fun bind(post: Post) {
-            // Load the image using Glide
             Glide.with(context)
                 .load(post.image_url)
-                .override(200, 200)  // Optional size limitation to optimize memory usage
+                .override(200, 200)
                 .into(imageView)
             textViewCaption.text = post.caption
 
-            // Set the initial save/unsave state
-            buttonSave.text = if (post.isSaved) "Unsave" else "Save"
+            // Check and update the save button state
+            checkSaveStatus(post)
 
-            // Save/Unsave functionality
+            // Update UI for likes
+            updateLikeButton(post)
+
             buttonSave.setOnClickListener {
                 if (post.isSaved) {
                     unsavePost(post)
-                    onUnsave(post)
                 } else {
                     savePost(post)
                 }
             }
 
-            // Like button functionality
             buttonLike.setOnClickListener {
-                likePost(post)
+                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@setOnClickListener
+                val dataBase = DataBase(context)
+
+                dataBase.likePost(post.postId, userId) { isLiked ->
+                    // Create a new Post instance with updated likes
+                    val updatedLikes = if (isLiked) {
+                        post.likes.toMutableMap().apply { put(userId, true) }
+                    } else {
+                        post.likes.toMutableMap().apply { remove(userId) }
+                    }
+
+                    // Update the Post in the database
+                    dataBase.dataBaseRef.child("posts").child(post.postId).setValue(post.copy(likes = updatedLikes))
+
+                    // Update the UI
+                    updateLikeButton(post.copy(likes = updatedLikes))
+                    likeCount.text = updatedLikes.size.toString()
+                }
             }
 
-            // Update the like button state
-            updateLikeButton(post)
         }
 
-        private fun likePost(post: Post) {
+        private fun checkSaveStatus(post: Post) {
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-            val postRef = FirebaseFirestore.getInstance().collection("posts").document(post.postId)
-            val likes = post.likes.toMutableMap()
+            val favoritesRef = FirebaseFirestore.getInstance()
+                .collection("favorites")
+                .document(currentUserId)
+                .collection("posts")
 
-            // Toggle like status
-            if (likes.containsKey(currentUserId)) {
-                likes.remove(currentUserId)
-            } else {
-                likes[currentUserId] = true
-            }
-
-            postRef.update("likes", likes)
-                .addOnSuccessListener {
-                    // Update like button color
-                    updateLikeButton(post.copy(likes = likes))
+            favoritesRef.document(post.postId).get()
+                .addOnSuccessListener { document ->
+                    val isPostSaved = document.exists()
+                    post.isSaved = isPostSaved
+                    updateSaveButton(isPostSaved)
+                }
+                .addOnFailureListener {
+                    // Handle the error
                 }
         }
 
@@ -99,8 +114,8 @@ class PostAdapter(
             // Save the post in the user's favorites
             favoritesRef.document(post.postId).set(post)
                 .addOnSuccessListener {
-                    post.isSaved = true  // Update the post's saved state
-                    buttonSave.text = "Unsave"
+                    post.isSaved = true
+                    updateSaveButton(true)
                 }
                 .addOnFailureListener {
                     // Handle the error
@@ -117,21 +132,28 @@ class PostAdapter(
             // Unsave the post from the user's favorites
             favoritesRef.document(post.postId).delete()
                 .addOnSuccessListener {
-                    post.isSaved = false  // Update the post's saved state
-                    buttonSave.text = "Save"
+                    post.isSaved = false
+                    updateSaveButton(false)
+                    onUnsave(post)
                 }
                 .addOnFailureListener {
                     // Handle the error
                 }
         }
 
+        private fun updateSaveButton(isSaved: Boolean) {
+            val color = if (isSaved) R.color.yellow else R.color.standard_save
+            buttonSave.setColorFilter(ContextCompat.getColor(context, color))
+            buttonSave.setImageResource(if (isSaved) R.drawable.ic_save else R.drawable.ic_save)
+        }
+
         private fun updateLikeButton(post: Post) {
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-            if (post.likes.containsKey(currentUserId)) {
-                buttonLike.setColorFilter(ContextCompat.getColor(context, R.color.red)) // Set to red when liked
-            } else {
-                buttonLike.setColorFilter(ContextCompat.getColor(context, R.color.light_purple)) // Set to light purple when not liked
-            }
+            val color = if (post.likes.containsKey(currentUserId)) R.color.red else R.color.light_purple
+            buttonLike.setColorFilter(ContextCompat.getColor(context, color))
+            likeCount.text = post.likes.size.toString()
         }
     }
+
+
 }

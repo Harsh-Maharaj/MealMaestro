@@ -110,6 +110,15 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:layout_marginEnd="16dp" />
 
+                <!-- Like Count -->
+                <TextView
+                    android:id="@+id/like_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textSize="14sp"
+                    android:layout_gravity="center_vertical" />
+
                 <!-- Comment Icon -->
                 <ImageButton
                     android:id="@+id/button_comment"

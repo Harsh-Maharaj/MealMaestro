@@ -18,7 +18,6 @@ import com.google.firebase.firestore.Source
 import com.example.mealmaestro.Helper.Post
 import android.util.Log
 
-
 class FavouritesFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
@@ -82,15 +81,15 @@ class FavouritesFragment : Fragment() {
             firestore.collection("favorites")
                 .document(currentUserId)
                 .collection("posts")
-                .limit(10)  // Limit the number of results for pagination
-                .get(Source.SERVER)  // Force fresh data from server
+                .limit(10)
+                .get(Source.SERVER)
         } else {
             firestore.collection("favorites")
                 .document(currentUserId)
                 .collection("posts")
                 .startAfter(lastVisible!!)
                 .limit(10)
-                .get(Source.SERVER)  // Force fresh data from server
+                .get(Source.SERVER)
         }
 
         query.addOnSuccessListener { snapshots ->
@@ -98,18 +97,16 @@ class FavouritesFragment : Fragment() {
                 for (document in snapshots.documents) {
                     val post = document.toObject(Post::class.java)
                     if (post != null) {
-                        post.isSaved = true  // Mark post as saved
+                        post.isSaved = true
                         if (!favouriteList.contains(post)) {
                             favouriteList.add(post)
                             postAdapter.notifyItemInserted(favouriteList.size - 1)
                         }
                     }
                 }
-                // Update lastVisible with the last document from the current batch
                 lastVisible = snapshots.documents[snapshots.size() - 1]
             }
 
-            // Show or hide the RecyclerView and 'No favourites' message
             if (favouriteList.isEmpty()) {
                 headerAndListContainer.visibility = View.GONE
                 noFavouritesTextView.visibility = View.VISIBLE
@@ -117,9 +114,9 @@ class FavouritesFragment : Fragment() {
                 headerAndListContainer.visibility = View.VISIBLE
                 noFavouritesTextView.visibility = View.GONE
             }
-            isLoading = false  // Done loading
+            isLoading = false
         }.addOnFailureListener {
-            isLoading = false  // Reset loading flag on error
+            isLoading = false
         }
     }
 
