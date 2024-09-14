@@ -11,7 +11,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.mealmaestro.Helper.Post
-
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class HomeFragment : Fragment() {
 
@@ -83,11 +85,46 @@ class HomeFragment : Fragment() {
                         post?.let {
                             it.isSaved = savedPosts.contains(it.postId)
                             postList.add(it)
+
+                            // Fetch comments for the post
+                            fetchCommentsForPost(it)
                         }
                     }
                     postAdapter.notifyDataSetChanged() // Notify adapter to update the UI
                 }
             }
+    }
+
+    private fun fetchCommentsForPost(post: Post) {
+        val postRef = FirebaseFirestore.getInstance()
+            .collection("posts")
+            .document(post.postId)
+            .collection("comments")
+
+        postRef.orderBy("timestamp").addSnapshotListener { snapshot, error ->
+            if (error != null || snapshot == null) {
+                return@addSnapshotListener
+            }
+
+            val comments = StringBuilder()
+            for (document in snapshot.documents) {
+                val commentData = document.data ?: continue
+                val username = commentData["username"].toString()
+                val text = commentData["text"].toString()
+                val timestamp = commentData["timestamp"] as? Long ?: 0L
+                val formattedDate = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault())
+                    .format(Date(timestamp))
+
+                comments.append("$username: $text\n$formattedDate\n\n")
+            }
+
+            // Find the correct post and update the comments section
+            val postIndex = postList.indexOfFirst { it.postId == post.postId }
+            if (postIndex != -1) {
+                postList[postIndex].comments = comments.toString()  // Assuming you have a 'comments' field in Post class
+                postAdapter.notifyItemChanged(postIndex)  // Notify adapter to update the specific post
+            }
+        }
     }
 
     override fun onResume() {
