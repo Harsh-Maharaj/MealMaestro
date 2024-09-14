@@ -86,7 +86,7 @@
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp" />
 
-        <!-- Like, Comment, Share on Left & Save on Right -->
+        <!-- Like, Share on Left & Save on Right -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -94,7 +94,7 @@
             android:gravity="center_vertical"
             android:weightSum="4">
 
-            <!-- Left side icons: Like, Comment, Share -->
+            <!-- Left side icons: Like, Share -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -118,15 +118,6 @@
                     android:text="0"
                     android:textSize="14sp"
                     android:layout_gravity="center_vertical" />
-
-                <!-- Comment Icon -->
-                <ImageButton
-                    android:id="@+id/button_comment"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/ic_comment"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:layout_marginEnd="16dp" />
 
                 <!-- Share Icon -->
                 <ImageButton
@@ -155,16 +146,43 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Comment Section (Expandable or Inline) -->
+        <!-- Comment Section -->
         <TextView
             android:id="@+id/comment_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="View all 10 comments"
+            android:text="View all comments"
             android:textSize="14sp"
             android:layout_marginTop="8dp"
             android:textColor="@android:color/darker_gray"
             android:visibility="visible" />
+
+        <!-- Comment Input Section -->
+        <LinearLayout
+            android:id="@+id/comment_input_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp"
+            android:visibility="visible">
+
+            <!-- Input field -->
+            <EditText
+                android:id="@+id/edit_text_comment"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Add a comment..."
+                android:background="@android:drawable/editbox_background" />
+
+            <!-- Post Button -->
+            <Button
+                android:id="@+id/button_post_comment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Post" />
+        </LinearLayout>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
