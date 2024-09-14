@@ -9,5 +9,11 @@
     <!--    <item name="android:textColor">@color/white</item>  this change all the text base -->
     </style>
 
+
+    <style name="CircleImageView" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
     <style name="Theme.MealMaestro" parent="Base.Theme.MealMaestro" />
 </resources>

@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.functions)
     implementation(libs.firebase.analytics)
+    implementation ("com.google.android.material:material:1.4.0")
 
 
 

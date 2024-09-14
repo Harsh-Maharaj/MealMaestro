@@ -56,7 +56,7 @@ class PostAdapter(
             textViewCaption.text = post.caption
 
             // Set up the adapter for the comments RecyclerView
-            val commentAdapter = CommentAdapter(context, mutableListOf())
+            val commentAdapter = CommentAdapter(context, post.comments)
             recyclerViewComments.layoutManager = LinearLayoutManager(context)
             recyclerViewComments.adapter = commentAdapter
 
