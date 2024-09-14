@@ -8,10 +8,10 @@ data class Post(
     val user_id: String = "",
     val image_url: String = "",
     val caption: String = "",
-    val likes: Map<String, Boolean> = emptyMap(),
+    var likes: MutableMap<String, Boolean> = mutableMapOf(), // Change to MutableMap
     val isPublic: Boolean = true,
     var isSaved: Boolean = false,
     val created_at: Timestamp? = null,
     var comments: MutableList<Comment> = mutableListOf(),
-    var isCommentsVisible: Boolean = false // New field to track if comments are visible
+    var isCommentsVisible: Boolean = false // Field to track if comments are visible
 )

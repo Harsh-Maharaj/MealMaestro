@@ -19,6 +19,7 @@ import com.bumptech.glide.request.target.Target
 import com.example.mealmaestro.Helper.Comment
 import com.example.mealmaestro.Helper.Post
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 class PostAdapter(
@@ -47,6 +48,7 @@ class PostAdapter(
         private val buttonComment: ImageButton = itemView.findViewById(R.id.button_comment)
         private val buttonSave: ImageButton = itemView.findViewById(R.id.button_save)
         private val buttonLike: ImageButton = itemView.findViewById(R.id.button_like)
+        private val likeCount: TextView = itemView.findViewById(R.id.like_count)
         private val recyclerViewComments: RecyclerView = itemView.findViewById(R.id.recycler_view_comments)
         private val editTextComment: TextView = itemView.findViewById(R.id.edit_text_comment)
         private val buttonPostComment: TextView = itemView.findViewById(R.id.button_post_comment)
@@ -55,7 +57,7 @@ class PostAdapter(
             // Load the post image using Glide with dynamic height adjustment
             Glide.with(context)
                 .load(post.image_url)
-                .fitCenter()  // Ensures the image is scaled to fit inside the ImageView without stretching
+                .fitCenter()
                 .listener(object : RequestListener<Drawable> {
                     override fun onLoadFailed(
                         e: GlideException?,
@@ -94,6 +96,15 @@ class PostAdapter(
             recyclerViewComments.layoutManager = LinearLayoutManager(context)
             recyclerViewComments.adapter = commentAdapter
 
+            // Update like button and like count
+            updateLikeButton(post)
+            likeCount.text = "${post.likes.size} likes"
+
+            // Handle like button click
+            buttonLike.setOnClickListener {
+                toggleLike(post)
+            }
+
             // Toggle visibility of comments based on the post.isCommentsVisible flag
             recyclerViewComments.visibility = if (post.isCommentsVisible) View.VISIBLE else View.GONE
 
@@ -116,10 +127,48 @@ class PostAdapter(
                     savePost(post)
                 }
             }
+        }
 
-            // Handle like functionality (placeholder for real functionality)
-            buttonLike.setOnClickListener {
-                Toast.makeText(context, "Like functionality not implemented yet", Toast.LENGTH_SHORT).show()
+        private fun toggleLike(post: Post) {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+            val postRef = FirebaseFirestore.getInstance().collection("posts").document(post.postId)
+
+            if (post.likes.containsKey(userId)) {
+                // Unlike the post (remove user's like)
+                post.likes.remove(userId)
+                postRef.update("likes.$userId", FieldValue.delete()) // Remove the like from Firestore
+                    .addOnSuccessListener {
+                        // Update the local post object and UI
+                        updateLikeButton(post)
+                        likeCount.text = "${post.likes.size} likes" // Update the like count text
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(context, "Failed to unlike post.", Toast.LENGTH_SHORT).show()
+                    }
+            } else {
+                // Like the post (add user's like)
+                post.likes[userId] = true
+                postRef.update("likes.$userId", true) // Add the like to Firestore
+                    .addOnSuccessListener {
+                        // Update the local post object and UI
+                        updateLikeButton(post)
+                        likeCount.text = "${post.likes.size} likes" // Update the like count text
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(context, "Failed to like post.", Toast.LENGTH_SHORT).show()
+                    }
+            }
+
+
+        }
+
+        private fun updateLikeButton(post: Post) {
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+            val isLiked = post.likes.containsKey(currentUserId)
+            if (isLiked) {
+                buttonLike.setImageResource(R.drawable.ic_liked)  // Change to red liked icon
+            } else {
+                buttonLike.setImageResource(R.drawable.ic_like)  // Change to default like icon
             }
         }
 

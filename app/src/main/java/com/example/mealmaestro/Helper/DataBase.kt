@@ -221,7 +221,7 @@ class DataBase(private val context: Context?) {
                     user_id = uid,
                     image_url = downloadUri.toString(),
                     caption = caption,
-                    likes = mapOf(), // Initialize with an empty map
+                    likes = mutableMapOf(), // Initialize with a mutable map
                     isPublic = true // Set post visibility to public
                 )
                 dataBaseRef.child("posts").child(postId).setValue(post)
@@ -237,6 +237,7 @@ class DataBase(private val context: Context?) {
             Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
         }
     }
+
 
     fun likePost(postId: String, userId: String, callback: (Boolean) -> Unit) {
         val postRef = dataBaseRef.child("posts").child(postId)
