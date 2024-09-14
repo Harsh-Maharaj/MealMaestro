@@ -4,5 +4,5 @@ data class Comment(
     val userId: String = "",
     val username: String = "",
     val text: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = 0L
 )

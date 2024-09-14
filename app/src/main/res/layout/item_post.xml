@@ -147,15 +147,13 @@
         </LinearLayout>
 
         <!-- Comment Section -->
-        <TextView
-            android:id="@+id/comment_section"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_comments"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="View all comments"
-            android:textSize="14sp"
             android:layout_marginTop="8dp"
-            android:textColor="@android:color/darker_gray"
-            android:visibility="visible" />
+            android:scrollbars="vertical" />
+
 
         <!-- Comment Input Section -->
         <LinearLayout
@@ -183,6 +181,8 @@
                 android:layout_height="wrap_content"
                 android:text="Post" />
         </LinearLayout>
+
+
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
