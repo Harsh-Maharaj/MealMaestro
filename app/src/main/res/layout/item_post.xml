@@ -68,7 +68,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
-            android:scaleType="fitCenter"/> <!-- Use fitCenter to prevent stretching -->
+            android:scaleType="fitCenter"/>
 
         <!-- Interaction Buttons -->
         <LinearLayout
@@ -129,15 +129,41 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"/>
 
-        <!-- Caption -->
+        <!-- Caption TextView (Initially Collapsed) -->
         <TextView
             android:id="@+id/text_view_caption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Caption goes here"
+            android:maxLines="3"
+            android:ellipsize="end"
             android:textSize="14sp"
             android:textColor="@android:color/black"
             android:padding="12dp"/>
+
+        <!-- Button to Expand/Collapse the caption -->
+        <TextView
+            android:id="@+id/button_view_more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="View More"
+            android:textColor="@android:color/holo_purple"
+            android:visibility="gone"
+            android:textSize="14sp"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"/>
+
+        <!-- Comments Header -->
+        <TextView
+            android:id="@+id/comments_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Comments:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:paddingStart="12dp"
+            android:paddingTop="12dp"/>
 
         <!-- Comments RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView

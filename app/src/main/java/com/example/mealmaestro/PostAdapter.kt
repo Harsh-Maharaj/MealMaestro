@@ -45,6 +45,7 @@ class PostAdapter(
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageView: ImageView = itemView.findViewById(R.id.image_view_post)
         private val textViewCaption: TextView = itemView.findViewById(R.id.text_view_caption)
+        private val buttonViewMore: TextView = itemView.findViewById(R.id.button_view_more)
         private val buttonComment: ImageButton = itemView.findViewById(R.id.button_comment)
         private val buttonSave: ImageButton = itemView.findViewById(R.id.button_save)
         private val buttonLike: ImageButton = itemView.findViewById(R.id.button_like)
@@ -89,6 +90,23 @@ class PostAdapter(
                 })
                 .into(imageView)
 
+            // Show "View More" button if the caption is long
+            if (post.caption.length > 100) {
+                buttonViewMore.visibility = View.VISIBLE
+                textViewCaption.maxLines = if (post.isCaptionExpanded) Int.MAX_VALUE else 3
+                buttonViewMore.text = if (post.isCaptionExpanded) "View Less" else "View More"
+            } else {
+                buttonViewMore.visibility = View.GONE
+                textViewCaption.maxLines = Int.MAX_VALUE
+            }
+
+            // Handle View More button click
+            buttonViewMore.setOnClickListener {
+                post.isCaptionExpanded = !post.isCaptionExpanded
+                notifyItemChanged(adapterPosition)
+            }
+
+            // Set caption text
             textViewCaption.text = post.caption
 
             // Set up the comment RecyclerView and Adapter
@@ -158,8 +176,6 @@ class PostAdapter(
                         Toast.makeText(context, "Failed to like post.", Toast.LENGTH_SHORT).show()
                     }
             }
-
-
         }
 
         private fun updateLikeButton(post: Post) {
@@ -243,3 +259,4 @@ class PostAdapter(
         }
     }
 }
+

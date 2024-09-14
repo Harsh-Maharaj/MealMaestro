@@ -13,5 +13,6 @@ data class Post(
     var isSaved: Boolean = false,
     val created_at: Timestamp? = null,
     var comments: MutableList<Comment> = mutableListOf(),
-    var isCommentsVisible: Boolean = false // Field to track if comments are visible
+    var isCommentsVisible: Boolean = false, // Field to track if comments are visible
+    var isCaptionExpanded: Boolean = false // Add this flag
 )

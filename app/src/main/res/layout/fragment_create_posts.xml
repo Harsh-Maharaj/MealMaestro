@@ -1,38 +1,72 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@android:color/white">
 
-    <ImageView
-        android:id="@+id/image_view"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_marginBottom="16dp"
-        android:scaleType="centerCrop"
-        android:background="#E0E0E0"
-        android:contentDescription="Selected Image"/>
-
-    <EditText
-        android:id="@+id/edit_text_caption"
+    <!-- Image container with CardView for a nice elevation -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter your recipe..."
-        android:inputType="textMultiLine"
-        android:minLines="3"/>
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        android:backgroundTint="@color/cardBackground">
 
-    <Button
+        <ImageView
+            android:id="@+id/image_view"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:background="@android:color/darker_gray"
+            android:contentDescription="Selected Image"/>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Caption input field with a more distinct style -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter your recipe description"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine"
+            android:minLines="3"
+            android:maxLines="5"
+            android:padding="8dp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Choose Image Button -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_choose_image"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Choose Image"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp"
+        app:cornerRadius="8dp"
+        app:icon="@drawable/ic_image"
+        app:iconPadding="8dp"
+        app:iconTint="@android:color/white"
+        android:backgroundTint="@color/colorAccent"
+        android:textColor="@android:color/white"/>
 
-    <Button
+    <!-- Post Button -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_post"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Post"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp"
+        app:cornerRadius="8dp"
+        app:icon="@drawable/ic_post"
+        app:iconPadding="8dp"
+        app:iconTint="@android:color/white"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@android:color/white"/>
 </LinearLayout>
