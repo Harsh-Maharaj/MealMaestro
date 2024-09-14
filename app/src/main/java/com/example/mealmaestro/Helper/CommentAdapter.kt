@@ -29,7 +29,6 @@ class CommentAdapter(
         return commentList.size
     }
 
-    // Function to update the comments list in real-time
     fun updateComments(newComments: MutableList<Comment>) {
         this.commentList = newComments
         notifyDataSetChanged()
@@ -50,3 +49,4 @@ class CommentAdapter(
         }
     }
 }
+

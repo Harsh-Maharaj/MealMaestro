@@ -1,21 +1,25 @@
 package com.example.mealmaestro
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
-import androidx.core.content.ContextCompat
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.example.mealmaestro.Helper.Comment
+import com.example.mealmaestro.Helper.Post
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.example.mealmaestro.Helper.Post
-import com.example.mealmaestro.Helper.DataBase
-import java.text.SimpleDateFormat
-import java.util.*
 
 class PostAdapter(
     private val context: Context,
@@ -40,56 +44,82 @@ class PostAdapter(
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageView: ImageView = itemView.findViewById(R.id.image_view_post)
         private val textViewCaption: TextView = itemView.findViewById(R.id.text_view_caption)
+        private val buttonComment: ImageButton = itemView.findViewById(R.id.button_comment)
         private val buttonSave: ImageButton = itemView.findViewById(R.id.button_save)
         private val buttonLike: ImageButton = itemView.findViewById(R.id.button_like)
-        private val likeCount: TextView = itemView.findViewById(R.id.like_count)
         private val recyclerViewComments: RecyclerView = itemView.findViewById(R.id.recycler_view_comments)
-        private val editTextComment: EditText = itemView.findViewById(R.id.edit_text_comment)
-        private val buttonPostComment: Button = itemView.findViewById(R.id.button_post_comment)
+        private val editTextComment: TextView = itemView.findViewById(R.id.edit_text_comment)
+        private val buttonPostComment: TextView = itemView.findViewById(R.id.button_post_comment)
 
         fun bind(post: Post) {
-            // Load the post image
+            // Load the post image using Glide with dynamic height adjustment
             Glide.with(context)
                 .load(post.image_url)
-                .override(200, 200)
+                .fitCenter()  // Ensures the image is scaled to fit inside the ImageView without stretching
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        resource?.let {
+                            val imageViewWidth = imageView.width
+                            val aspectRatio = it.intrinsicWidth.toFloat() / it.intrinsicHeight.toFloat()
+                            val imageViewHeight = (imageViewWidth / aspectRatio).toInt()
+
+                            // Set the ImageView height dynamically to maintain aspect ratio
+                            imageView.layoutParams.height = imageViewHeight
+                            imageView.requestLayout()
+                        }
+                        return false
+                    }
+                })
                 .into(imageView)
+
             textViewCaption.text = post.caption
 
-            // Set up the adapter for the comments RecyclerView
+            // Set up the comment RecyclerView and Adapter
             val commentAdapter = CommentAdapter(context, post.comments)
             recyclerViewComments.layoutManager = LinearLayoutManager(context)
             recyclerViewComments.adapter = commentAdapter
 
-            // Fetch and display comments for the post
-            setupCommentListener(post, commentAdapter)
+            // Toggle visibility of comments based on the post.isCommentsVisible flag
+            recyclerViewComments.visibility = if (post.isCommentsVisible) View.VISIBLE else View.GONE
 
-            // Set up post comment functionality
+            // Handle comment icon click to toggle the comments visibility
+            buttonComment.setOnClickListener {
+                post.isCommentsVisible = !post.isCommentsVisible
+                notifyItemChanged(adapterPosition)
+            }
+
+            // Post comment functionality
             buttonPostComment.setOnClickListener {
                 postComment(post)
             }
 
-            // Handle likes
-            buttonLike.setOnClickListener {
-                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@setOnClickListener
-                val dataBase = DataBase(context)
-                dataBase.likePost(post.postId, userId) { isLiked ->
-                    val updatedLikes = if (isLiked) {
-                        post.likes.toMutableMap().apply { put(userId, true) }
-                    } else {
-                        post.likes.toMutableMap().apply { remove(userId) }
-                    }
-                    updateLikeButton(post.copy(likes = updatedLikes))
-                    likeCount.text = updatedLikes.size.toString()
-                }
-            }
-
-            // Handle saving/unsaving post
+            // Handle saving and unsaving the post
             buttonSave.setOnClickListener {
                 if (post.isSaved) {
                     unsavePost(post)
                 } else {
                     savePost(post)
                 }
+            }
+
+            // Handle like functionality (placeholder for real functionality)
+            buttonLike.setOnClickListener {
+                Toast.makeText(context, "Like functionality not implemented yet", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -115,42 +145,12 @@ class PostAdapter(
 
             postRef.add(comment)
                 .addOnSuccessListener {
-                    editTextComment.text.clear()
+                    editTextComment.text = ""
                     Toast.makeText(context, "Comment posted!", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener {
                     Toast.makeText(context, "Failed to post comment", Toast.LENGTH_SHORT).show()
                 }
-        }
-
-        private fun setupCommentListener(post: Post, adapter: CommentAdapter) {
-            val postRef = FirebaseFirestore.getInstance()
-                .collection("posts")
-                .document(post.postId)
-                .collection("comments")
-                .orderBy("timestamp")
-
-            postRef.addSnapshotListener { snapshot, error ->
-                if (error != null || snapshot == null) {
-                    return@addSnapshotListener
-                }
-
-                val comments = mutableListOf<Comment>()
-                for (document in snapshot.documents) {
-                    val comment = document.toObject(Comment::class.java)
-                    if (comment != null) {
-                        comments.add(comment)
-                    }
-                }
-
-                adapter.updateComments(comments)
-            }
-        }
-
-        private fun updateLikeButton(post: Post) {
-            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-            val color = if (post.likes.containsKey(currentUserId)) R.color.red else R.color.light_purple
-            buttonLike.setColorFilter(ContextCompat.getColor(context, color))
         }
 
         private fun savePost(post: Post) {
@@ -166,7 +166,7 @@ class PostAdapter(
                     updateSaveButton(true)
                 }
                 .addOnFailureListener {
-                    // Handle the error
+                    Toast.makeText(context, "Failed to save post", Toast.LENGTH_SHORT).show()
                 }
         }
 
@@ -184,14 +184,13 @@ class PostAdapter(
                     onUnsave(post)
                 }
                 .addOnFailureListener {
-                    // Handle the error
+                    Toast.makeText(context, "Failed to unsave post", Toast.LENGTH_SHORT).show()
                 }
         }
 
         private fun updateSaveButton(isSaved: Boolean) {
-            val color = if (isSaved) R.color.yellow else R.color.standard_save
-            buttonSave.setColorFilter(ContextCompat.getColor(context, color))
-            buttonSave.setImageResource(if (isSaved) R.drawable.ic_save else R.drawable.ic_save)
+            val icon = if (isSaved) R.drawable.ic_save else R.drawable.ic_unsave
+            buttonSave.setImageResource(icon)
         }
     }
 }
