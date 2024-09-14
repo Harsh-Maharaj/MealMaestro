@@ -5,14 +5,16 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mealmaestro.Helper.Comment
+import com.example.mealmaestro.Helper.Post
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.example.mealmaestro.Helper.Post
+import com.google.firebase.firestore.Query
 
 class HomeFragment : Fragment() {
 
@@ -45,6 +47,12 @@ class HomeFragment : Fragment() {
 
         recyclerView.adapter = postAdapter
         fetchSavedPosts { fetchPosts() }
+
+        // Check if we need to show a toast indicating the post was created
+        val isPostCreated = arguments?.getBoolean("postCreated", false) ?: false
+        if (isPostCreated) {
+            Toast.makeText(requireContext(), "Post successfully created!", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onResume() {
@@ -86,22 +94,28 @@ class HomeFragment : Fragment() {
 
     private fun fetchPosts() {
         removeListeners() // Remove existing listeners before setting up new ones
-        postListener = FirebaseFirestore.getInstance().collection("posts")
+
+        // Order the posts by "created_at" in descending order to get the latest posts first
+        postListener = FirebaseFirestore.getInstance()
+            .collection("posts")
+            .orderBy("created_at", Query.Direction.DESCENDING) // Latest posts at the top
             .addSnapshotListener { snapshots, e ->
                 if (e != null || snapshots == null) return@addSnapshotListener
-                postList.clear()
+                postList.clear() // Clear the existing list to avoid duplicates
+
                 snapshots.documents.forEach { document ->
                     val post = document.toObject(Post::class.java)
                     post?.let {
                         it.postId = document.id // Ensure postId is set
                         it.isSaved = savedPosts.contains(it.postId)
-                        postList.add(it)
-                        fetchCommentsForPost(it)
+                        postList.add(it) // Add post to the list
+                        fetchCommentsForPost(it) // Fetch comments for the post
                     }
                 }
-                postAdapter.notifyDataSetChanged()
+                postAdapter.notifyDataSetChanged() // Notify adapter to update the UI
             }
     }
+
 
     private fun fetchCommentsForPost(post: Post) {
         val commentListener = FirebaseFirestore.getInstance()

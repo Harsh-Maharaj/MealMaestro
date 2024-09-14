@@ -10,8 +10,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.example.mealmaestro.R
+import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -61,7 +62,7 @@ class CreatePostsFragment : Fragment() {
     }
 
     private fun uploadPost() {
-        if (imageUri != null) {
+        if (imageUri != null && editTextCaption.text.isNotEmpty()) {
             val storageReference = FirebaseStorage.getInstance().reference.child("uploads")
             val fileReference = storageReference.child(UUID.randomUUID().toString())
 
@@ -79,13 +80,32 @@ class CreatePostsFragment : Fragment() {
                         FirebaseFirestore.getInstance().collection("posts")
                             .add(post)
                             .addOnSuccessListener {
-                                // Post was successful, you can finish or navigate
-                                requireActivity().finish()
+                                // Clear the input fields
+                                imageView.setImageResource(0)  // Clear ImageView
+                                editTextCaption.text.clear()   // Clear caption EditText
+                                imageUri = null
+
+                                // Show a success message
+                                Toast.makeText(context, "Post successfully created!", Toast.LENGTH_SHORT).show()
+
+                                // Use the NavController to navigate back to HomeFragment
+                                findNavController().navigate(R.id.action_createPostsFragment_to_homeFragment)
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(context, "Failed to create post. Please try again.", Toast.LENGTH_SHORT).show()
                             }
                     }
                 }
+                .addOnFailureListener {
+                    Toast.makeText(context, "Failed to upload image. Please try again.", Toast.LENGTH_SHORT).show()
+                }
+        } else {
+            Toast.makeText(context, "Please select an image and add a caption.", Toast.LENGTH_SHORT).show()
         }
     }
+
+
+
 
     companion object {
         private const val PICK_IMAGE_REQUEST = 1

@@ -4,30 +4,40 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/nav_home">
 
+    <!-- Home Fragment -->
     <fragment
         android:id="@+id/nav_home"
         android:name="com.example.mealmaestro.HomeFragment"
         android:label="Home"
         tools:layout="@layout/fragment_home" />
 
+    <!-- Friends Fragment -->
     <fragment
         android:id="@+id/nav_friends"
         android:name="com.example.mealmaestro.FriendsFragment"
         android:label="Friends"
         tools:layout="@layout/activity_recycle_user_friends" />
 
+    <!-- Create Post Fragment -->
     <fragment
         android:id="@+id/nav_create_post"
         android:name="com.example.mealmaestro.CreatePostsFragment"
         android:label="Create Post"
-        tools:layout="@layout/fragment_create_posts" />
+        tools:layout="@layout/fragment_create_posts">
+        <!-- Define the action from CreatePostsFragment to HomeFragment -->
+        <action
+            android:id="@+id/action_createPostsFragment_to_homeFragment"
+            app:destination="@id/nav_home" />
+    </fragment>
 
+    <!-- Favorites Fragment -->
     <fragment
         android:id="@+id/nav_favorites"
         android:name="com.example.mealmaestro.FavouritesFragment"
         android:label="Favorites"
         tools:layout="@layout/fragment_favourites" />
 
+    <!-- AI Fragment -->
     <fragment
         android:id="@+id/nav_ai"
         android:name="com.example.mealmaestro.AiFragment"
