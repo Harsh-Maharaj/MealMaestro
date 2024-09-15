@@ -2,6 +2,7 @@ package com.example.mealmaestro
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,7 @@ import com.bumptech.glide.request.target.Target
 import com.example.mealmaestro.Helper.Comment
 import com.example.mealmaestro.Helper.Post
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -53,6 +55,7 @@ class PostAdapter(
         private val recyclerViewComments: RecyclerView = itemView.findViewById(R.id.recycler_view_comments)
         private val editTextComment: TextView = itemView.findViewById(R.id.edit_text_comment)
         private val buttonPostComment: TextView = itemView.findViewById(R.id.button_post_comment)
+        private val usernameTextView: TextView = itemView.findViewById(R.id.username) // Reference for the username TextView
 
         fun bind(post: Post) {
             // Load the post image using Glide with dynamic height adjustment
@@ -89,6 +92,24 @@ class PostAdapter(
                     }
                 })
                 .into(imageView)
+
+            // Fetch the username from Realtime Database using user_id and display it
+            val userId = post.user_id
+            val userRef = FirebaseDatabase.getInstance().getReference("user").child(userId)
+
+            userRef.get().addOnSuccessListener { dataSnapshot ->
+                if (dataSnapshot.exists()) {
+                    val username = dataSnapshot.child("name").getValue(String::class.java)
+                    usernameTextView.text = username ?: "No Name"
+                    Log.d("PostAdapter", "Fetched username: $username for userId: $userId")
+                } else {
+                    usernameTextView.text = "Unknown User"
+                    Log.w("PostAdapter", "User document does not exist for userId: $userId. DataSnapshot: ${dataSnapshot.value}")
+                }
+            }.addOnFailureListener { e ->
+                usernameTextView.text = "Error"
+                Log.e("PostAdapter", "Failed to fetch username for userId: $userId", e)
+            }
 
             // Show "View More" button if the caption is long
             if (post.caption.length > 100) {
@@ -259,4 +280,3 @@ class PostAdapter(
         }
     }
 }
-
