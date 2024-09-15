@@ -23,6 +23,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class PostAdapter(
     private val context: Context,
@@ -55,7 +57,8 @@ class PostAdapter(
         private val recyclerViewComments: RecyclerView = itemView.findViewById(R.id.recycler_view_comments)
         private val editTextComment: TextView = itemView.findViewById(R.id.edit_text_comment)
         private val buttonPostComment: TextView = itemView.findViewById(R.id.button_post_comment)
-        private val usernameTextView: TextView = itemView.findViewById(R.id.username) // Reference for the username TextView
+        private val usernameTextView: TextView = itemView.findViewById(R.id.username)
+        private val postTimeTextView: TextView = itemView.findViewById(R.id.post_time)
 
         fun bind(post: Post) {
             // Load the post image using Glide with dynamic height adjustment
@@ -93,22 +96,13 @@ class PostAdapter(
                 })
                 .into(imageView)
 
-            // Fetch the username from Realtime Database using user_id and display it
-            val userId = post.user_id
-            val userRef = FirebaseDatabase.getInstance().getReference("user").child(userId)
+            // Fetch the username from Firestore or Realtime Database
+            fetchUsernameFromFirestore(post.user_id, usernameTextView)
+            // Or use fetchUsernameFromRealtimeDatabase(post.user_id, usernameTextView) if needed
 
-            userRef.get().addOnSuccessListener { dataSnapshot ->
-                if (dataSnapshot.exists()) {
-                    val username = dataSnapshot.child("name").getValue(String::class.java)
-                    usernameTextView.text = username ?: "No Name"
-                    Log.d("PostAdapter", "Fetched username: $username for userId: $userId")
-                } else {
-                    usernameTextView.text = "Unknown User"
-                    Log.w("PostAdapter", "User document does not exist for userId: $userId. DataSnapshot: ${dataSnapshot.value}")
-                }
-            }.addOnFailureListener { e ->
-                usernameTextView.text = "Error"
-                Log.e("PostAdapter", "Failed to fetch username for userId: $userId", e)
+            // Set timestamp text (e.g., "2 hours ago")
+            post.created_at?.let {
+                postTimeTextView.text = getTimeAgo(it.toDate().time)
             }
 
             // Show "View More" button if the caption is long
@@ -130,10 +124,13 @@ class PostAdapter(
             // Set caption text
             textViewCaption.text = post.caption
 
-            // Set up the comment RecyclerView and Adapter
+            // Set up the comment RecyclerView and Adapter with smooth scrolling
             val commentAdapter = CommentAdapter(context, post.comments)
-            recyclerViewComments.layoutManager = LinearLayoutManager(context)
+            recyclerViewComments.layoutManager = LinearLayoutManager(context).apply {
+                isSmoothScrollbarEnabled = true
+            }
             recyclerViewComments.adapter = commentAdapter
+            recyclerViewComments.setHasFixedSize(true)
 
             // Update like button and like count
             updateLikeButton(post)
@@ -277,6 +274,56 @@ class PostAdapter(
         private fun updateSaveButton(isSaved: Boolean) {
             val icon = if (isSaved) R.drawable.ic_save else R.drawable.ic_unsave
             buttonSave.setImageResource(icon)
+        }
+
+        // Helper function to convert timestamp to "time ago" format
+        private fun getTimeAgo(time: Long): String {
+            val diff = System.currentTimeMillis() - time
+            val seconds = diff / 1000
+            val minutes = seconds / 60
+            val hours = minutes / 60
+            val days = hours / 24
+
+            return when {
+                seconds < 60 -> "Just now"
+                minutes < 60 -> "$minutes minute(s) ago"
+                hours < 24 -> "$hours hour(s) ago"
+                else -> SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(time)
+            }
+        }
+
+        // Fetch username from Firestore
+        private fun fetchUsernameFromFirestore(userId: String, usernameTextView: TextView) {
+            val userRef = FirebaseFirestore.getInstance().collection("users").document(userId)
+
+            userRef.get().addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    val username = documentSnapshot.getString("name") ?: "Unknown"
+                    usernameTextView.text = username
+                } else {
+                    usernameTextView.text = "Unknown User"
+                }
+            }.addOnFailureListener { e ->
+                Log.e("PostAdapter", "Error fetching username from Firestore: ${e.message}")
+                usernameTextView.text = "Error"
+            }
+        }
+
+        // Fetch username from Realtime Database
+        private fun fetchUsernameFromRealtimeDatabase(userId: String, usernameTextView: TextView) {
+            val userRef = FirebaseDatabase.getInstance().getReference("user").child(userId)
+
+            userRef.get().addOnSuccessListener { dataSnapshot ->
+                if (dataSnapshot.exists()) {
+                    val username = dataSnapshot.child("name").getValue(String::class.java) ?: "Unknown"
+                    usernameTextView.text = username
+                } else {
+                    usernameTextView.text = "Unknown User"
+                }
+            }.addOnFailureListener { e ->
+                Log.e("PostAdapter", "Error fetching username from Realtime Database: ${e.message}")
+                usernameTextView.text = "Error"
+            }
         }
     }
 }
