@@ -50,19 +50,23 @@ Clone the repository to your local machine:
 ```bash
 git clone https://github.com/yourusername/meal-maestro.git
 cd meal-maestro
+```
 
-Open in Android Studio
+
+## Open in Android Studio
 Open Android Studio.
 Select Open an existing project.
 Navigate to the cloned directory and open the project.
 Build and Run the Project
 Sync your project with Gradle files by clicking on File > Sync Project with Gradle Files.
 Once synced, connect an Android device or use the emulator, then click on the Run button to build and launch the app.
-📦 Dependencies
+
+## 📦 Dependencies
 Glide: For efficient image loading.
 Firebase SDK: Firestore, Realtime Database, Firebase Auth.
 Material Design Components: For a sleek and modern UI.
-💡 How to Use
+
+## 💡 How to Use
 Sign Up / Log In
 Use Firebase Authentication to sign up or log in.
 
@@ -81,7 +85,7 @@ Like, save, and comment on recipes that inspire you.
 Meal Planning
 Plan your meals by selecting recipes for the upcoming days. Keep track of your diet and schedule meals.
 
-💻 Technical Details
+## 💻 Technical Details
 Firebase
 Firestore: Used to store and retrieve user posts, comments, and interactions such as likes.
 Realtime Database: Used for real-time updates to the friends list and public user data.
@@ -92,20 +96,20 @@ OpenAI's GPT-4: Integrated to provide meal suggestions based on user input. The 
 🛠️ Customization
 You can customize the following features in the app:
 
-Theme Colors: Change the primary and accent colors in res/values/colors.xml to match your branding.
+## Theme Colors: Change the primary and accent colors in res/values/colors.xml to match your branding.
 Firebase Rules: Set your Firestore and Realtime Database rules to ensure data security and privacy.
 AI Model: Customize the AI model's temperature or tokens based on your preference for more or less creative meal suggestions.
 🔧 Troubleshooting
 Firebase Authentication Issues
 Double-check your google-services.json file and ensure Firebase Authentication is correctly configured in the console.
 
-App Crashes on Startup
+## App Crashes on Startup
 Ensure your Gradle dependencies are synced and the correct SDK versions are installed.
 
-API Errors
+## API Errors
 If the AI isn’t responding correctly, verify your OpenAI API key is correctly fetched from Firebase Remote Config.
 
-📄 License
+## 📄 License
 This project is licensed under the MIT License. See the LICENSE file for more details.
 
-Thank you for using Meal Maestro! If you have any issues or suggestions, feel free to open an issue or contact us via email at MealMaestrohelp@gmail.com.
+## Thank you for using Meal Maestro! If you have any issues or suggestions, feel free to open an issue or contact us via email at MealMaestrohelp@gmail.com.
