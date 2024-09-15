@@ -9,12 +9,15 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.ktx.remoteConfig
+import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
+import com.google.firebase.ktx.Firebase
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
-import java.util.*
 
 class AiFragment : Fragment() {
 
@@ -24,18 +27,30 @@ class AiFragment : Fragment() {
     private lateinit var etQuestion: TextInputEditText
     private lateinit var apiKey: String
 
+    // Initialize Firebase Remote Config
+    private val remoteConfig: FirebaseRemoteConfig by lazy {
+        Firebase.remoteConfig
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_ai, container, false)
 
-        // Load the API key from the properties file
-        loadApiKey()
-
         etQuestion = view.findViewById(R.id.etQuestion)
         idTVQuestion = view.findViewById(R.id.idTVQuestion)
         txtResponse = view.findViewById(R.id.txtResponse)
+
+        // Configure Remote Config settings
+        val configSettings = remoteConfigSettings {
+            minimumFetchIntervalInSeconds = 3600 // 1 hour interval
+        }
+        remoteConfig.setConfigSettingsAsync(configSettings)
+        remoteConfig.setDefaultsAsync(mapOf("openai_api_key" to ""))
+
+        // Fetch the API key from Remote Config
+        fetchApiKey()
 
         etQuestion.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEND) {
@@ -53,21 +68,28 @@ class AiFragment : Fragment() {
         return view
     }
 
-    private fun loadApiKey() {
-        try {
-            val properties = Properties()
-            val inputStream = requireContext().assets.open("api_keys.properties")
-            properties.load(inputStream)
-            apiKey = properties.getProperty("OPENAI_API_KEY") ?: throw IllegalStateException("API Key not found")
-        } catch (e: Exception) {
-            Log.e("AiFragment", "Failed to load API key", e)
-            throw RuntimeException("API Key loading failed", e)
-        }
+    // Fetch API key from Firebase Remote Config
+    private fun fetchApiKey() {
+        remoteConfig.fetchAndActivate()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    apiKey = remoteConfig.getString("openai_api_key")
+                    Log.d("AiFragment", "API Key fetched successfully: $apiKey")
+                } else {
+                    Log.e("AiFragment", "Failed to fetch API key from Firebase")
+                    txtResponse.text = "Failed to fetch API key."
+                }
+            }
     }
 
     private fun getResponse(question: String, callback: (String) -> Unit) {
         idTVQuestion.text = question
         etQuestion.setText("")
+
+        if (!::apiKey.isInitialized || apiKey.isEmpty()) {
+            callback("API Key not found.")
+            return
+        }
 
         val requestBody = """
             {
