@@ -60,18 +60,12 @@ class SignUpActivity : AppCompatActivity() {
         }
         googleAuth = GoogleAuth(this, launcher)
 
-        // =============================  X ========================================================
-
-        xAuth = XAuth(this@SignUpActivity)
-
-        binding.xBtn.setOnClickListener {
-            xAuth.xAuth()
-        }
         // ======================= EMAIL & PASSWORD ================================================
         binding.signUpContinueBtn.setOnClickListener {
             val email = binding.signUpEmail.text.toString()
             val password = binding.signUpPassword.text.toString()
             val confirmPass = binding.signUpConfirmPassword.text.toString()
+            val username = binding.signUpUsername.text.toString()
 
             if (email.isEmpty() || password.isEmpty() || confirmPass.isEmpty()) {
                 Toast.makeText(this@SignUpActivity, "Please fill all details", Toast.LENGTH_SHORT)
@@ -92,7 +86,7 @@ class SignUpActivity : AppCompatActivity() {
                                 Toast.LENGTH_SHORT
                             ).show()
                             // add user to database
-                            dataBase.addUserToDataBase(email, auth.currentUser!!.uid)
+                            dataBase.addUserToDataBase(email, auth.currentUser!!.uid, username)
                             startActivity(Intent(this@SignUpActivity, MainActivity::class.java))
                             finish()
                         } else {

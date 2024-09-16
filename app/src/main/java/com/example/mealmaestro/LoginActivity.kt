@@ -61,14 +61,6 @@ class LoginActivity : AppCompatActivity() {
             googleAuth.launchSignIn()
         }
         googleAuth = GoogleAuth(this, launcher)
-
-        // =========================== X ===========================================================
-
-        xAuth = XAuth(this)
-
-        binding.xBtn.setOnClickListener {
-            xAuth.xAuth()
-        }
     }
 
     // ========================= EMAIL & PASSWORD ================================================

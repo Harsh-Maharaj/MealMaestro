@@ -38,7 +38,7 @@ class FriendsAdapter(
 
     override fun onBindViewHolder(holder: FriendsViewHolder, position: Int) {
         val currentFriend = friendsList[position]
-        holder.textName.text = currentFriend.name
+        holder.textName.text = currentFriend.username
 
         // Find the ImageViews from the layout
         val chat = holder.itemView.findViewById<ImageView>(R.id.friend_message)
@@ -50,7 +50,7 @@ class FriendsAdapter(
         // Open the chat with the current friend
         chat?.setOnClickListener {
             val intent = Intent(context, ChatFriendsActivity::class.java)
-            intent.putExtra("name", currentFriend.name)
+            intent.putExtra("username", currentFriend.username)
             intent.putExtra("uid", currentFriend.uid)
             intent.putExtra("icon", currentFriend.icon)
             context.startActivity(intent)

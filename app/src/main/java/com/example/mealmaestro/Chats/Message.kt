@@ -1,6 +1,8 @@
 package com.example.mealmaestro.Chats
 
-class Message (var message: String?,var sender: String?) {
-
-    constructor():this(null,null)
-}
+data class Message(
+    val message: String = "",
+    val sender: String = "",
+    val receiverUid: String? = null,
+    val timestamp: Long = System.currentTimeMillis() // Optional: you can include a timestamp
+)
