@@ -90,6 +90,7 @@
             android:background="@drawable/round_border"
             android:hint="Message..."
             android:padding="10dp"
+            android:textColor="@color/white"
             android:textColorHint="@color/white" />
 
         <ImageView
