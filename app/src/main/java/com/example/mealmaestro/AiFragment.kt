@@ -49,6 +49,9 @@ class AiFragment : Fragment() {
         aiImageResponse = view.findViewById(R.id.ai_image_response)
         btnSubmitQuestion = view.findViewById(R.id.btnSubmitQuestion)
 
+        // Introduce Maestro when the user enters the page
+        txtResponse.text = "Hi I'm Maestro, your virtual food AI assistant"
+
         // Configure Remote Config settings
         val configSettings = remoteConfigSettings {
             minimumFetchIntervalInSeconds = 3600 // 1 hour interval
@@ -92,20 +95,34 @@ class AiFragment : Fragment() {
     // Function to handle submitting a query
     private fun handleQuerySubmit() {
         val question = etQuestion.text.toString().trim()
-        if (question.isNotEmpty()) {
-            txtResponse.text = "Please wait..."
-            getResponse(question) { response, imageUrl ->
-                activity?.runOnUiThread {
-                    txtResponse.text = response
-                    if (imageUrl != null) {
-                        aiImageResponse.visibility = View.VISIBLE
-                        Glide.with(this@AiFragment).load(imageUrl).into(aiImageResponse)
-                    } else {
-                        aiImageResponse.visibility = View.GONE
-                    }
+
+        // Filter out non-food-related queries
+        if (question.isEmpty()) {
+            txtResponse.text = "Please ask something about food."
+            return
+        } else if (!isFoodRelated(question)) {
+            txtResponse.text = "I'm sorry, I can only help with food-related questions."
+            return
+        }
+
+        txtResponse.text = "Please wait..."
+        getResponse(question) { response, imageUrl ->
+            activity?.runOnUiThread {
+                txtResponse.text = response
+                if (imageUrl != null) {
+                    aiImageResponse.visibility = View.VISIBLE
+                    Glide.with(this@AiFragment).load(imageUrl).into(aiImageResponse)
+                } else {
+                    aiImageResponse.visibility = View.GONE
                 }
             }
         }
+    }
+
+    // Function to determine if the query is food-related
+    private fun isFoodRelated(question: String): Boolean {
+        val foodKeywords = listOf("food", "recipe", "meal", "ingredient", "dish", "cooking", "nutrition", "restaurant", "diet", "calories")
+        return foodKeywords.any { question.contains(it, ignoreCase = true) }
     }
 
     // Function to request AI response
