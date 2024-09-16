@@ -29,8 +29,8 @@
             app:cardElevation="0dp">
 
             <ImageView
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:layout_width="110dp"
+                android:layout_height="110dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/meal_maestro_logo" />
         </androidx.cardview.widget.CardView>
@@ -67,6 +67,20 @@
                 android:textColor="@color/white"
                 android:textColorHint="@color/white" />
 
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/sign_up_username"
+                android:layout_marginHorizontal="40dp"
+                android:layout_marginVertical="0dp"
+                android:background="@drawable/round_border"
+                android:backgroundTint="@color/darkGrey"
+                android:gravity="center"
+                android:hint="Username"
+                android:padding="12dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/white" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -79,7 +93,6 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/sign_up_password"
                     android:layout_marginHorizontal="40dp"
-                    android:layout_marginVertical="5dp"
                     android:background="@drawable/round_border"
                     android:backgroundTint="@color/darkGrey"
                     android:gravity="center"
@@ -103,7 +116,6 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/sign_up_confirm_password"
                     android:layout_marginHorizontal="40dp"
-                    android:layout_marginVertical="5dp"
                     android:background="@drawable/round_border"
                     android:backgroundTint="@color/darkGrey"
                     android:gravity="center"
@@ -117,9 +129,9 @@
 
             <Button
                 android:layout_width="120dp"
-                android:layout_height="60dp"
+                android:layout_height="45dp"
                 android:id="@+id/sign_up_continue_btn"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="5dp"
                 android:backgroundTint="@color/green"
                 android:text="Continue"
                 android:textColor="@color/white" />
@@ -128,8 +140,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:padding="10dp"
-                android:text="Or sign up with" />
+                android:text="Or" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -137,28 +148,13 @@
                 android:gravity="center">
 
                 <ImageButton
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="190dp"
+                    android:layout_height="40dp"
                     android:id="@+id/google_btn"
                     android:layout_margin="10dp"
-                    android:background="@drawable/google"
+                    android:background="@drawable/android_light_rd_ctn"
                     android:contentDescription="google" />
 
-                <ImageButton
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:id="@+id/facebook_btn"
-                    android:layout_margin="10dp"
-                    android:background="@drawable/facebook"
-                    android:contentDescription="facebook" />
-
-                <ImageButton
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:id="@+id/x_btn"
-                    android:layout_margin="10dp"
-                    android:background="@drawable/x"
-                    android:contentDescription="X" />
             </LinearLayout>
 
             <Button
@@ -174,7 +170,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:lineHeight="17dp"
-                android:layout_marginVertical="10dp"
+                android:layout_marginVertical="20dp"
                 android:text="@string/copyRight"
                 android:textStyle="bold" />
 

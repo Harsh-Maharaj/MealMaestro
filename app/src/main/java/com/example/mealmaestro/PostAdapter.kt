@@ -96,9 +96,8 @@ class PostAdapter(
                 })
                 .into(imageView)
 
-            // Fetch the username from Firestore or Realtime Database
-            fetchUsernameFromFirestore(post.user_id, usernameTextView)
-            // Or use fetchUsernameFromRealtimeDatabase(post.user_id, usernameTextView) if needed
+            // Fetch the username from Realtime Database using the post's user_id
+            fetchUsernameFromRealtimeDatabase(post.user_id, usernameTextView)
 
             // Set timestamp text (e.g., "2 hours ago")
             post.created_at?.let {
@@ -292,30 +291,13 @@ class PostAdapter(
             }
         }
 
-        // Fetch username from Firestore
-        private fun fetchUsernameFromFirestore(userId: String, usernameTextView: TextView) {
-            val userRef = FirebaseFirestore.getInstance().collection("users").document(userId)
-
-            userRef.get().addOnSuccessListener { documentSnapshot ->
-                if (documentSnapshot.exists()) {
-                    val username = documentSnapshot.getString("name") ?: "Unknown"
-                    usernameTextView.text = username
-                } else {
-                    usernameTextView.text = "Unknown User"
-                }
-            }.addOnFailureListener { e ->
-                Log.e("PostAdapter", "Error fetching username from Firestore: ${e.message}")
-                usernameTextView.text = "Error"
-            }
-        }
-
         // Fetch username from Realtime Database
         private fun fetchUsernameFromRealtimeDatabase(userId: String, usernameTextView: TextView) {
             val userRef = FirebaseDatabase.getInstance().getReference("user").child(userId)
 
             userRef.get().addOnSuccessListener { dataSnapshot ->
                 if (dataSnapshot.exists()) {
-                    val username = dataSnapshot.child("name").getValue(String::class.java) ?: "Unknown"
+                    val username = dataSnapshot.child("username").getValue(String::class.java) ?: "Unknown"
                     usernameTextView.text = username
                 } else {
                     usernameTextView.text = "Unknown User"

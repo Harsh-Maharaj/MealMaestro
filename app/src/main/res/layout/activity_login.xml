@@ -38,7 +38,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="40dp"
+            android:layout_marginHorizontal="20dp"
             android:background="@drawable/round_border"
             android:backgroundTint="@color/lightGrey"
             android:gravity="center"
@@ -49,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="10dp"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp"
                 android:text="Login"
                 android:textSize="16sp"
@@ -107,7 +107,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="10dp"
-                android:text="Or Login with" />
+                android:text="Or" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -115,32 +115,17 @@
                 android:gravity="center">
 
                 <ImageButton
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="190dp"
+                    android:layout_height="40dp"
                     android:layout_margin="10dp"
-                    android:background="@drawable/google"
+                    android:background="@drawable/android_light_rd_ctn"
                     android:contentDescription="google"
                     android:id="@+id/google_btn"/>
 
-                <ImageButton
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:layout_margin="10dp"
-                    android:background="@drawable/facebook"
-                    android:contentDescription="facebook"
-                    android:id="@+id/facebook_btn"/>
-
-                <ImageButton
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:layout_margin="10dp"
-                    android:background="@drawable/x"
-                    android:contentDescription="X"
-                    android:id="@+id/x_btn"/>
             </LinearLayout>
 
             <Button
-                android:layout_width="wrap_content"
+                android:layout_width="150dp"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/green"
                 android:text="@string/newUser"
@@ -152,7 +137,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:lineHeight="17dp"
-                android:layout_marginVertical="10dp"
+                android:layout_marginVertical="20dp"
                 android:text="@string/copyRight"
                 android:textStyle="bold" />
 

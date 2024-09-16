@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.mealmaestro.Chats.ChatFriendsActivity
 import com.google.firebase.auth.FirebaseAuth
 
 class SplashActivity : AppCompatActivity() {
@@ -24,6 +25,7 @@ class SplashActivity : AppCompatActivity() {
         }
         supportActionBar?.hide()
         auth = FirebaseAuth.getInstance()
+
         Handler(Looper.getMainLooper()).postDelayed({
             if (auth.currentUser != null) {
                 startActivity(Intent(this@SplashActivity, MainActivity::class.java))

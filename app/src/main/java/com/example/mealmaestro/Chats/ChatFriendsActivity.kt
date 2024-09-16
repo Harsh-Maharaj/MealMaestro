@@ -42,7 +42,7 @@ class ChatFriendsActivity : AppCompatActivity() {
             insets
         }
 
-        val name = intent.getStringExtra("name")
+        val name = intent.getStringExtra("username")
         val receiverUid = intent.getStringExtra("uid")
         val icon = intent.getStringExtra("icon")
         val senderUid = FirebaseAuth.getInstance().currentUser!!.uid
@@ -67,14 +67,21 @@ class ChatFriendsActivity : AppCompatActivity() {
         // send message
         binding.sendMessage.setOnClickListener {
             val message = binding.textMessage.text.toString() // message written in the edit text
-            val messageObject = Message(message, senderUid) // create a message
 
-            dataBase.addFriendChatMessage(senderRoom!!, receiverRoom!!,messageObject) // send message to database
-            binding.textMessage.text.clear() // clear message text box
+            if (message.isNotEmpty()) {
+                val messageObject = Message(message, senderUid, receiverUid) // create a message
+
+                dataBase.addFriendChatMessage(
+                    senderRoom!!,
+                    receiverRoom!!,
+                    messageObject
+                ) // send message to database
+                binding.textMessage.text.clear() // clear message text box
+            }
         }
 
         // display message in recycler
-        dataBase.getFriendMessage(senderRoom!!,messageList, adapter)
+        dataBase.getFriendMessage(senderRoom!!, messageList, adapter)
 
         binding.chatBack.setOnClickListener {
             finish()

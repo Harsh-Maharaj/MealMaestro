@@ -36,12 +36,7 @@ class RecycleUserView : AppCompatActivity(){
 
         userList = ArrayList()
 
-        adapter = UsersAdapter(this@RecycleUserView, userList)/*, object : AddOrRemoveFriend{
-            override fun refreshFriendList() {
-                setResult(RESULT_OK) // Notify the calling activity that a friend has been added
-                finish() // Close this activity and return to RecycleUserFriends
-            }
-        })*/
+        adapter = UsersAdapter(this@RecycleUserView, userList)
         userRecyclerView = binding.recyclingUserView
         userRecyclerView.layoutManager = LinearLayoutManager(this@RecycleUserView)
         userRecyclerView.adapter = adapter
