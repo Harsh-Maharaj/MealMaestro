@@ -1,24 +1,27 @@
 package com.example.mealmaestro
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.ThemedSpinnerAdapter.Helper
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
+import com.example.mealmaestro.Helper.DataBase
 import com.example.mealmaestro.databinding.ActivityMainBinding
 import com.example.mealmaestro.users.RecycleUserFriends
-import com.example.mealmaestro.users.RecycleUserView
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
@@ -26,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var drawerLayout: DrawerLayout
+    private lateinit var dataBase: DataBase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,6 +100,12 @@ class MainActivity : AppCompatActivity() {
 
         // Get FCM Token for messaging notifications
         getFCMToken()
+        // set permission for android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
+            }
+        }
     }
 
     override fun onBackPressed() {
@@ -108,9 +118,14 @@ class MainActivity : AppCompatActivity() {
 
     // ================ FOR MESSAGE NOTIFICATIONS ==================================================
     fun getFCMToken() {
+        dataBase = DataBase()
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val token = task.result
+                val currentUser = FirebaseAuth.getInstance().currentUser?.uid
+
+                if(currentUser != null)
+                    dataBase.addFCMToken(token, currentUser)
                 Log.i("My Token", token)
             } else {
                 Log.e("Token error", "fail to retrieve FCM token", task.exception)
