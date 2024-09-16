@@ -2,6 +2,7 @@ package com.example.mealmaestro
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,8 +20,11 @@ import com.bumptech.glide.request.target.Target
 import com.example.mealmaestro.Helper.Comment
 import com.example.mealmaestro.Helper.Post
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class PostAdapter(
     private val context: Context,
@@ -53,9 +57,11 @@ class PostAdapter(
         private val recyclerViewComments: RecyclerView = itemView.findViewById(R.id.recycler_view_comments)
         private val editTextComment: TextView = itemView.findViewById(R.id.edit_text_comment)
         private val buttonPostComment: TextView = itemView.findViewById(R.id.button_post_comment)
+        private val usernameTextView: TextView = itemView.findViewById(R.id.username)
+        private val postTimeTextView: TextView = itemView.findViewById(R.id.post_time)
 
         fun bind(post: Post) {
-            // Load the post image using Glide with dynamic height adjustment
+            // Load the post image using Glide
             Glide.with(context)
                 .load(post.image_url)
                 .fitCenter()
@@ -90,7 +96,14 @@ class PostAdapter(
                 })
                 .into(imageView)
 
-            // Show "View More" button if the caption is long
+            // Fetch the username from Realtime Database
+            fetchUsernameFromRealtimeDatabase(post.user_id, usernameTextView)
+
+            // Set timestamp and other post details
+            post.created_at?.let {
+                postTimeTextView.text = getTimeAgo(it.toDate().time)
+            }
+
             if (post.caption.length > 100) {
                 buttonViewMore.visibility = View.VISIBLE
                 textViewCaption.maxLines = if (post.isCaptionExpanded) Int.MAX_VALUE else 3
@@ -100,44 +113,39 @@ class PostAdapter(
                 textViewCaption.maxLines = Int.MAX_VALUE
             }
 
-            // Handle View More button click
             buttonViewMore.setOnClickListener {
                 post.isCaptionExpanded = !post.isCaptionExpanded
                 notifyItemChanged(adapterPosition)
             }
 
-            // Set caption text
             textViewCaption.text = post.caption
 
-            // Set up the comment RecyclerView and Adapter
             val commentAdapter = CommentAdapter(context, post.comments)
-            recyclerViewComments.layoutManager = LinearLayoutManager(context)
+            recyclerViewComments.layoutManager = LinearLayoutManager(context).apply {
+                isSmoothScrollbarEnabled = true
+            }
             recyclerViewComments.adapter = commentAdapter
+            recyclerViewComments.setHasFixedSize(true)
 
-            // Update like button and like count
             updateLikeButton(post)
             likeCount.text = "${post.likes.size} likes"
 
-            // Handle like button click
             buttonLike.setOnClickListener {
                 toggleLike(post)
             }
 
-            // Toggle visibility of comments based on the post.isCommentsVisible flag
-            recyclerViewComments.visibility = if (post.isCommentsVisible) View.VISIBLE else View.GONE
+            recyclerViewComments.visibility =
+                if (post.isCommentsVisible) View.VISIBLE else View.GONE
 
-            // Handle comment icon click to toggle the comments visibility
             buttonComment.setOnClickListener {
                 post.isCommentsVisible = !post.isCommentsVisible
                 notifyItemChanged(adapterPosition)
             }
 
-            // Post comment functionality
             buttonPostComment.setOnClickListener {
                 postComment(post)
             }
 
-            // Handle saving and unsaving the post
             buttonSave.setOnClickListener {
                 if (post.isSaved) {
                     unsavePost(post)
@@ -147,30 +155,49 @@ class PostAdapter(
             }
         }
 
+        private fun fetchUsernameFromRealtimeDatabase(userId: String, usernameTextView: TextView) {
+            if (userId.isEmpty()) {
+                usernameTextView.text = "Unknown User"
+                return
+            }
+
+            val userRef = FirebaseDatabase.getInstance("https://mealmaestro-46c0d-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("user")
+                .child(userId)
+
+            userRef.get().addOnSuccessListener { dataSnapshot ->
+                if (dataSnapshot.exists()) {
+                    val username = dataSnapshot.child("username").getValue(String::class.java)
+                    usernameTextView.text = username ?: "Unknown"
+                } else {
+                    usernameTextView.text = "Unknown User"
+                }
+            }.addOnFailureListener { e ->
+                Log.e("PostAdapter", "Error fetching username from Realtime Database: ${e.message}")
+                usernameTextView.text = "Error"
+            }
+        }
+
         private fun toggleLike(post: Post) {
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
             val postRef = FirebaseFirestore.getInstance().collection("posts").document(post.postId)
 
             if (post.likes.containsKey(userId)) {
-                // Unlike the post (remove user's like)
                 post.likes.remove(userId)
-                postRef.update("likes.$userId", FieldValue.delete()) // Remove the like from Firestore
+                postRef.update("likes.$userId", FieldValue.delete())
                     .addOnSuccessListener {
-                        // Update the local post object and UI
                         updateLikeButton(post)
-                        likeCount.text = "${post.likes.size} likes" // Update the like count text
+                        likeCount.text = "${post.likes.size} likes"
                     }
                     .addOnFailureListener {
                         Toast.makeText(context, "Failed to unlike post.", Toast.LENGTH_SHORT).show()
                     }
             } else {
-                // Like the post (add user's like)
                 post.likes[userId] = true
-                postRef.update("likes.$userId", true) // Add the like to Firestore
+                postRef.update("likes.$userId", true)
                     .addOnSuccessListener {
-                        // Update the local post object and UI
                         updateLikeButton(post)
-                        likeCount.text = "${post.likes.size} likes" // Update the like count text
+                        likeCount.text = "${post.likes.size} likes"
                     }
                     .addOnFailureListener {
                         Toast.makeText(context, "Failed to like post.", Toast.LENGTH_SHORT).show()
@@ -181,11 +208,7 @@ class PostAdapter(
         private fun updateLikeButton(post: Post) {
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
             val isLiked = post.likes.containsKey(currentUserId)
-            if (isLiked) {
-                buttonLike.setImageResource(R.drawable.ic_liked)  // Change to red liked icon
-            } else {
-                buttonLike.setImageResource(R.drawable.ic_like)  // Change to default like icon
-            }
+            buttonLike.setImageResource(if (isLiked) R.drawable.ic_liked else R.drawable.ic_like)
         }
 
         private fun postComment(post: Post) {
@@ -257,6 +280,20 @@ class PostAdapter(
             val icon = if (isSaved) R.drawable.ic_save else R.drawable.ic_unsave
             buttonSave.setImageResource(icon)
         }
+
+        private fun getTimeAgo(time: Long): String {
+            val diff = System.currentTimeMillis() - time
+            val seconds = diff / 1000
+            val minutes = seconds / 60
+            val hours = minutes / 60
+            val days = hours / 24
+
+            return when {
+                seconds < 60 -> "Just now"
+                minutes < 60 -> "$minutes minute(s) ago"
+                hours < 24 -> "$hours hour(s) ago"
+                else -> SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(time)
+            }
+        }
     }
 }
-
