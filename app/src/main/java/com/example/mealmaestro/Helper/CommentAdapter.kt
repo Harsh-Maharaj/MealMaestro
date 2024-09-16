@@ -1,6 +1,7 @@
 package com.example.mealmaestro
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mealmaestro.Helper.Comment
 import com.example.mealmaestro.R
+import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -52,13 +54,15 @@ class CommentAdapter(
     }
 
     inner class CommentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val textViewComment: TextView = itemView.findViewById(R.id.comment_text)
-        val textViewUsername: TextView = itemView.findViewById(R.id.comment_username)
-        val textViewTimestamp: TextView = itemView.findViewById(R.id.comment_timestamp)
+        private val textViewComment: TextView = itemView.findViewById(R.id.comment_text)
+        private val textViewUsername: TextView = itemView.findViewById(R.id.comment_username)
+        private val textViewTimestamp: TextView = itemView.findViewById(R.id.comment_timestamp)
 
         fun bind(comment: Comment) {
             textViewComment.text = comment.text
-            textViewUsername.text = comment.username
+
+            // Fetch and set the username from Realtime Database using userId
+            fetchUsernameFromRealtimeDatabase(comment.userId, textViewUsername)
 
             // Format the Long timestamp to a readable String
             val formattedDate = getFormattedDate(comment.timestamp)
@@ -69,6 +73,30 @@ class CommentAdapter(
         private fun getFormattedDate(timestamp: Long): String {
             val sdf = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault())
             return sdf.format(Date(timestamp))
+        }
+
+        // Fetch the username from Realtime Database
+        private fun fetchUsernameFromRealtimeDatabase(userId: String, textViewUsername: TextView) {
+            if (userId.isEmpty()) {
+                textViewUsername.text = "Unknown User"
+                return
+            }
+
+            val userRef = FirebaseDatabase.getInstance("https://mealmaestro-46c0d-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("user")
+                .child(userId)
+
+            userRef.get().addOnSuccessListener { dataSnapshot ->
+                if (dataSnapshot.exists()) {
+                    val username = dataSnapshot.child("username").getValue(String::class.java)
+                    textViewUsername.text = username ?: "Unknown"
+                } else {
+                    textViewUsername.text = "Unknown User"
+                }
+            }.addOnFailureListener { e ->
+                Log.e("CommentAdapter", "Error fetching username from Realtime Database: ${e.message}")
+                textViewUsername.text = "Error"
+            }
         }
     }
 }
