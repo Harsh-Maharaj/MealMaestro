@@ -16,16 +16,15 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import okhttp3.OkHttpClient
-import org.json.JSONObject
-import java.util.UUID
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.util.UUID
 import java.io.IOException
-
 
 class DataBase(private val context: Context?) {
     constructor() : this(null)
@@ -117,29 +116,6 @@ class DataBase(private val context: Context?) {
         })
     }
 
-    /*
-    fun getUsersFromDataBase(
-        userList: ArrayList<Users>,
-        adapter: UsersAdapter,
-        callback: DataFetchCallback
-    ) {
-        dataBaseRef.child("user").addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                userList.clear()
-                for (user in snapshot.children) {
-                    val currentUser = user.getValue(Users::class.java)
-                    if (currentUser!!.uid != auth.currentUser!!.uid) {
-                        userList.add(currentUser)
-                    }
-                }
-                adapter.notifyDataSetChanged()
-                callback.onDataFetched()
-            }
-
-            override fun onCancelled(error: DatabaseError) {}
-        })
-    }
-*/
     // -------------------- Friends Methods --------------------------
 
     fun getFriendsList(friendList: ArrayList<Users>, adapter: FriendsAdapter) {
@@ -155,8 +131,11 @@ class DataBase(private val context: Context?) {
                     for (friendId in friendsIds) {
                         dataBaseRef.child("user").child(friendId).get()
                             .addOnSuccessListener { userSnapshot ->
-                                val user = userSnapshot.getValue(Users::class.java)
-                                if (user != null) {
+                                val userData = userSnapshot.getValue() as Map<String, Any>?
+                                if (userData != null) {
+                                    val uid = userData["uid"] as? String ?: ""
+                                    val username = userData["username"] as? String ?: ""
+                                    val user = Users(uid = uid, username = username)
                                     friendList.add(user)
                                 }
                                 friendsRetrieved++
@@ -238,7 +217,6 @@ class DataBase(private val context: Context?) {
             }
     }
 
-
     // Function to trigger FCM notification to a friend using Realtime Database
     private fun triggerNotificationToFriend(friendUid: String, message: String) {
         // Get the friends FCM token and details from the Realtime Database
@@ -310,7 +288,7 @@ class DataBase(private val context: Context?) {
             }
         })
     }
-//=============================== END NOTIFICATION =================================================
+    //=============================== END NOTIFICATION =================================================
 
     fun getFriendMessage(
         senderRoom: String,
@@ -351,29 +329,39 @@ class DataBase(private val context: Context?) {
         val postId = UUID.randomUUID().toString()
         val postImageRef = storageRef.child("postImages/$postId.jpg")
 
-        postImageRef.putFile(imageUri).addOnSuccessListener {
-            postImageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                val post = Post(
-                    postId = postId,
-                    user_id = uid,
-                    image_url = downloadUri.toString(),
-                    caption = caption,
-                    likes = mutableMapOf(), // Initialize with a mutable map
-                    isPublic = true // Set post visibility to public
-                )
-                dataBaseRef.child("posts").child(postId).setValue(post)
-                    .addOnSuccessListener {
-                        Toast.makeText(context, "Post added successfully!", Toast.LENGTH_SHORT).show()
-                    }.addOnFailureListener { e ->
-                        Toast.makeText(context, "Failed to add post: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
+        // First, fetch the username from the Realtime Database for the user
+        dataBaseRef.child("user").child(uid).child("username").get().addOnSuccessListener { snapshot ->
+            val username = snapshot.getValue(String::class.java) ?: "Unknown"
+
+            postImageRef.putFile(imageUri).addOnSuccessListener {
+                postImageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                    val post = Post(
+                        postId = postId,
+                        user_id = uid,
+                        username = username,  // Add the username here
+                        image_url = downloadUri.toString(),
+                        caption = caption,
+                        likes = mutableMapOf(), // Initialize with a mutable map
+                        isPublic = true // Set post visibility to public
+                    )
+                    dataBaseRef.child("posts").child(postId).setValue(post)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Post added successfully!", Toast.LENGTH_SHORT).show()
+                        }.addOnFailureListener { e ->
+                            Toast.makeText(context, "Failed to add post: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                }.addOnFailureListener {
+                    Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
+                }
             }.addOnFailureListener {
-                Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener {
-            Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Failed to get username", Toast.LENGTH_SHORT).show()
         }
     }
+
+
 
 
     fun likePost(postId: String, userId: String, callback: (Boolean) -> Unit) {
@@ -465,4 +453,7 @@ class DataBase(private val context: Context?) {
             }
         }
     }
+
+
+
 }

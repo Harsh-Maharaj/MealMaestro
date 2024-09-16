@@ -2,35 +2,66 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:padding="8dp"
+    android:padding="12dp"
     android:background="@android:color/white">
 
-    <!-- Username and Comment Text -->
-    <TextView
-        android:id="@+id/comment_username"
-        android:layout_width="wrap_content"
+    <!-- User Info Row: Image and Comment -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Username"
-        android:textStyle="bold"
-        android:textSize="14sp"
-        android:layout_marginBottom="4dp"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="8dp">
 
-    <TextView
-        android:id="@+id/comment_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="This is a comment"
-        android:textSize="14sp"
-        android:layout_marginBottom="8dp"/>
+        <!-- User Profile Image -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/comment_user_image"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="12dp"
+            android:src="@drawable/person"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/CircleImageView" />
 
-    <!-- Timestamp Section (No Like Button) -->
+        <!-- Username and Comment Text -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Username -->
+            <TextView
+                android:id="@+id/comment_username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Username"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="@android:color/black" />
+
+            <!-- Comment Text -->
+            <TextView
+                android:id="@+id/comment_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="This is a comment"
+                android:textSize="14sp"
+                android:textColor="@android:color/black"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Timestamp -->
     <TextView
         android:id="@+id/comment_timestamp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Sep 15, 11:13 AM"
         android:textSize="12sp"
-        android:textColor="@android:color/darker_gray"/>
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginTop="4dp"/>
 
 </LinearLayout>
