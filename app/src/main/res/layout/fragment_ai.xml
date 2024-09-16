@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -14,8 +13,13 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:padding="12dp"
         app:cardElevation="8dp"
+        app:cardCornerRadius="12dp"
+        app:strokeColor="@color/purpleLight"
+        app:strokeWidth="1dp"
         android:backgroundTint="@color/white">
 
         <LinearLayout
@@ -23,22 +27,32 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Label for Question Input -->
             <TextView
                 android:id="@+id/idTVQuestion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Your Question:"
+                android:text="Your Question"
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:paddingBottom="8dp"
-                android:textColor="@color/black"/>
+                android:paddingStart="8dp"
+                android:textColor="@color/black" />
 
+            <!-- Input for Question -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Ask something..."
                 app:boxStrokeColor="@color/purpleLight"
-                app:boxBackgroundMode="outline">
+                app:boxStrokeWidth="2dp"
+                app:boxStrokeWidthFocused="3dp"
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:hintTextColor="@color/purpleLight">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etQuestion"
@@ -47,7 +61,9 @@
                     android:inputType="text"
                     android:imeOptions="actionSend"
                     android:textColor="@color/black"
-                    android:textColorHint="@color/purpleLight"/>
+                    android:textColorHint="@color/purpleLight"
+                    android:padding="12dp"
+                    android:backgroundTint="@android:color/transparent"/>
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -57,24 +73,47 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp">
 
-        <com.google.android.material.card.MaterialCardView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            app:cardElevation="8dp"
-            android:backgroundTint="@color/white">
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/txtResponse"
+            <!-- AI Text Response -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="AI Response will appear here"
-                android:textSize="18sp"
-                android:textColor="@color/black"
-                android:textStyle="bold"/>
-        </com.google.android.material.card.MaterialCardView>
+                android:padding="16dp"
+                app:cardElevation="8dp"
+                app:cardCornerRadius="12dp"
+                app:strokeColor="@color/purpleLight"
+                app:strokeWidth="1dp"
+                android:backgroundTint="@color/white">
+
+                <TextView
+                    android:id="@+id/txtResponse"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="AI Response will appear here"
+                    android:textSize="16sp"
+                    android:textColor="@color/black"
+                    android:padding="4dp"
+                    android:textAlignment="center"
+                    android:textStyle="bold"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ImageView to display AI's image response -->
+            <ImageView
+                android:id="@+id/ai_image_response"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                android:scaleType="centerCrop"/>
+        </LinearLayout>
     </ScrollView>
 
     <!-- Button to Save the Response to Favorites -->
@@ -82,6 +121,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:orientation="horizontal">
 
         <!-- Heart Button -->
@@ -105,7 +146,8 @@
             android:backgroundTint="@color/purpleLight"
             android:text="Ask AI"
             android:textColor="@color/white"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            app:cornerRadius="12dp"/>
     </LinearLayout>
 
 </LinearLayout>
