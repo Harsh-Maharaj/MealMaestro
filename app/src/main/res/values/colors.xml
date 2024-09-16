@@ -15,6 +15,8 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorAccent">#03DAC5</color>
     <color name="cardBackground">#F5F5F5</color>
+    <color name="focused_background">#E0E0E0</color> <!-- Light gray or any color you prefer -->
+
 
 
 
