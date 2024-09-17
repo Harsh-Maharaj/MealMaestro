@@ -1,5 +1,6 @@
 package com.example.mealmaestro
 
+import android.app.AlertDialog
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.Log
@@ -17,7 +18,6 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.example.mealmaestro.Helper.Comment
 import com.example.mealmaestro.Helper.Post
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
@@ -53,6 +53,7 @@ class PostAdapter(
         private val buttonComment: ImageButton = itemView.findViewById(R.id.button_comment)
         private val buttonSave: ImageButton = itemView.findViewById(R.id.button_save)
         private val buttonLike: ImageButton = itemView.findViewById(R.id.button_like)
+        private val buttonShare: ImageButton = itemView.findViewById(R.id.button_share)
         private val likeCount: TextView = itemView.findViewById(R.id.like_count)
         private val recyclerViewComments: RecyclerView = itemView.findViewById(R.id.recycler_view_comments)
         private val editTextComment: TextView = itemView.findViewById(R.id.edit_text_comment)
@@ -152,6 +153,10 @@ class PostAdapter(
                 } else {
                     savePost(post)
                 }
+            }
+
+            buttonShare.setOnClickListener {
+                showFriendsDialog(post)
             }
         }
 
@@ -294,6 +299,60 @@ class PostAdapter(
                 hours < 24 -> "$hours hour(s) ago"
                 else -> SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(time)
             }
+        }
+
+        private fun showFriendsDialog(post: Post) {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+            val friendsRef = FirebaseDatabase.getInstance()
+                .getReference("user")
+                .child(userId)
+                .child("friends")
+
+            friendsRef.get().addOnSuccessListener { dataSnapshot ->
+                val friendsList = mutableListOf<String>()
+                dataSnapshot.children.forEach { friendSnapshot ->
+                    friendSnapshot.getValue(String::class.java)?.let { friendsList.add(it) }
+                }
+
+                // Inflate the custom dialog layout
+                val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_friends_list, null)
+                val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recycler_view_friends)
+
+                // Set up RecyclerView
+                recyclerView.layoutManager = LinearLayoutManager(context)
+                recyclerView.adapter = FriendsListAdapter(friendsList) { selectedFriendId ->
+                    sharePostWithFriend(post, selectedFriendId)
+                }
+
+                AlertDialog.Builder(context)
+                    .setView(dialogView)
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }.addOnFailureListener {
+                Toast.makeText(context, "Failed to fetch friends", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        private fun sharePostWithFriend(post: Post, friendId: String) {
+            val message = hashMapOf(
+                "sender" to FirebaseAuth.getInstance().currentUser?.uid,
+                "receiver" to friendId,
+                "message" to "Check out this post!",
+                "postId" to post.postId,
+                "timestamp" to System.currentTimeMillis()
+            )
+
+            val messagesRef = FirebaseFirestore.getInstance()
+                .collection("messages")
+                .document()
+
+            messagesRef.set(message)
+                .addOnSuccessListener {
+                    Toast.makeText(context, "Post shared!", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(context, "Failed to share post", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 }
