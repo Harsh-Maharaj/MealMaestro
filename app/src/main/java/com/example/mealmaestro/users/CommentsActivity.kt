@@ -7,12 +7,13 @@ import android.widget.EditText
 import com.example.mealmaestro.CommentAdapter
 import com.example.mealmaestro.Helper.Comment
 import com.example.mealmaestro.R
+import com.google.android.material.button.MaterialButton
 
 class CommentsActivity : AppCompatActivity() {
 
     private lateinit var commentAdapter: CommentAdapter
     private lateinit var commentsList: RecyclerView
-    private lateinit var postButton: Button
+    private lateinit var postButton: MaterialButton // Changed to MaterialButton
     private lateinit var commentInput: EditText
     private var comments: MutableList<Comment> = mutableListOf()
 
@@ -67,3 +68,4 @@ class CommentsActivity : AppCompatActivity() {
         commentAdapter.notifyDataSetChanged()
     }
 }
+
