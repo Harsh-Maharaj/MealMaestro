@@ -5,11 +5,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
+import android.widget.EditText
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.ThemedSpinnerAdapter.Helper
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
@@ -21,7 +23,6 @@ import com.example.mealmaestro.users.RecycleUserFriends
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
@@ -100,12 +101,29 @@ class MainActivity : AppCompatActivity() {
 
         // Get FCM Token for messaging notifications
         getFCMToken()
+
         // set permission for android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
             }
         }
+
+        // Setup search bar handling
+        val searchBar: EditText = binding.searchBar
+        searchBar.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                val searchQuery = s.toString()
+                // Pass the search query to the HomeFragment
+                val currentFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)?.childFragmentManager?.fragments?.get(0)
+                if (currentFragment is HomeFragment) {
+                    currentFragment.performSearch(searchQuery)
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
     }
 
     override fun onBackPressed() {
@@ -124,7 +142,7 @@ class MainActivity : AppCompatActivity() {
                 val token = task.result
                 val currentUser = FirebaseAuth.getInstance().currentUser?.uid
 
-                if(currentUser != null)
+                if (currentUser != null)
                     dataBase.addFCMToken(token, currentUser)
                 Log.i("My Token", token)
             } else {

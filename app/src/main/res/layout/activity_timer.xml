@@ -80,20 +80,24 @@
                 android:progress="50"
                 android:progressDrawable="@drawable/circular_progress_bar" />
 
+            <!-- Time Input Fields (Hours, Minutes, Seconds) -->
             <TextView
                 android:id="@+id/timeTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignStart="@id/circularProgressBar"
+                android:layout_alignTop="@id/circularProgressBar"
+                android:layout_alignEnd="@id/circularProgressBar"
+                android:layout_alignBottom="@id/circularProgressBar"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="-1dp"
+                android:layout_marginEnd="-16dp"
+                android:layout_marginBottom="1dp"
                 android:gravity="center"
                 android:text="00:00:00"
                 android:textSize="40sp"
-                android:textStyle="bold"
-                android:layout_alignStart="@id/circularProgressBar"
-                android:layout_alignEnd="@id/circularProgressBar"
-                android:layout_alignTop="@id/circularProgressBar"
-                android:layout_alignBottom="@id/circularProgressBar" />
+                android:textStyle="bold" />
 
-            <!-- Time Input Fields (Hours, Minutes, Seconds) -->
             <LinearLayout
                 android:id="@+id/timeInputLayout"
                 android:layout_width="wrap_content"
