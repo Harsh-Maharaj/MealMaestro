@@ -434,15 +434,29 @@ class DataBase(private val context: Context?) {
 
     // -------------------- File Metadata --------------------------
 
-    fun saveFileMetadata(uid: String, fileUrl: String, mimeType: String?, folder: String) {
+    // Function to save file metadata for a user in the Firebase Realtime Database
+    fun saveFileMetadata(
+        uid: String, // The unique ID of the user who owns the file
+        fileUrl: String, // The URL of the uploaded file (usually from Firebase Storage)
+        mimeType: String?, // The MIME type of the file (e.g., image/jpeg, application/pdf), can be null
+        folder: String // The folder or directory where the file is stored
+    ) {
+        // Create a map that stores the metadata for the file
         val metadata = mapOf(
-            "url" to fileUrl,
-            "mimeType" to mimeType,
-            "folder" to folder,
-            "timestamp" to System.currentTimeMillis()
+            "url" to fileUrl, // Store the file URL in the metadata
+            "mimeType" to mimeType, // Store the MIME type of the file
+            "folder" to folder, // Store the folder where the file is located
+            "timestamp" to System.currentTimeMillis() // Store the current timestamp (time when the file was saved)
         )
-        dataBaseRef.child("user").child(uid).child("files").push().setValue(metadata)
+
+        // Save the metadata to the Firebase Realtime Database under the user's "files" node
+        dataBaseRef.child("user") // Access the "user" node in the database
+            .child(uid) // Navigate to the specific user by their unique ID
+            .child("files") // Access or create the "files" node for storing file metadata
+            .push() // Generate a new unique key for the file metadata entry
+            .setValue(metadata) // Save the metadata map as the value under the generated key
     }
+
 
     // -------------------- Posts Methods --------------------------
 
