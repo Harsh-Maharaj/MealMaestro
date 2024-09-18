@@ -24,15 +24,12 @@ import java.io.IOException
 
 class AiFragment : Fragment() {
 
-    // OkHttpClient instance used for making network requests
     private val client = OkHttpClient()
-    // UI components (TextViews and EditText) for displaying question, response, and input
     private lateinit var txtResponse: TextView
     private lateinit var idTVQuestion: TextView
     private lateinit var etQuestion: TextInputEditText
     private lateinit var aiImageResponse: ImageView
     private lateinit var btnSubmitQuestion: MaterialButton // Button to trigger the AI request
-    // Holds the OpenAI API key fetched from Firebase Remote Config
     private lateinit var apiKey: String
 
     // Initialize Firebase Remote Config
@@ -40,12 +37,10 @@ class AiFragment : Fragment() {
         Firebase.remoteConfig
     }
 
-    // This method is called to inflate the fragment's view and set up UI elements
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Initialize the UI components
         val view = inflater.inflate(R.layout.fragment_ai, container, false)
 
         etQuestion = view.findViewById(R.id.etQuestion)
@@ -62,26 +57,15 @@ class AiFragment : Fragment() {
             minimumFetchIntervalInSeconds = 3600 // 1 hour interval
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
-        // Set default values for Remote Config
         remoteConfig.setDefaultsAsync(mapOf("openai_api_key" to ""))
 
         // Fetch the API key from Remote Config
         fetchApiKey()
 
         // Submit the query when pressing the "send" button on the keyboard
-        // Set up the action listener for when the "Send" button on the keyboard is pressed
         etQuestion.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEND) {
                 handleQuerySubmit()
-                val question = etQuestion.text.toString().trim()
-                if (question.isNotEmpty()) {
-                    // Display a loading message while waiting for a response
-                    txtResponse.text = "Please wait..."
-                    getResponse(question) { response ->
-                        // Update the response on the UI thread
-                        activity?.runOnUiThread { txtResponse.text = response }
-                    }
-                }
                 true
             } else false
         }
@@ -99,11 +83,9 @@ class AiFragment : Fragment() {
         remoteConfig.fetchAndActivate()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Store the API key retrieved from Firebase
                     apiKey = remoteConfig.getString("openai_api_key")
                     Log.d("AiFragment", "API Key fetched successfully: $apiKey")
                 } else {
-                    // Log an error and display a message if fetching the API key fails
                     Log.e("AiFragment", "Failed to fetch API key from Firebase")
                     txtResponse.text = "Failed to fetch API key."
                 }
@@ -145,19 +127,14 @@ class AiFragment : Fragment() {
 
     // Function to request AI response
     private fun getResponse(question: String, callback: (String, String?) -> Unit) {
-    // Send a POST request to OpenAI's API to get a response based on the user's question
-    private fun getResponse(question: String, callback: (String) -> Unit) {
-        // Display the user's question
         idTVQuestion.text = question
         etQuestion.setText("")
 
-        // Check if the API key has been initialized or is empty
         if (!::apiKey.isInitialized || apiKey.isEmpty()) {
             callback("API Key not found.", null)
             return
         }
 
-        // Build the JSON request body to send to OpenAI's API
         val requestBody = """
             {
                 "model": "gpt-4o",
@@ -169,7 +146,6 @@ class AiFragment : Fragment() {
             }
         """.trimIndent()
 
-        // Create the HTTP request with the appropriate headers and request body
         val request = Request.Builder()
             .url("https://api.openai.com/v1/chat/completions")
             .addHeader("Content-Type", "application/json")
@@ -177,12 +153,9 @@ class AiFragment : Fragment() {
             .post(requestBody.toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
 
-        // Execute the HTTP request asynchronously
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 callback("Failed to connect: ${e.message}", null)
-                // Handle network or connection failure
-                callback("Failed to connect: ${e.message}")
                 Log.e("API_ERROR", "API call failed", e)
             }
 
@@ -191,7 +164,6 @@ class AiFragment : Fragment() {
                     val body = resp.body?.string()
                     if (resp.isSuccessful && body != null) {
                         try {
-                            // Parse the response body and extract the generated response
                             val jsonObject = JSONObject(body)
                             val jsonArray = jsonObject.getJSONArray("choices")
                             val textResult = jsonArray.getJSONObject(0).getJSONObject("message").getString("content")
@@ -206,17 +178,12 @@ class AiFragment : Fragment() {
                             }
 
                             callback(textResult, imageUrl)
-                            callback(textResult)// Return the AI's response via callback
                         } catch (e: Exception) {
                             callback("Error parsing response: ${e.localizedMessage}", null)
-                            // Handle errors while parsing the response
-                            callback("Error parsing response: ${e.localizedMessage}")
                             Log.e("API_ERROR", "Response parsing failed", e)
                         }
                     } else {
                         callback("Error: ${resp.message} - ${body ?: "No response body"}", null)
-                        // Handle cases where the API responds with an error
-                        callback("Error: ${resp.message} - ${body ?: "No response body"}")
                         Log.e("API_ERROR", "Server responded with error: ${resp.message} - ${body ?: "No response body"}")
                     }
                 }
