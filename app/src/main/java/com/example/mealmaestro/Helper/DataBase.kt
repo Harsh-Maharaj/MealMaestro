@@ -126,7 +126,8 @@ class DataBase(private val context: Context?) {
                             // Create a new Users object from the parsed data
                             val currentUser = Users(
                                 uid = userData["uid"] as? String ?: "", // Get the user's UID
-                                username = userData["username"] as? String ?: "" // Get the user's username
+                                username = userData["username"] as? String
+                                    ?: "" // Get the user's username
                             )
                             // Only add users that are not the currently authenticated user
                             if (currentUser.uid != auth.currentUser!!.uid) {
@@ -172,7 +173,8 @@ class DataBase(private val context: Context?) {
 
                     // Retrieve the list of friend IDs from the database, or an empty list if none exist
                     val friendsIds =
-                        snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {}) ?: arrayListOf()
+                        snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {})
+                            ?: arrayListOf()
 
                     // Iterate through the list of friend IDs
                     for (friendId in friendsIds) {
@@ -213,7 +215,8 @@ class DataBase(private val context: Context?) {
                 // Called if the retrieval of the friends list is canceled or fails
                 override fun onCancelled(error: DatabaseError) {
                     // Show a toast message if there's an error retrieving the friends list
-                    Toast.makeText(context, "Failed to retrieve friends list.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Failed to retrieve friends list.", Toast.LENGTH_SHORT)
+                        .show()
                 }
             })
     }
@@ -229,7 +232,9 @@ class DataBase(private val context: Context?) {
         // Retrieve the current friends list from the database
         currentUserRef.get().addOnSuccessListener { snapshot ->
             // Convert the retrieved data to an ArrayList of friend IDs, or create an empty list if none exist
-            val friendsList = snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {}) ?: arrayListOf()
+            val friendsList =
+                snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {})
+                    ?: arrayListOf()
 
             // Check if the new friend is already in the user's friends list
             if (!friendsList.contains(newFriendId)) {
@@ -240,10 +245,15 @@ class DataBase(private val context: Context?) {
                 currentUserRef.setValue(friendsList)
                     .addOnSuccessListener {
                         // Show a toast message indicating that the friend was successfully added
-                        Toast.makeText(context, "Friend added successfully!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Friend added successfully!", Toast.LENGTH_SHORT)
+                            .show()
                     }.addOnFailureListener { e ->
                         // Show a toast message if there's an error adding the friend
-                        Toast.makeText(context, "Error adding friend: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Error adding friend: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
             } else {
                 // If the friend is already in the list, show a toast message
@@ -263,7 +273,9 @@ class DataBase(private val context: Context?) {
         // Retrieve the current friends list from the database
         currentUserRef.get().addOnSuccessListener { snapshot ->
             // Convert the retrieved data to an ArrayList of friend IDs, or create an empty list if none exist
-            val friendsList = snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {}) ?: arrayListOf()
+            val friendsList =
+                snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {})
+                    ?: arrayListOf()
 
             // Check if the friend to remove is in the user's friends list
             if (friendsList.contains(friendToRemove)) {
@@ -274,10 +286,15 @@ class DataBase(private val context: Context?) {
                 currentUserRef.setValue(friendsList)
                     .addOnSuccessListener {
                         // Show a toast message indicating that the friend was successfully removed
-                        Toast.makeText(context, "Friend removed successfully!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Friend removed successfully!", Toast.LENGTH_SHORT)
+                            .show()
                     }.addOnFailureListener { e ->
                         // Show a toast message if there's an error removing the friend
-                        Toast.makeText(context, "Error removing friend: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Error removing friend: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
             } else {
                 // If the friend is not in the list, show a toast message
@@ -302,7 +319,10 @@ class DataBase(private val context: Context?) {
                 dataBaseRef.child("friendChat").child(receiverRoom).child("messages").push()
                     .setValue(messageObject).addOnSuccessListener {
                         // After storing the message in both rooms, trigger a notification to the friend
-                        triggerNotificationToFriend(messageObject.receiverUid!!, messageObject.message)
+                        triggerNotificationToFriend(
+                            messageObject.receiverUid!!,
+                            messageObject.message
+                        )
                     }
             }
     }
@@ -338,7 +358,13 @@ class DataBase(private val context: Context?) {
     }
 
     // Function to send the actual Firebase Cloud Messaging (FCM) notification
-    private fun sendFCMNotification(friendFcmToken: String, friendName: String, friendUid: String, friendIcon: String, message: String) {
+    private fun sendFCMNotification(
+        friendFcmToken: String,
+        friendName: String,
+        friendUid: String,
+        friendIcon: String,
+        message: String
+    ) {
         // Build the JSON payload for the FCM notification
         val jsonObject = JSONObject().apply {
             // Create the notification object that holds the title and body of the notification
@@ -363,13 +389,17 @@ class DataBase(private val context: Context?) {
 
         // Define the media type for the request as JSON
         val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
-        val requestBody = jsonObject.toString().toRequestBody(mediaType) // Convert JSON to request body
+        val requestBody =
+            jsonObject.toString().toRequestBody(mediaType) // Convert JSON to request body
 
         // Build the HTTP request to send to the FCM server
         val request = Request.Builder()
             .url("https://fcm.googleapis.com/fcm/send") // FCM send URL
             .post(requestBody) // Attach the request body (notification payload)
-            .addHeader("Authorization", "key=AIzaSyDB24uVr8v76ti0Cd5x-nWPUfrP4OlnHPo")  // Firebase server key
+            .addHeader(
+                "Authorization",
+                "key=AIzaSyDB24uVr8v76ti0Cd5x-nWPUfrP4OlnHPo"
+            )  // Firebase server key
             .addHeader("Content-Type", "application/json") // Content type header
             .build()
 
@@ -385,10 +415,16 @@ class DataBase(private val context: Context?) {
                 response.use {
                     if (!it.isSuccessful) {
                         // If the response is not successful, log the error message
-                        Log.e("FCMNotification", "FCM Notification Response Failed: ${response.body?.string()}")
+                        Log.e(
+                            "FCMNotification",
+                            "FCM Notification Response Failed: ${response.body?.string()}"
+                        )
                     } else {
                         // Log the successful response for debugging
-                        Log.i("FCMNotification", "FCM Notification Response: ${response.body?.string()}")
+                        Log.i(
+                            "FCMNotification",
+                            "FCM Notification Response: ${response.body?.string()}"
+                        )
                     }
                 }
             }
@@ -469,42 +505,53 @@ class DataBase(private val context: Context?) {
         val postImageRef = storageRef.child("postImages/$postId.jpg")
 
         // Fetch the username of the user who is creating the post from the Realtime Database
-        dataBaseRef.child("user").child(uid).child("username").get().addOnSuccessListener { snapshot ->
-            val username = snapshot.getValue(String::class.java) ?: "Unknown" // Default to "Unknown" if username is not found
+        dataBaseRef.child("user").child(uid).child("username").get()
+            .addOnSuccessListener { snapshot ->
+                val username = snapshot.getValue(String::class.java)
+                    ?: "Unknown" // Default to "Unknown" if username is not found
 
-            // Upload the image to Firebase Storage
-            postImageRef.putFile(imageUri).addOnSuccessListener {
-                // Get the download URL for the uploaded image
-                postImageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                    // Create a Post object with the required fields
-                    val post = Post(
-                        postId = postId, // Unique post ID
-                        user_id = uid, // ID of the user creating the post
-                        username = username,  // Username of the post creator
-                        image_url = downloadUri.toString(), // URL of the uploaded image
-                        caption = caption, // Post caption
-                        likes = mutableMapOf(), // Initialize an empty mutable map for likes
-                        isPublic = true // Set post visibility to public
-                    )
+                // Upload the image to Firebase Storage
+                postImageRef.putFile(imageUri).addOnSuccessListener {
+                    // Get the download URL for the uploaded image
+                    postImageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                        // Create a Post object with the required fields
+                        val post = Post(
+                            postId = postId, // Unique post ID
+                            user_id = uid, // ID of the user creating the post
+                            username = username,  // Username of the post creator
+                            image_url = downloadUri.toString(), // URL of the uploaded image
+                            caption = caption, // Post caption
+                            likes = mutableMapOf(), // Initialize an empty mutable map for likes
+                            isPublic = true // Set post visibility to public
+                        )
 
-                    // Save the post object to the "posts" node in the Realtime Database
-                    dataBaseRef.child("posts").child(postId).setValue(post)
-                        .addOnSuccessListener {
-                            // Show a success message when the post is successfully added
-                            Toast.makeText(context, "Post added successfully!", Toast.LENGTH_SHORT).show()
-                        }.addOnFailureListener { e ->
-                            // Show an error message if adding the post fails
-                            Toast.makeText(context, "Failed to add post: ${e.message}", Toast.LENGTH_SHORT).show()
-                        }
+                        // Save the post object to the "posts" node in the Realtime Database
+                        dataBaseRef.child("posts").child(postId).setValue(post)
+                            .addOnSuccessListener {
+                                // Show a success message when the post is successfully added
+                                Toast.makeText(
+                                    context,
+                                    "Post added successfully!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }.addOnFailureListener { e ->
+                                // Show an error message if adding the post fails
+                                Toast.makeText(
+                                    context,
+                                    "Failed to add post: ${e.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                    }.addOnFailureListener {
+                        // Show an error message if fetching the download URL fails
+                        Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT)
+                            .show()
+                    }
                 }.addOnFailureListener {
-                    // Show an error message if fetching the download URL fails
-                    Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
+                    // Show an error message if the image upload fails
+                    Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
                 }
             }.addOnFailureListener {
-                // Show an error message if the image upload fails
-                Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
-            }
-        }.addOnFailureListener {
             // Show an error message if fetching the username fails
             Toast.makeText(context, "Failed to get username", Toast.LENGTH_SHORT).show()
         }
@@ -530,7 +577,11 @@ class DataBase(private val context: Context?) {
                         }
                         .addOnFailureListener { e ->
                             // Show an error message if removing the like fails
-                            Toast.makeText(context, "Failed to unlike post: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Failed to unlike post: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                 } else {
                     // If the user has not liked the post, add a like
@@ -541,7 +592,11 @@ class DataBase(private val context: Context?) {
                         }
                         .addOnFailureListener { e ->
                             // Show an error message if adding the like fails
-                            Toast.makeText(context, "Failed to like post: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Failed to like post: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                 }
             }
@@ -566,7 +621,8 @@ class DataBase(private val context: Context?) {
             }
             .addOnFailureListener { e ->
                 // Show an error message if saving the post fails
-                Toast.makeText(context, "Failed to save post: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Failed to save post: ${e.message}", Toast.LENGTH_SHORT)
+                    .show()
             }
     }
 
@@ -599,27 +655,37 @@ class DataBase(private val context: Context?) {
 
     // -------------------- Update Post Method --------------------------
 
+    // Function to update an existing post with a new caption and/or a new image
     fun updatePost(postId: String, newCaption: String?, newImageUri: Uri?) {
+        // Reference to the specific post in the Firebase Realtime Database
         val postRef = dataBaseRef.child("posts").child(postId)
 
+        // Check if a new caption is provided
         if (newCaption != null) {
+            // Update the "caption" field in the database if a new caption is provided
             postRef.child("caption").setValue(newCaption)
         }
 
+        // Check if a new image URI is provided
         if (newImageUri != null) {
+            // Reference to the new image location in Firebase Storage
             val postImageRef = storageRef.child("postImages/$postId.jpg")
+
+            // Upload the new image to Firebase Storage
             postImageRef.putFile(newImageUri).addOnSuccessListener {
+                // If the image upload is successful, get the download URL
                 postImageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                    // Update the "image_url" field in the database with the new download URL
                     postRef.child("image_url").setValue(downloadUri.toString())
                 }.addOnFailureListener {
+                    // Show a toast message if there's an error getting the download URL
                     Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
                 }
             }.addOnFailureListener {
+                // Show a toast message if there's an error uploading the image
                 Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
             }
         }
     }
-
-
 
 }
