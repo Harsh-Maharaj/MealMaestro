@@ -460,106 +460,137 @@ class DataBase(private val context: Context?) {
 
     // -------------------- Posts Methods --------------------------
 
+    // Function to add a new post to the Firebase Realtime Database
     fun addPostToDataBase(uid: String, imageUri: Uri, caption: String) {
+        // Generate a unique ID for the post using UUID
         val postId = UUID.randomUUID().toString()
+
+        // Create a reference to where the post image will be stored in Firebase Storage
         val postImageRef = storageRef.child("postImages/$postId.jpg")
 
-        // First, fetch the username from the Realtime Database for the user
+        // Fetch the username of the user who is creating the post from the Realtime Database
         dataBaseRef.child("user").child(uid).child("username").get().addOnSuccessListener { snapshot ->
-            val username = snapshot.getValue(String::class.java) ?: "Unknown"
+            val username = snapshot.getValue(String::class.java) ?: "Unknown" // Default to "Unknown" if username is not found
 
+            // Upload the image to Firebase Storage
             postImageRef.putFile(imageUri).addOnSuccessListener {
+                // Get the download URL for the uploaded image
                 postImageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                    // Create a Post object with the required fields
                     val post = Post(
-                        postId = postId,
-                        user_id = uid,
-                        username = username,  // Add the username here
-                        image_url = downloadUri.toString(),
-                        caption = caption,
-                        likes = mutableMapOf(), // Initialize with a mutable map
+                        postId = postId, // Unique post ID
+                        user_id = uid, // ID of the user creating the post
+                        username = username,  // Username of the post creator
+                        image_url = downloadUri.toString(), // URL of the uploaded image
+                        caption = caption, // Post caption
+                        likes = mutableMapOf(), // Initialize an empty mutable map for likes
                         isPublic = true // Set post visibility to public
                     )
+
+                    // Save the post object to the "posts" node in the Realtime Database
                     dataBaseRef.child("posts").child(postId).setValue(post)
                         .addOnSuccessListener {
+                            // Show a success message when the post is successfully added
                             Toast.makeText(context, "Post added successfully!", Toast.LENGTH_SHORT).show()
                         }.addOnFailureListener { e ->
+                            // Show an error message if adding the post fails
                             Toast.makeText(context, "Failed to add post: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                 }.addOnFailureListener {
+                    // Show an error message if fetching the download URL fails
                     Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
                 }
             }.addOnFailureListener {
+                // Show an error message if the image upload fails
                 Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener {
+            // Show an error message if fetching the username fails
             Toast.makeText(context, "Failed to get username", Toast.LENGTH_SHORT).show()
         }
     }
 
-
-
-
+    // Function to like or unlike a post
     fun likePost(postId: String, userId: String, callback: (Boolean) -> Unit) {
+        // Reference the specific post in the "posts" node
         val postRef = dataBaseRef.child("posts").child(postId)
 
+        // Retrieve the post data once
         postRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                // Convert the snapshot into a Post object
                 val post = snapshot.getValue(Post::class.java) ?: return
 
                 if (post.likes.containsKey(userId)) {
-                    // User has already liked the post, so we remove the like
+                    // If the user has already liked the post, remove the like
                     postRef.child("likes").child(userId).removeValue()
                         .addOnSuccessListener {
-                            callback(false) // Not liked
+                            callback(false) // Indicate the post is no longer liked
                             Toast.makeText(context, "Post unliked!", Toast.LENGTH_SHORT).show()
                         }
                         .addOnFailureListener { e ->
+                            // Show an error message if removing the like fails
                             Toast.makeText(context, "Failed to unlike post: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                 } else {
-                    // User has not liked the post yet, so we add the like
+                    // If the user has not liked the post, add a like
                     postRef.child("likes").child(userId).setValue(true)
                         .addOnSuccessListener {
-                            callback(true) // Liked
+                            callback(true) // Indicate the post is now liked
                             Toast.makeText(context, "Post liked!", Toast.LENGTH_SHORT).show()
                         }
                         .addOnFailureListener { e ->
+                            // Show an error message if adding the like fails
                             Toast.makeText(context, "Failed to like post: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                 }
             }
 
+            // Handle database read failure
             override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(context, "Failed to check like status.", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
+    // Function to save a post to the user's favorites
     fun savePostToFavorites(postId: String, userId: String) {
+        // Reference to the user's "favorites" node in the database
         val favoritesRef = dataBaseRef.child("favorites").child(userId).child(postId)
+
+        // Save the post to the favorites list
         favoritesRef.setValue(true)
             .addOnSuccessListener {
+                // Show a success message if the post is successfully added to favorites
                 Toast.makeText(context, "Post saved to favorites!", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
+                // Show an error message if saving the post fails
                 Toast.makeText(context, "Failed to save post: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
+    // Function to retrieve posts from the database and update the post list
     fun getPostsFromDataBase(postList: ArrayList<Post>, adapter: PostAdapter) {
+        // Query the "posts" node in the database for posts where "isPublic" is true
         dataBaseRef.child("posts").orderByChild("isPublic").equalTo(true)
             .addValueEventListener(object : ValueEventListener {
+                // Called when data is received or changed
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    postList.clear()
+                    postList.clear() // Clear the current post list
+                    // Loop through all post snapshots
                     for (postSnap in snapshot.children) {
+                        // Convert each snapshot into a Post object
                         val post = postSnap.getValue(Post::class.java)
                         if (post != null) {
-                            postList.add(post)
+                            postList.add(post) // Add the post to the list
                         }
                     }
+                    // Notify the adapter that the data has changed
                     adapter.notifyDataSetChanged()
                 }
 
+                // Handle database read failure
                 override fun onCancelled(error: DatabaseError) {
                     Toast.makeText(context, "Failed to fetch posts.", Toast.LENGTH_SHORT).show()
                 }
