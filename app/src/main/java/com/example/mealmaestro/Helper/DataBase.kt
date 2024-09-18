@@ -154,32 +154,53 @@ class DataBase(private val context: Context?) {
 
 
     // -------------------- Friends Methods --------------------------
-
+// Function to retrieve the list of friends for the current user
     fun getFriendsList(friendList: ArrayList<Users>, adapter: FriendsAdapter) {
+        // Get the current user's ID, or return if the user is not authenticated
         val currentUserId = auth.currentUser?.uid ?: return
+
+        // Access the "friends" node under the current user's ID in the Firebase database
         dataBaseRef.child("user").child(currentUserId).child("friends")
             .addListenerForSingleValueEvent(object : ValueEventListener {
+                // Called when data is successfully retrieved
                 override fun onDataChange(snapshot: DataSnapshot) {
+                    // Clear the current friend list to avoid duplicates
                     friendList.clear()
+
+                    // Counter to track how many friends are retrieved
                     var friendsRetrieved = 0
+
+                    // Retrieve the list of friend IDs from the database, or an empty list if none exist
                     val friendsIds =
                         snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {}) ?: arrayListOf()
 
+                    // Iterate through the list of friend IDs
                     for (friendId in friendsIds) {
+                        // For each friend ID, fetch their data from the "user" node
                         dataBaseRef.child("user").child(friendId).get()
                             .addOnSuccessListener { userSnapshot ->
+                                // Convert the retrieved data to a map of key-value pairs
                                 val userData = userSnapshot.getValue() as Map<String, Any>?
+
+                                // If user data is not null, extract the UID and username
                                 if (userData != null) {
                                     val uid = userData["uid"] as? String ?: ""
                                     val username = userData["username"] as? String ?: ""
+
+                                    // Create a Users object and add it to the friend list
                                     val user = Users(uid = uid, username = username)
                                     friendList.add(user)
                                 }
+
+                                // Increment the counter for retrieved friends
                                 friendsRetrieved++
+
+                                // Once all friends have been retrieved, notify the adapter to update the UI
                                 if (friendsRetrieved == friendsIds.size) {
                                     adapter.notifyDataSetChanged()
                                 }
                             }.addOnFailureListener {
+                                // If an error occurs while retrieving a friend's data, show a toast message
                                 Toast.makeText(
                                     context,
                                     "Failed to retrieve friend: $friendId",
@@ -189,54 +210,85 @@ class DataBase(private val context: Context?) {
                     }
                 }
 
+                // Called if the retrieval of the friends list is canceled or fails
                 override fun onCancelled(error: DatabaseError) {
+                    // Show a toast message if there's an error retrieving the friends list
                     Toast.makeText(context, "Failed to retrieve friends list.", Toast.LENGTH_SHORT).show()
                 }
             })
     }
 
+    // Function to add a new friend to the current user's friends list in the database
     fun addFriendToDataBase(currentUserId: String, newFriendId: String?) {
+        // If the new friend's ID is null, return without doing anything
         if (newFriendId == null) return
+
+        // Get a reference to the current user's "friends" node in the database
         val currentUserRef = dataBaseRef.child("user").child(currentUserId).child("friends")
 
+        // Retrieve the current friends list from the database
         currentUserRef.get().addOnSuccessListener { snapshot ->
+            // Convert the retrieved data to an ArrayList of friend IDs, or create an empty list if none exist
             val friendsList = snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {}) ?: arrayListOf()
+
+            // Check if the new friend is already in the user's friends list
             if (!friendsList.contains(newFriendId)) {
+                // If the new friend is not in the list, add them
                 friendsList.add(newFriendId)
+
+                // Update the friends list in the database with the new friend added
                 currentUserRef.setValue(friendsList)
                     .addOnSuccessListener {
+                        // Show a toast message indicating that the friend was successfully added
                         Toast.makeText(context, "Friend added successfully!", Toast.LENGTH_SHORT).show()
                     }.addOnFailureListener { e ->
+                        // Show a toast message if there's an error adding the friend
                         Toast.makeText(context, "Error adding friend: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             } else {
+                // If the friend is already in the list, show a toast message
                 Toast.makeText(context, "Friend already in the list!", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener { e ->
+            // If there's an error fetching the current friends list, log the error
             println("Error fetching friends list: ${e.message}")
         }
     }
 
+    // Function to remove a friend from the current user's friends list in the database
     fun removeFriendFromDataBase(currentUserId: String, friendToRemove: String) {
+        // Get a reference to the current user's "friends" node in the database
         val currentUserRef = dataBaseRef.child("user").child(currentUserId).child("friends")
 
+        // Retrieve the current friends list from the database
         currentUserRef.get().addOnSuccessListener { snapshot ->
+            // Convert the retrieved data to an ArrayList of friend IDs, or create an empty list if none exist
             val friendsList = snapshot.getValue(object : GenericTypeIndicator<ArrayList<String>>() {}) ?: arrayListOf()
+
+            // Check if the friend to remove is in the user's friends list
             if (friendsList.contains(friendToRemove)) {
+                // If the friend is in the list, remove them
                 friendsList.remove(friendToRemove)
+
+                // Update the friends list in the database with the friend removed
                 currentUserRef.setValue(friendsList)
                     .addOnSuccessListener {
+                        // Show a toast message indicating that the friend was successfully removed
                         Toast.makeText(context, "Friend removed successfully!", Toast.LENGTH_SHORT).show()
                     }.addOnFailureListener { e ->
+                        // Show a toast message if there's an error removing the friend
                         Toast.makeText(context, "Error removing friend: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             } else {
+                // If the friend is not in the list, show a toast message
                 Toast.makeText(context, "Friend not in your list!", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener { e ->
+            // If there's an error fetching the current friends list, log the error
             println("Error fetching friends list: ${e.message}")
         }
     }
+
 
     // -------------------- Chat Methods --------------------------
 
