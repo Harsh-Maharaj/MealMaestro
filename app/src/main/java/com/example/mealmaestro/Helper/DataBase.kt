@@ -293,90 +293,108 @@ class DataBase(private val context: Context?) {
     // -------------------- Chat Methods --------------------------
 
     // ================ NOTIFICATIONS ==============================================================
+    // Function to add a chat message between two friends (sender and receiver)
     fun addFriendChatMessage(senderRoom: String, receiverRoom: String, messageObject: Message) {
-        // Store the message in the sender's chat room
+        // First, store the message in the sender's chat room in the database
         dataBaseRef.child("friendChat").child(senderRoom).child("messages").push()
             .setValue(messageObject).addOnSuccessListener {
-                // After success, store the message in the receiver's chat room
+                // Once the message is stored in the sender's chat room, store it in the receiver's chat room
                 dataBaseRef.child("friendChat").child(receiverRoom).child("messages").push()
                     .setValue(messageObject).addOnSuccessListener {
-                        // After adding the message to both sender's and receiver's chat rooms, trigger the notification
+                        // After storing the message in both rooms, trigger a notification to the friend
                         triggerNotificationToFriend(messageObject.receiverUid!!, messageObject.message)
                     }
             }
     }
 
-    // Function to trigger FCM notification to a friend using Realtime Database
+    // Private function to trigger a Firebase Cloud Messaging (FCM) notification to the friend
     private fun triggerNotificationToFriend(friendUid: String, message: String) {
-        // Get the friends FCM token and details from the Realtime Database
+        // Access the friend's data (including FCM token, username, and icon) from the database
         val userRef = dataBaseRef.child("user").child(friendUid)
 
+        // Fetch user details (FCM token, username, and icon) from Firebase Realtime Database
         userRef.get().addOnSuccessListener { dataSnapshot ->
             if (dataSnapshot.exists()) {
+                // Retrieve friend's FCM token, username, and profile icon URL
                 val friendFcmToken = dataSnapshot.child("fcmToken").getValue(String::class.java)
                 val friendName = dataSnapshot.child("username").getValue(String::class.java)
                 val friendIcon = dataSnapshot.child("icon").getValue(String::class.java)
 
+                // Log the retrieved details for debugging
                 Log.d("FCM Token", "Token: $friendFcmToken") // debug
                 Log.d("Friend username", "username: $friendName")  // debug
                 Log.d("Friend Icon", "Icon: $friendIcon")  // debug
 
-                // Send the notification via FCM
+                // Send the notification via FCM if all required details are available
                 if (friendFcmToken != null && friendName != null && friendIcon != null) {
                     Log.d("sendFCMNotification", "Notification Fun Send")  // debug
                     sendFCMNotification(friendFcmToken, friendName, friendUid, friendIcon, message)
                 }
             }
         }.addOnFailureListener { exception ->
+            // Log any errors that occur while fetching user details from the database
             Log.e("DatabaseError", "Error fetching user details: ", exception)
         }
     }
 
-    // Function to send the actual FCM notification in Kotlin
+    // Function to send the actual Firebase Cloud Messaging (FCM) notification
     private fun sendFCMNotification(friendFcmToken: String, friendName: String, friendUid: String, friendIcon: String, message: String) {
+        // Build the JSON payload for the FCM notification
         val jsonObject = JSONObject().apply {
+            // Create the notification object that holds the title and body of the notification
             val notificationObject = JSONObject().apply {
-                put("title", "New message from $friendName")
-                put("body", message)
+                put("title", "New message from $friendName") // Notification title
+                put("body", message) // Notification body containing the message content
             }
+            // Create the data object that holds additional information about the friend (sent as data payload)
             val dataObject = JSONObject().apply {
-                put("friendName", friendName)
-                put("friendUid", friendUid)
-                put("friendIcon", friendIcon)
+                put("friendName", friendName) // Friend's username
+                put("friendUid", friendUid) // Friend's UID
+                put("friendIcon", friendIcon) // Friend's profile icon URL
             }
+            // Attach the notification and data to the FCM payload
             put("notification", notificationObject)
             put("data", dataObject)
-            put("to", friendFcmToken)
+            put("to", friendFcmToken) // Send the notification to the friend's FCM token
         }
 
+        // Create an OkHttp client to send the HTTP request to FCM
         val client = OkHttpClient()
 
+        // Define the media type for the request as JSON
         val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
-        val requestBody = jsonObject.toString().toRequestBody(mediaType)
+        val requestBody = jsonObject.toString().toRequestBody(mediaType) // Convert JSON to request body
 
+        // Build the HTTP request to send to the FCM server
         val request = Request.Builder()
-            .url("https://fcm.googleapis.com/fcm/send")
-            .post(requestBody)
-            .addHeader("Authorization", "key=AIzaSyDB24uVr8v76ti0Cd5x-nWPUfrP4OlnHPo")  // Firebase server key from google credential
-            .addHeader("Content-Type", "application/json")
+            .url("https://fcm.googleapis.com/fcm/send") // FCM send URL
+            .post(requestBody) // Attach the request body (notification payload)
+            .addHeader("Authorization", "key=AIzaSyDB24uVr8v76ti0Cd5x-nWPUfrP4OlnHPo")  // Firebase server key
+            .addHeader("Content-Type", "application/json") // Content type header
             .build()
 
+        // Send the HTTP request asynchronously using OkHttp
         client.newCall(request).enqueue(object : Callback {
+            // Handle failure to send the notification
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("FCMNotification", "Failed to send FCM notification", e)
             }
 
+            // Handle the response from the FCM server
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     if (!it.isSuccessful) {
+                        // If the response is not successful, log the error message
                         Log.e("FCMNotification", "FCM Notification Response Failed: ${response.body?.string()}")
                     } else {
+                        // Log the successful response for debugging
                         Log.i("FCMNotification", "FCM Notification Response: ${response.body?.string()}")
                     }
                 }
             }
         })
     }
+
     //=============================== END NOTIFICATION =================================================
 
     fun getFriendMessage(
