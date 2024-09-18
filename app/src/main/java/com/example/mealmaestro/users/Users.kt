@@ -1,13 +1,14 @@
 package com.example.mealmaestro.users
 
+import androidx.browser.trusted.Token
 import com.example.mealmaestro.R
 
 class Users(
-    var name: String? = null,
     val email: String? = null,
     val uid: String? = null,
     var friends: ArrayList<String>? = null,
-    var username: String? = null,
+    val username: String? = null,
+    val fcmToken: String? = null,
     icon: String? = null
 ) {
     var icon = icon

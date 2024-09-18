@@ -74,7 +74,7 @@ class ChatFriendsActivity : AppCompatActivity() {
                 dataBase.addFriendChatMessage(
                     senderRoom!!,
                     receiverRoom!!,
-                    messageObject
+                    messageObject, this
                 ) // send message to database
                 binding.textMessage.text.clear() // clear message text box
             }

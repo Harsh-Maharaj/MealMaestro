@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.mealmaestro.Auth.GoogleAuth
-import com.example.mealmaestro.Auth.XAuth
 import com.example.mealmaestro.Helper.DataBase
 import com.example.mealmaestro.databinding.ActivitySignUpBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -20,7 +19,6 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignUpBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var googleAuth: GoogleAuth
-    private lateinit var xAuth: XAuth
     private val dataBase: DataBase = DataBase()
 
     // ========================== GOOGLE ===========================================================
@@ -28,13 +26,6 @@ class SignUpActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             googleAuth.handleSignInResult(GoogleAuth.REQ_ONE_TAP, result.data)
         }
-
-    // Handle activity result here (or use the launcher)
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        // Forward result to GoogleAuth class
-        googleAuth.handleSignInResult(requestCode, data)
-    }
     //==============================================================================================
 
     override fun onCreate(savedInstanceState: Bundle?) {

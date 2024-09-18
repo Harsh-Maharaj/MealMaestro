@@ -6,11 +6,9 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.mealmaestro.Auth.GoogleAuth
-import com.example.mealmaestro.Auth.XAuth
 import com.example.mealmaestro.databinding.ActivityLoginBinding
 import com.google.firebase.auth.FirebaseAuth
 
@@ -19,20 +17,13 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var googleAuth: GoogleAuth
     private lateinit var auth: FirebaseAuth
-    private lateinit var xAuth: XAuth
 
     // ========================== GOOGLE ===========================================================
     private val launcher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            // Pass the result to the handleSignInResult method
             googleAuth.handleSignInResult(GoogleAuth.REQ_ONE_TAP, result.data)
         }
-
-    // Handle activity result here (or use the launcher)
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        // Forward result to GoogleAuth class
-        googleAuth.handleSignInResult(requestCode, data)
-    }
     //==============================================================================================
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,11 +73,8 @@ class LoginActivity : AppCompatActivity() {
                             .show()
                         startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                     } else {
-                        Toast.makeText(
-                            this@LoginActivity,
-                            "Login failed, please try again",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val errorMessage = task.exception?.message ?: "Login failed"
+                        Toast.makeText(this@LoginActivity, errorMessage, Toast.LENGTH_SHORT).show()
                     }
                 }
         }
