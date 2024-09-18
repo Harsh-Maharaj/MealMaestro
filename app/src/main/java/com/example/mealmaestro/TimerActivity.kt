@@ -26,7 +26,8 @@ class TimerActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var toggle: ActionBarDrawerToggle
 
-    private var timerMillis: Long = 0
+    private var timerMillis: Long = 0 // Total timer duration in milliseconds
+    private var remainingMillis: Long = 0 // Remaining time when the timer is paused
     private var timer: CountDownTimer? = null
     private val maxProgress = 100
 
@@ -107,15 +108,22 @@ class TimerActivity : AppCompatActivity() {
         }
     }
 
+    // Start the timer for the given duration
     private fun startTimer(durationMillis: Long) {
         circularProgressBar.max = maxProgress
-        timer = object : CountDownTimer(durationMillis, 1000) {
+
+        // If resuming, use the remainingMillis; if starting new, use durationMillis
+        val startMillis = if (remainingMillis > 0) remainingMillis else durationMillis
+
+        timer = object : CountDownTimer(startMillis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
+                remainingMillis = millisUntilFinished // Update remaining time
+
                 val secondsRemaining = (millisUntilFinished / 1000).toInt()
                 updateTimerText(secondsRemaining)
 
                 // Update the progress bar
-                val progressPercentage = ((millisUntilFinished.toFloat() / durationMillis) * maxProgress).toInt()
+                val progressPercentage = ((millisUntilFinished.toFloat() / timerMillis) * maxProgress).toInt()
                 circularProgressBar.progress = progressPercentage
             }
 
@@ -126,20 +134,28 @@ class TimerActivity : AppCompatActivity() {
         }.start()
     }
 
+    // Pause the timer and store the remaining time
     private fun pauseTimer() {
         timer?.cancel()
     }
 
+    // Resume the timer from the remaining time
     private fun resumeTimer() {
-        startTimer(timerMillis)
+        if (remainingMillis > 0) {
+            startTimer(remainingMillis)
+        }
     }
 
+    // Reset the timer to its original state
+    // Reset the timer to the original time that was set (timerMillis)
     private fun resetTimer() {
         pauseTimer()
+        remainingMillis = timerMillis // Reset remaining time to the original duration
         circularProgressBar.progress = maxProgress
-        updateTimerText(0)
+        startTimer(timerMillis) // Start the timer again with the original duration
     }
 
+    // Update the displayed time based on the number of seconds left
     private fun updateTimerText(secondsLeft: Int) {
         val hours = secondsLeft / 3600
         val minutes = (secondsLeft % 3600) / 60
