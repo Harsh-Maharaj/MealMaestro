@@ -48,83 +48,110 @@ class DataBase(private val context: Context?) {
             .getReference()
 
 
-
     // -------------------- User Methods --------------------------
 
-    fun addFCMToken(token: String, currentUserId: String){
+    // Adds an FCM (Firebase Cloud Messaging) token for the current user to the database
+    fun addFCMToken(token: String, currentUserId: String) {
+        // Access the "user" node in the database and set the FCM token for the current user
         dataBaseRef.child("user")
-            .child(currentUserId)
-            .child("fcmToken")
-            .setValue(token)
+            .child(currentUserId) // Specify the current user's ID to store the token under their node
+            .child("fcmToken") // Store the FCM token under the "fcmToken" child
+            .setValue(token) // Save the token value in the database
             .addOnSuccessListener {
+                // If the token is successfully saved, log the success
                 Log.i("FCM Token", "Token saved successfully")
             }
             .addOnFailureListener { e ->
+                // If there's an error saving the token, log the error message
                 Log.e("FCM Token Error", "Fail to save token", e)
             }
     }
 
+    // Adds a new user to the Firebase Realtime Database
     fun addUserToDataBase(email: String, uid: String, username: String) {
+        // Create a new user in the "user" node using the user's unique ID (uid)
         dataBaseRef.child("user").child(uid)
+            // Store the user's email, uid, and username, and set other fields (e.g., name, icon) to null
             .setValue(Users(name = null, email, uid, username = username, icon = null))
     }
 
+    // Uploads a user icon to Firebase Storage and stores the download URL in the database
     fun addUserIcon(uid: String, iconUri: Uri) {
+        // Get the content resolver to determine the MIME type of the image (e.g., JPEG, PNG)
         val contentResolver = context?.contentResolver
         val mimeType = contentResolver?.getType(iconUri)
+
+        // Determine the file extension based on the MIME type (defaults to "jpg" if unknown)
         val extension = when (mimeType) {
             "image/jpeg" -> "jpg"
             "image/png" -> "png"
             else -> "jpg"
         }
 
+        // Create a reference to where the user's icon will be stored in Firebase Storage
         val iconRef = storageRef.child("userImages/$uid/${UUID.randomUUID()}.$extension")
+
+        // Upload the file to Firebase Storage
         iconRef.putFile(iconUri).addOnSuccessListener {
+            // After a successful upload, retrieve the download URL of the uploaded file
             iconRef.downloadUrl.addOnSuccessListener { uri ->
+                // Save the download URL of the icon to the user's node in the database
                 dataBaseRef.child("user").child(uid).child("icon").setValue(uri.toString())
             }.addOnFailureListener {
+                // If there's an error retrieving the download URL, show a toast message to the user
                 Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener {
+            // If there's an error uploading the file, show a toast message to the user
             Toast.makeText(context, "Failed to upload icon", Toast.LENGTH_SHORT).show()
         }
     }
 
+    // Fetches users from the database and updates the user list and adapter
     fun getUsersFromDataBase(
-        userList: ArrayList<Users>,
-        adapter: UsersAdapter,
-        callback: DataFetchCallback
+        userList: ArrayList<Users>, // List to store the fetched users
+        adapter: UsersAdapter, // Adapter to update the RecyclerView with the fetched users
+        callback: DataFetchCallback // Callback to notify when data fetching is complete
     ) {
+        // Add a value event listener to the "user" node in the database
         dataBaseRef.child("user").addValueEventListener(object : ValueEventListener {
+            // Called when the data changes or is initially loaded
             override fun onDataChange(snapshot: DataSnapshot) {
-                userList.clear()
+                userList.clear() // Clear the existing user list
                 for (user in snapshot.children) {
                     try {
+                        // Parse each user's data into a map
                         val userData = user.value as? Map<String, Any>
                         if (userData != null) {
+                            // Create a new Users object from the parsed data
                             val currentUser = Users(
-                                uid = userData["uid"] as? String ?: "",
-                                username = userData["username"] as? String ?: "",
+                                uid = userData["uid"] as? String ?: "", // Get the user's UID
+                                username = userData["username"] as? String ?: "" // Get the user's username
                             )
+                            // Only add users that are not the currently authenticated user
                             if (currentUser.uid != auth.currentUser!!.uid) {
-                                userList.add(currentUser)
+                                userList.add(currentUser) // Add the user to the userList
                             }
                         }
                     } catch (e: Exception) {
+                        // Log any errors that occur during parsing of user data
                         Log.e("DatabaseError", "Error parsing user data", e)
-                        // Handle the error as appropriate for your app
                     }
                 }
+                // Notify the adapter that the data has changed, so the UI can be updated
                 adapter.notifyDataSetChanged()
+                // Call the callback method to signal that data fetching is complete
                 callback.onDataFetched()
             }
 
+            // Called if there's an error fetching data from the database
             override fun onCancelled(error: DatabaseError) {
+                // Log the error if data fetching is cancelled or fails
                 Log.e("DatabaseError", "Error fetching data", error.toException())
-                // Handle the error as appropriate for your app
             }
         })
     }
+
 
     // -------------------- Friends Methods --------------------------
 
