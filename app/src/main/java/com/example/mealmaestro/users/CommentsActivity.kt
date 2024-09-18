@@ -2,7 +2,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.widget.Button
 import android.widget.EditText
 import com.example.mealmaestro.CommentAdapter
 import com.example.mealmaestro.Helper.Comment
@@ -13,7 +12,7 @@ class CommentsActivity : AppCompatActivity() {
 
     private lateinit var commentAdapter: CommentAdapter
     private lateinit var commentsList: RecyclerView
-    private lateinit var postButton: MaterialButton // Changed to MaterialButton
+    private lateinit var postButton: MaterialButton
     private lateinit var commentInput: EditText
     private var comments: MutableList<Comment> = mutableListOf()
 
@@ -27,11 +26,15 @@ class CommentsActivity : AppCompatActivity() {
         commentInput = findViewById(R.id.comment_input)
 
         // Set up RecyclerView with LinearLayoutManager
-        commentsList.layoutManager = LinearLayoutManager(this)
+        commentsList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        commentsList.setHasFixedSize(false)
+        commentsList.isNestedScrollingEnabled = false
+
+        // Set adapter
         commentAdapter = CommentAdapter(this, comments)
         commentsList.adapter = commentAdapter
 
-        // Simulate fetching comments or fetch from your database
+        // Fetch comments or simulate fetching
         fetchComments()
 
         // Handle posting a new comment
@@ -53,7 +56,7 @@ class CommentsActivity : AppCompatActivity() {
     }
 
     private fun fetchComments() {
-        // comments to test scrolling
+        // Sample comments to test scrolling
         val mockComments = mutableListOf(
             Comment(userId = "user1", username = "user1", text = "Great post!", timestamp = System.currentTimeMillis() - 60000),
             Comment(userId = "user2", username = "user2", text = "Thanks for the recipe!", timestamp = System.currentTimeMillis() - 120000),
@@ -65,7 +68,6 @@ class CommentsActivity : AppCompatActivity() {
             Comment(userId = "user8", username = "user8", text = "Thanks for sharing!", timestamp = System.currentTimeMillis() - 480000)
         )
         comments.addAll(mockComments)
-        commentAdapter.notifyDataSetChanged()
+        commentAdapter.notifyDataSetChanged() // Update RecyclerView
     }
 }
-
