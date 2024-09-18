@@ -27,17 +27,27 @@ import java.util.UUID
 import java.io.IOException
 
 class DataBase(private val context: Context?) {
+    // Secondary constructor to allow instantiation without passing context
     constructor() : this(null)
 
+    // Interface definition for a callback to be triggered when data fetching is complete
     interface DataFetchCallback {
-        fun onDataFetched()
+        fun onDataFetched() // This method will be implemented by the caller to handle data fetching events
     }
 
+    // Firebase Authentication instance, used to manage user authentication (e.g., login, sign up)
     private val auth = FirebaseAuth.getInstance()
+
+    // Firebase Storage reference, used for uploading and accessing files (e.g., user profile images)
     private val storageRef: StorageReference = FirebaseStorage.getInstance().reference
+
+    // Firebase Realtime Database reference, pointing to the root of the specified database URL
+    // This allows for reading and writing data to the Firebase Realtime Database
     val dataBaseRef =
         FirebaseDatabase.getInstance("https://mealmaestro-46c0d-default-rtdb.asia-southeast1.firebasedatabase.app/")
             .getReference()
+
+
 
     // -------------------- User Methods --------------------------
 
