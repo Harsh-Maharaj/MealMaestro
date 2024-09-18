@@ -397,26 +397,40 @@ class DataBase(private val context: Context?) {
 
     //=============================== END NOTIFICATION =================================================
 
+    // Function to retrieve chat messages between friends for a specific chat room (senderRoom)
     fun getFriendMessage(
-        senderRoom: String,
-        messageList: ArrayList<Message>,
-        adapter: MessageAdapter
+        senderRoom: String, // The chat room associated with the sender
+        messageList: ArrayList<Message>, // List to store the retrieved messages
+        adapter: MessageAdapter // Adapter to update the RecyclerView with the new messages
     ) {
+        // Access the "messages" node under the sender's chat room in the Firebase Realtime Database
         dataBaseRef.child("friendChat").child(senderRoom).child("messages")
             .addValueEventListener(object : ValueEventListener {
+                // Triggered whenever there is a change in the data (e.g., new message, update, delete)
                 override fun onDataChange(snapshot: DataSnapshot) {
+                    // Clear the current list of messages to avoid duplicates
                     messageList.clear()
+
+                    // Iterate through each child (message) in the "messages" node
                     for (postSnap in snapshot.children) {
+                        // Convert each child (snapshot) into a Message object
                         val message = postSnap.getValue(Message::class.java)
+
+                        // Add the message to the message list (the double exclamation marks assert it's non-null)
                         messageList.add(message!!)
                     }
+
+                    // Notify the adapter that the data has changed so it can refresh the UI
                     adapter.notifyDataSetChanged()
                 }
 
-                override fun onCancelled(error: DatabaseError) {}
-
+                // Triggered if there is an error or issue retrieving the data from the database
+                override fun onCancelled(error: DatabaseError) {
+                    // Handle any error that might occur while fetching messages (currently left empty)
+                }
             })
     }
+
 
     // -------------------- File Metadata --------------------------
 
