@@ -48,7 +48,6 @@ class HomeFragment : Fragment() {
         recyclerView.adapter = postAdapter
         fetchSavedPosts { fetchPosts() }
 
-        // Check if we need to show a toast indicating the post was created
         val isPostCreated = arguments?.getBoolean("postCreated", false) ?: false
         if (isPostCreated) {
             Toast.makeText(requireContext(), "Post successfully created!", Toast.LENGTH_SHORT).show()
@@ -76,6 +75,35 @@ class HomeFragment : Fragment() {
         commentListeners.clear()
     }
 
+    // The function to handle searching posts by caption
+    fun performSearch(query: String) {
+        if (query.isEmpty()) {
+            fetchPosts() // If the search query is empty, fetch all posts
+            return
+        }
+
+        // Firestore query to search for captions that contain the query
+        val searchQuery = FirebaseFirestore.getInstance()
+            .collection("posts")
+            .whereGreaterThanOrEqualTo("caption", query)
+            .whereLessThanOrEqualTo("caption", query + "\uf8ff")
+
+        searchQuery.get().addOnSuccessListener { snapshots ->
+            postList.clear()
+            for (document in snapshots.documents) {
+                val post = document.toObject(Post::class.java)
+                post?.let {
+                    it.postId = document.id
+                    it.isSaved = savedPosts.contains(it.postId)
+                    postList.add(it)
+                }
+            }
+            postAdapter.notifyDataSetChanged()
+        }.addOnFailureListener {
+            Toast.makeText(requireContext(), "Failed to search posts", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun fetchSavedPosts(callback: () -> Unit) {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         FirebaseFirestore.getInstance().collection("favorites")
@@ -93,29 +121,27 @@ class HomeFragment : Fragment() {
     }
 
     private fun fetchPosts() {
-        removeListeners() // Remove existing listeners before setting up new ones
+        removeListeners()
 
-        // Order the posts by "created_at" in descending order to get the latest posts first
         postListener = FirebaseFirestore.getInstance()
             .collection("posts")
-            .orderBy("created_at", Query.Direction.DESCENDING) // Latest posts at the top
+            .orderBy("created_at", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshots, e ->
                 if (e != null || snapshots == null) return@addSnapshotListener
-                postList.clear() // Clear the existing list to avoid duplicates
+                postList.clear()
 
                 snapshots.documents.forEach { document ->
                     val post = document.toObject(Post::class.java)
                     post?.let {
-                        it.postId = document.id // Ensure postId is set
+                        it.postId = document.id
                         it.isSaved = savedPosts.contains(it.postId)
-                        postList.add(it) // Add post to the list
-                        fetchCommentsForPost(it) // Fetch comments for the post
+                        postList.add(it)
+                        fetchCommentsForPost(it)
                     }
                 }
-                postAdapter.notifyDataSetChanged() // Notify adapter to update the UI
+                postAdapter.notifyDataSetChanged()
             }
     }
-
 
     private fun fetchCommentsForPost(post: Post) {
         val commentListener = FirebaseFirestore.getInstance()

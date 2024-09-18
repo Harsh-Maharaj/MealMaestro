@@ -32,7 +32,6 @@ class MessageAdapter(val context: Context, val messageList: ArrayList<Message>) 
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-
         val currenteMessage = messageList[position]
 
         if (holder.javaClass == SendViewHolder::class.java) {
@@ -54,14 +53,11 @@ class MessageAdapter(val context: Context, val messageList: ArrayList<Message>) 
         }
     }
 
-    // capture the id to where to send the message
     class SendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val sendMessage = itemView.findViewById<TextView>(R.id.send_friend_message)
-
     }
 
     class ReceiveViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val receiveMessage = itemView.findViewById<TextView>(R.id.receive_friend_message)
     }
-
 }

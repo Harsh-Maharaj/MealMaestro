@@ -36,7 +36,9 @@ class UsersAdapter(
 
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
         val currentUser = userList[position]
-        holder.textName.text = currentUser.name
+        Log.d("UsersAdapter", "Binding user: ${currentUser.username}, UID: ${currentUser.uid}, Icon: ${currentUser.icon}")
+
+        holder.textName.text = currentUser.username
 
         // Fetch views by IDs and ensure they are found
         val chat = holder.itemView.findViewById<ImageView>(R.id.user_message)
@@ -45,7 +47,7 @@ class UsersAdapter(
         // Verify that the views are not null before attaching click listeners
         chat?.setOnClickListener {
             val intent = Intent(context, ChatFriendsActivity::class.java)
-            intent.putExtra("name", currentUser.name)
+            intent.putExtra("username", currentUser.username)
             intent.putExtra("uid", currentUser.uid)
             intent.putExtra("icon", currentUser.icon)
             context.startActivity(intent)
@@ -84,9 +86,9 @@ class UsersAdapter(
                     val filterPattern = constraint.toString().lowercase().trim()
 
                     for (user in userListFull) {
-                        Log.d("UserListFull", "User name: ${user.name}")
-                        Log.d("PerformFiltering", "User name: ${user.name}")
-                        if (user.name?.lowercase()?.contains(filterPattern) == true) {
+                        Log.d("UserListFull", "User username: ${user.username}")
+                        Log.d("PerformFiltering", "User username: ${user.username}")
+                        if (user.username?.lowercase()?.contains(filterPattern) == true) {
                             filteredList.add(user)
                         }
                     }

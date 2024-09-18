@@ -6,6 +6,7 @@ import java.util.UUID
 data class Post(
     var postId: String = UUID.randomUUID().toString(),
     val user_id: String = "",
+    val username: String = "", // Add this field to store the username
     val image_url: String = "",
     val caption: String = "",
     var likes: MutableMap<String, Boolean> = mutableMapOf(),
@@ -16,3 +17,4 @@ data class Post(
     var isCommentsVisible: Boolean = false,
     var isCaptionExpanded: Boolean = false
 )
+
