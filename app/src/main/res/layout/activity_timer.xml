@@ -10,7 +10,8 @@
     <!-- Main content -->
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        tools:ignore="ExtraText">
 
         <!-- Toolbar for Drawer -->
         <androidx.appcompat.widget.Toolbar
@@ -64,11 +65,23 @@
                 android:textSize="25sp" />
         </RelativeLayout>
 
-        <!-- Timer content below the top bar -->
+        <!-- Start button at the top -->
+        <Button
+            android:id="@+id/startBtn"
+            android:layout_width="125dp"
+            android:layout_height="82dp"
+            android:layout_below="@id/topAppBar"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="36dp"
+            android:text="Start"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- Timer content below the start button -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/topAppBar">
+            android:layout_below="@id/startBtn">
 
             <ProgressBar
                 android:id="@+id/circularProgressBar"
@@ -80,20 +93,24 @@
                 android:progress="50"
                 android:progressDrawable="@drawable/circular_progress_bar" />
 
+            <!-- Time Input Fields (Hours, Minutes, Seconds) -->
             <TextView
                 android:id="@+id/timeTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignStart="@id/circularProgressBar"
+                android:layout_alignTop="@id/circularProgressBar"
+                android:layout_alignEnd="@id/circularProgressBar"
+                android:layout_alignBottom="@id/circularProgressBar"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="-1dp"
+                android:layout_marginEnd="-16dp"
+                android:layout_marginBottom="1dp"
                 android:gravity="center"
                 android:text="00:00:00"
                 android:textSize="40sp"
-                android:textStyle="bold"
-                android:layout_alignStart="@id/circularProgressBar"
-                android:layout_alignEnd="@id/circularProgressBar"
-                android:layout_alignTop="@id/circularProgressBar"
-                android:layout_alignBottom="@id/circularProgressBar" />
+                android:textStyle="bold" />
 
-            <!-- Time Input Fields (Hours, Minutes, Seconds) -->
             <LinearLayout
                 android:id="@+id/timeInputLayout"
                 android:layout_width="wrap_content"
@@ -134,7 +151,7 @@
                     android:maxLength="2" />
             </LinearLayout>
 
-            <!-- Buttons for controlling the timer -->
+            <!-- Buttons for Pause, Resume, Reset at the bottom -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -143,11 +160,11 @@
                 android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/startBtn"
+                    android:id="@+id/resumeBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="4dp"
-                    android:text="Start" />
+                    android:text="Resume" />
 
                 <Button
                     android:id="@+id/pauseBtn"
@@ -155,13 +172,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="4dp"
                     android:text="Pause" />
-
-                <Button
-                    android:id="@+id/resumeBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="4dp"
-                    android:text="Resume" />
 
                 <Button
                     android:id="@+id/resetBtn"

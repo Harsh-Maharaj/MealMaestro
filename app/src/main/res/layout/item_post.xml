@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -6,14 +5,14 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Post Header: User Image and Username -->
+        <!-- Post Header: User Image, Username, and Timestamp -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -21,6 +20,7 @@
             android:padding="12dp"
             android:gravity="center_vertical">
 
+            <!-- User Image -->
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/user_image"
                 android:layout_width="40dp"
@@ -30,12 +30,14 @@
                 android:scaleType="centerCrop"
                 app:shapeAppearanceOverlay="@style/CircleImageView"/>
 
+            <!-- Username and Timestamp -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
+                <!-- Username -->
                 <TextView
                     android:id="@+id/username"
                     android:layout_width="wrap_content"
@@ -45,21 +47,25 @@
                     android:textStyle="bold"
                     android:textColor="@android:color/black"/>
 
+                <!-- Timestamp -->
                 <TextView
                     android:id="@+id/post_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="2 hours ago"
                     android:textSize="12sp"
                     android:textColor="@android:color/darker_gray"/>
             </LinearLayout>
 
+            <!-- More Button -->
             <ImageButton
                 android:id="@+id/button_more"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_more_vert"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"/>
+                android:padding="8dp"
+                android:contentDescription="More options"/>
         </LinearLayout>
 
         <!-- Post Image -->
@@ -68,7 +74,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
-            android:scaleType="fitCenter"/>
+            android:scaleType="fitCenter"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"/>
 
         <!-- Interaction Buttons -->
         <LinearLayout
@@ -79,30 +87,34 @@
 
             <ImageButton
                 android:id="@+id/button_like"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:src="@drawable/ic_favourites"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"/>
+                android:padding="8dp"
+                android:contentDescription="Like post"/>
 
             <ImageButton
                 android:id="@+id/button_comment"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:src="@drawable/ic_comment"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:padding="8dp"
-                android:layout_marginStart="16dp"/>
+                android:layout_marginStart="16dp"
+                android:contentDescription="Comment on post"/>
 
             <ImageButton
                 android:id="@+id/button_share"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:src="@drawable/ic_share"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:padding="8dp"
-                android:layout_marginStart="16dp"/>
+                android:layout_marginStart="16dp"
+                android:contentDescription="Share post"/>
 
+            <!-- Spacer -->
             <View
                 android:layout_width="0dp"
                 android:layout_height="1dp"
@@ -110,11 +122,12 @@
 
             <ImageButton
                 android:id="@+id/button_save"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:src="@drawable/ic_save"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"/>
+                android:padding="8dp"
+                android:contentDescription="Save post"/>
         </LinearLayout>
 
         <!-- Like Count -->
@@ -165,13 +178,17 @@
             android:paddingStart="12dp"
             android:paddingTop="12dp"/>
 
-        <!-- Comments RecyclerView -->
+        <!-- Scrollable Comments RecyclerView with White Background -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_comments"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"/>
+            android:layout_height="200dp"
+            android:background="@android:color/white"
+            android:scrollbars="vertical"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:overScrollMode="always"
+            android:padding="8dp" />
 
         <!-- Comment Input Section -->
         <LinearLayout
@@ -192,7 +209,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textMultiLine"
-                    android:maxLines="3"/>
+                    android:maxLines="3"
+                    android:background="@drawable/rounded_edit_text"/> <!-- Rounded background for the comment -->
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton
@@ -201,7 +219,11 @@
                 android:layout_height="wrap_content"
                 android:text="Post"
                 android:layout_marginStart="8dp"
-                style="@style/Widget.MaterialComponents.Button.TextButton"/>
+                app:backgroundTint="@color/purple_500"
+                android:textColor="#FFFFFF"
+                android:enabled="true"/>
+
         </LinearLayout>
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
