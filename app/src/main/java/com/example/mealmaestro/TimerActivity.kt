@@ -149,10 +149,14 @@ class TimerActivity : AppCompatActivity() {
     // Reset the timer to its original state
     // Reset the timer to the original time that was set (timerMillis)
     private fun resetTimer() {
-        pauseTimer()
+        pauseTimer() // Stop the current timer
         remainingMillis = timerMillis // Reset remaining time to the original duration
+
+        // Reset the progress bar and time display without starting the timer
         circularProgressBar.progress = maxProgress
-        startTimer(timerMillis) // Start the timer again with the original duration
+        updateTimerText((timerMillis / 1000).toInt()) // Display the original time
+
+        // Don't call startTimer() here. The user needs to click the Start button to restart the timer.
     }
 
     // Update the displayed time based on the number of seconds left
