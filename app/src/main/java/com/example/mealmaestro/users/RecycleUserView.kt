@@ -14,51 +14,61 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mealmaestro.Helper.DataBase
 import com.example.mealmaestro.databinding.ActivityRecycleUserViewBinding
 
-class RecycleUserView : AppCompatActivity(){
+// Activity to display a list of users and allow searching through a RecyclerView
+class RecycleUserView : AppCompatActivity() {
 
-    private lateinit var binding: ActivityRecycleUserViewBinding
-    private lateinit var userList: ArrayList<Users>
-    private lateinit var adapter: UsersAdapter
-    private lateinit var userRecyclerView: RecyclerView // bring the user and allocate them in the recycler viewer
-    private lateinit var dataBase: DataBase
+    // Declare variables for binding, data, adapter, and database
+    private lateinit var binding: ActivityRecycleUserViewBinding // View binding for the activity layout
+    private lateinit var userList: ArrayList<Users> // List to hold the users
+    private lateinit var adapter: UsersAdapter // Adapter to manage displaying users in the RecyclerView
+    private lateinit var userRecyclerView: RecyclerView // RecyclerView to display the user list
+    private lateinit var dataBase: DataBase // Database helper for managing Firebase operations
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Inflate the layout using view binding
         binding = ActivityRecycleUserViewBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        enableEdgeToEdge()
+        setContentView(binding.root) // Set the content view to the binding's root
+        enableEdgeToEdge() // Enable edge-to-edge display support
+
+        // Handle window insets to manage padding for system bars (status bar, navigation bar)
         ViewCompat.setOnApplyWindowInsetsListener(binding.recyclingUserView) { v, insets ->
+            // Apply padding to avoid overlapping with system bars
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
+        // Initialize the user list, adapter, and database
+        userList = ArrayList() // Initialize the user list as an empty ArrayList
+        adapter = UsersAdapter(this@RecycleUserView, userList) // Set up the adapter with context and user list
+        userRecyclerView = binding.recyclingUserView // Reference to the RecyclerView in the layout
+        userRecyclerView.layoutManager = LinearLayoutManager(this@RecycleUserView) // Set layout manager for vertical scrolling
+        userRecyclerView.adapter = adapter // Attach the adapter to the RecyclerView
+        dataBase = DataBase(this) // Initialize the database helper
 
-        userList = ArrayList()
-
-        adapter = UsersAdapter(this@RecycleUserView, userList)
-        userRecyclerView = binding.recyclingUserView
-        userRecyclerView.layoutManager = LinearLayoutManager(this@RecycleUserView)
-        userRecyclerView.adapter = adapter
-        dataBase = DataBase(this)
-        dataBase.getUsersFromDataBase(userList,adapter, object: DataBase.DataFetchCallback {
+        // Fetch the users from the database and update the RecyclerView
+        dataBase.getUsersFromDataBase(userList, adapter, object: DataBase.DataFetchCallback {
             override fun onDataFetched() {
-                // Once data is fetched from the database, update userListFull
+                // Once the data is fetched, update the full user list for filtering purposes
                 adapter.updateUserListFull(ArrayList(userList))
-                // Notify the adapter that data has changed
+                // Notify the adapter that data has changed so it can refresh the UI
                 adapter.notifyDataSetChanged()
             }
         })
 
+        // Set an onClickListener for the back button to finish the activity and go back
         binding.userBack.setOnClickListener {
-            finish()
+            finish() // Close the activity and return to the previous screen
         }
 
-        binding.searchBar.addTextChangedListener(object : TextWatcher{
+        // Add a text watcher to the search bar to filter the list of users as the user types
+        binding.searchBar.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) { }
+            // When the text in the search bar changes, filter the adapter based on the input
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 Log.d("SearchBar", "Text changed: $p0")
-                adapter.filter.filter(p0)
+                adapter.filter.filter(p0) // Use the adapter's filter function to search the list
             }
             override fun afterTextChanged(p0: Editable?) {}
         })
