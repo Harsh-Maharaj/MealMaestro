@@ -27,6 +27,12 @@ class TimerActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout // Layout for navigation drawer
     private lateinit var toggle: ActionBarDrawerToggle // Toggle for the navigation drawer
 
+    // Timer control buttons
+    private lateinit var startBtn: Button
+    private lateinit var pauseBtn: Button
+    private lateinit var resumeBtn: Button
+    private lateinit var resetBtn: Button
+
     // Variables to handle the timer
     private var timerMillis: Long = 0 // Total timer duration in milliseconds
     private var remainingMillis: Long = 0 // Time left when the timer is paused
@@ -45,6 +51,10 @@ class TimerActivity : AppCompatActivity() {
         editHours = findViewById(R.id.editHours)
         editMinutes = findViewById(R.id.editMinutes)
         editSeconds = findViewById(R.id.editSeconds)
+        startBtn = findViewById(R.id.startBtn)
+        pauseBtn = findViewById(R.id.pauseBtn)
+        resumeBtn = findViewById(R.id.resumeBtn)
+        resetBtn = findViewById(R.id.resetBtn)
 
         // Set up the Toolbar as the ActionBar
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
@@ -81,7 +91,6 @@ class TimerActivity : AppCompatActivity() {
         }
 
         // Initialize timer control buttons (start, pause, resume, reset)
-        val startBtn = findViewById<Button>(R.id.startBtn)
         startBtn.setOnClickListener {
             // Parse the input time (hours, minutes, seconds) into milliseconds
             val hours = editHours.text.toString().toIntOrNull() ?: 0
@@ -90,16 +99,14 @@ class TimerActivity : AppCompatActivity() {
             timerMillis = ((hours * 3600) + (minutes * 60) + seconds) * 1000L
             if (timerMillis > 0) {
                 startTimer(timerMillis) // Start the timer with the parsed duration
+                startBtn.isEnabled = false // Disable the start button
             }
         }
 
-        val pauseBtn = findViewById<Button>(R.id.pauseBtn)
         pauseBtn.setOnClickListener { pauseTimer() } // Pause the timer
 
-        val resumeBtn = findViewById<Button>(R.id.resumeBtn)
         resumeBtn.setOnClickListener { resumeTimer() } // Resume the timer
 
-        val resetBtn = findViewById<Button>(R.id.resetBtn)
         resetBtn.setOnClickListener { resetTimer() } // Reset the timer
     }
 
@@ -136,6 +143,7 @@ class TimerActivity : AppCompatActivity() {
             override fun onFinish() {
                 updateTimerText(0) // Set the time display to zero
                 circularProgressBar.progress = 0 // Reset the progress bar
+                startBtn.isEnabled = true // Enable the start button again when the timer finishes
             }
         }.start()
     }
@@ -161,7 +169,8 @@ class TimerActivity : AppCompatActivity() {
         circularProgressBar.progress = maxProgress
         updateTimerText((timerMillis / 1000).toInt()) // Update the time display to the original time
 
-        // The user will need to click the Start button to restart the timer
+        // Re-enable the start button after the timer is reset
+        startBtn.isEnabled = true
     }
 
     // Update the time display (TextView) based on the number of seconds left
