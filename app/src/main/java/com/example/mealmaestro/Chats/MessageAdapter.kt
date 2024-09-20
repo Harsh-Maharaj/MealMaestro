@@ -45,9 +45,16 @@ class MessageAdapter(val context: Context, val messageList: ArrayList<Message>) 
 
         // Check the type of the holder (whether it's a sent or received message)
         if (holder.javaClass == SendViewHolder::class.java) {
-            // If it's a SendViewHolder, bind the sent message content
+            // If it's a SendViewHolder, bind the sent message content and statuses
             val viewHolder = holder as SendViewHolder
             viewHolder.sendMessage.text = currentMessage.message.toString()
+            viewHolder.statusView.text = if (currentMessage.seen) {
+                "Seen"
+            } else if (currentMessage.delivered) {
+                "Delivered"
+            } else {
+                "Sent"
+            }
         } else {
             // If it's a ReceiveViewHolder, bind the received message content
             val viewHolder = holder as ReceiveViewHolder
@@ -69,6 +76,7 @@ class MessageAdapter(val context: Context, val messageList: ArrayList<Message>) 
     // ViewHolder for sent messages, referencing the layout for a sent message
     class SendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val sendMessage: TextView = itemView.findViewById(R.id.send_friend_message) // TextView for the sent message
+        val statusView: TextView = itemView.findViewById(R.id.status_message) // TextView for the status of the message
     }
 
     // ViewHolder for received messages, referencing the layout for a received message

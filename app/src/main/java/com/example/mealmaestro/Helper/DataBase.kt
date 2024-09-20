@@ -312,12 +312,18 @@ class DataBase(private val context: Context?) {
     // ================ NOTIFICATIONS ==============================================================
     // Function to add a chat message between two friends (sender and receiver)
     fun addFriendChatMessage(senderRoom: String, receiverRoom: String, messageObject: Message) {
-        // First, store the message in the sender's chat room in the database
-        dataBaseRef.child("friendChat").child(senderRoom).child("messages").push()
-            .setValue(messageObject).addOnSuccessListener {
-                // Once the message is stored in the sender's chat room, store it in the receiver's chat room
-                dataBaseRef.child("friendChat").child(receiverRoom).child("messages").push()
-                    .setValue(messageObject).addOnSuccessListener {
+        // Generate a unique messageId using Firebase's push().key()
+        val messageId = dataBaseRef.child("friendChat").child(senderRoom).child("messages").push().key ?: ""
+
+        // Update the message object to include the messageId
+        val updatedMessage = messageObject.copy(messageId = messageId)
+
+        // First, store the message in the sender's chat room with the messageId
+        dataBaseRef.child("friendChat").child(senderRoom).child("messages").child(messageId)
+            .setValue(updatedMessage).addOnSuccessListener {
+                // Once the message is stored in the sender's chat room, store it in the receiver's chat room with the messageId
+                dataBaseRef.child("friendChat").child(receiverRoom).child("messages").child(messageId)
+                    .setValue(updatedMessage).addOnSuccessListener {
                         // After storing the message in both rooms, trigger a notification to the friend
                         triggerNotificationToFriend(
                             messageObject.receiverUid!!,
@@ -326,6 +332,25 @@ class DataBase(private val context: Context?) {
                     }
             }
     }
+
+
+    // Function to mark a message as "seen" in the chat
+    fun markMessageAsSeen(room: String, messageId: String) {
+
+        // Reference the specific message in the Firebase Realtime Database
+        // The message is stored under the "friendChat" node, in a specific room, and has a unique message ID
+        val messageRef = dataBaseRef.child("friendChat").child(room).child("messages").child(messageId)
+
+        // Update the "status" field of the message to "seen"
+        messageRef.child("status").setValue("seen").addOnSuccessListener {
+            // If the update is successful, log the success message with the message ID
+            Log.d("MessageStatus", "Message marked as seen: $messageId")
+        }.addOnFailureListener { e ->
+            // If there's an error during the update, log the error message
+            Log.e("MessageStatusError", "Failed to mark message as seen: $e")
+        }
+    }
+
 
     // Private function to trigger a Firebase Cloud Messaging (FCM) notification to the friend
     private fun triggerNotificationToFriend(friendUid: String, message: String) {
@@ -552,9 +577,9 @@ class DataBase(private val context: Context?) {
                     Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
                 }
             }.addOnFailureListener {
-            // Show an error message if fetching the username fails
-            Toast.makeText(context, "Failed to get username", Toast.LENGTH_SHORT).show()
-        }
+                // Show an error message if fetching the username fails
+                Toast.makeText(context, "Failed to get username", Toast.LENGTH_SHORT).show()
+            }
     }
 
     // Function to like or unlike a post

@@ -83,8 +83,9 @@ class ChatFriendsActivity : AppCompatActivity() {
         // Set up the send button to send messages
         binding.sendMessage.setOnClickListener {
             val message = binding.textMessage.text.toString() // Get the typed message from the input field
+            val receiverUid = intent.getStringExtra("uid") // Ensure this is not null
 
-            if (message.isNotEmpty()) {
+            if (message.isNotEmpty() && receiverUid != null) { // Check for non-empty message and non-null receiverUid
                 // Create a Message object with the typed message and user details
                 val messageObject = Message(message, senderUid, receiverUid)
 
@@ -99,6 +100,7 @@ class ChatFriendsActivity : AppCompatActivity() {
                 binding.textMessage.text.clear()
             }
         }
+
 
         // Display messages in the chat by retrieving them from the database
         dataBase.getFriendMessage(senderRoom!!, messageList, adapter)
