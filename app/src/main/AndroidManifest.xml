@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Add the VIBRATE permission here -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
@@ -22,7 +25,7 @@
 
         <activity
             android:name=".LoginActivity"
-            android:exported="true"> <!-- Make sure to set exported to true -->
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -31,10 +34,9 @@
 
         <activity
             android:name=".MainActivity"
-            android:exported="false" /> <!-- No intent-filter here -->
+            android:exported="false" />
 
         <activity android:name=".users.RecycleUserFriends" />
-
         <activity
             android:name=".Chats.ChatFriendsActivity"
             android:exported="false" />
@@ -44,12 +46,11 @@
         <activity
             android:name=".users.RecycleUserView"
             android:exported="true" />
-
         <activity
             android:name=".SplashActivity"
             android:exported="true" />
 
-        <!-- Add both service and activity here -->
+        <!-- Firebase notification service -->
         <service
             android:name=".Helper.FCMNotificationService"
             android:exported="false">
@@ -57,6 +58,7 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
+
         <activity
             android:name=".TimerActivity"
             android:exported="false" />
