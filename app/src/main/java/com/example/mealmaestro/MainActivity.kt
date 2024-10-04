@@ -96,6 +96,14 @@ class MainActivity : AppCompatActivity() {
                     drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
+
+                R.id.nav_shopping_list -> {
+                    // Navigate to the ShoppingListFragment
+                    navController.navigate(R.id.shoppingListFragment)
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+
                 R.id.nav_logout -> {
                     // Log the user out and navigate to the login screen
                     FirebaseAuth.getInstance().signOut()  // Sign out from FirebaseAuth
@@ -166,4 +174,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+
+
+
+
+
+
 }
