@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_color"
+    android:background="@color/white"
     tools:context=".ShoppingListFragment">
 
     <!-- RecyclerView to display the shopping list items -->
@@ -47,7 +47,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
-                android:backgroundTint="@color/primary_color" />
+                android:backgroundTint="@color/purpleLight" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Floating action button to add item to the shopping list -->
