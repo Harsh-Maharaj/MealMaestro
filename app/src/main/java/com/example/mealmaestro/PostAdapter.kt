@@ -59,12 +59,20 @@ class PostAdapter(
         private val buttonSave: ImageButton = itemView.findViewById(R.id.button_save)
         private val buttonLike: ImageButton = itemView.findViewById(R.id.button_like)
         private val buttonShare: ImageButton = itemView.findViewById(R.id.button_share)
+        private val buttonMore: ImageButton = itemView.findViewById(R.id.button_more)
         private val likeCount: TextView = itemView.findViewById(R.id.like_count)
         private val recyclerViewComments: RecyclerView = itemView.findViewById(R.id.recycler_view_comments)
         private val editTextComment: TextView = itemView.findViewById(R.id.edit_text_comment)
         private val buttonPostComment: TextView = itemView.findViewById(R.id.button_post_comment)
         private val usernameTextView: TextView = itemView.findViewById(R.id.username)
         private val postTimeTextView: TextView = itemView.findViewById(R.id.post_time)
+
+        init {
+            // Handle "More" button click to generate shopping list
+            buttonMore.setOnClickListener {
+                showGenerateShoppingListDialog(postList[adapterPosition])
+            }
+        }
 
         // Bind the post data to the views
         fun bind(post: Post) {
@@ -387,5 +395,84 @@ class PostAdapter(
                     Toast.makeText(context, "Failed to share post", Toast.LENGTH_SHORT).show()
                 }
         }
+
+        // Show dialog to confirm generating a shopping list from post's caption
+        private fun showGenerateShoppingListDialog(post: Post) {
+            AlertDialog.Builder(context)
+                .setTitle("Generate Shopping List")
+                .setMessage("Do you want to generate a shopping list from this post's caption?")
+                .setPositiveButton("Yes") { dialog, which ->
+                    generateShoppingList(post.caption)
+                }
+                .setNegativeButton("No", null)
+                .show()
+        }
+
+        // Generate a shopping list from the post's caption
+        private fun generateShoppingList(caption: String) {
+            val ingredients = extractIngredients(caption)
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+            val shoppingListRef = FirebaseFirestore.getInstance()
+                .collection("shoppingLists")
+                .document(currentUserId)
+                .collection("items")
+
+            ingredients.forEach { ingredient ->
+                val item = ShoppingListitem(name = ingredient, checked = false)
+                shoppingListRef.add(item)
+                    .addOnSuccessListener {
+                        Log.d("ShoppingList", "Ingredient added to shopping list: $ingredient")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("ShoppingList", "Failed to add ingredient: $ingredient", e)
+                    }
+            }
+        }
+
+
+
+        // Add ingredients to Firestore under the current user's shopping list
+        private fun addToShoppingList(ingredients: List<String>) {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+            val shoppingListRef = FirebaseFirestore.getInstance()
+                .collection("shoppingLists")
+                .document(userId)
+
+            // Check if document exists or create a new one
+            shoppingListRef.get().addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    // Document exists, update the ingredients
+                    shoppingListRef.update("ingredients", FieldValue.arrayUnion(*ingredients.toTypedArray()))
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Shopping list updated!", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(context, "Failed to update shopping list.", Toast.LENGTH_SHORT).show()
+                        }
+                } else {
+                    // Create new document with ingredients
+                    val newShoppingList = hashMapOf("ingredients" to ingredients)
+                    shoppingListRef.set(newShoppingList)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Shopping list created and updated!", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(context, "Failed to create shopping list.", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }.addOnFailureListener {
+                Toast.makeText(context, "Failed to access shopping list.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+
+
+        // Extract ingredients from the caption by splitting on commas
+        private fun extractIngredients(caption: String): List<String> {
+            val ingredientsSection = caption.substringAfter("Ingredients:", "")
+            return ingredientsSection.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
+        }
+
     }
 }
