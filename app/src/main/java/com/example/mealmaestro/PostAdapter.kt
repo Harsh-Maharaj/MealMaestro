@@ -419,7 +419,7 @@ class PostAdapter(
                 .collection("items")
 
             ingredients.forEach { ingredient ->
-                val item = ShoppingListitem(name = ingredient, checked = false)
+                val item = ShoppingListItem(name = ingredient, checked = false)
                 shoppingListRef.add(item)
                     .addOnSuccessListener {
                         Log.d("ShoppingList", "Ingredient added to shopping list: $ingredient")

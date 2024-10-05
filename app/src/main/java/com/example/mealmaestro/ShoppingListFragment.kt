@@ -5,9 +5,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
@@ -42,6 +44,12 @@ class ShoppingListFragment : Fragment() {
                 addItemToShoppingList(itemName)
                 addItemInput.text?.clear()
             }
+        }
+
+        // Clear button functionality
+        val clearButton: MaterialButton = view.findViewById(R.id.button_clear_list)
+        clearButton.setOnClickListener {
+            showClearListConfirmationDialog()
         }
 
         loadShoppingList()
@@ -94,6 +102,38 @@ class ShoppingListFragment : Fragment() {
             Log.d("ShoppingList", "Item state updated: ${item.name}, checked: $isChecked")
         }.addOnFailureListener { e ->
             Log.e("ShoppingList", "Failed to update item state: ${e.message}")
+        }
+    }
+
+    private fun showClearListConfirmationDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Clear Shopping List")
+            .setMessage("Are you sure you want to clear the shopping list?")
+            .setPositiveButton("Yes") { _, _ ->
+                clearShoppingList()
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun clearShoppingList() {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val db = FirebaseFirestore.getInstance()
+        val shoppingListRef = db.collection("shoppingLists").document(userId).collection("items")
+
+        // Delete all items in the shopping list
+        shoppingListRef.get().addOnSuccessListener { documents ->
+            for (document in documents) {
+                shoppingListRef.document(document.id).delete()
+            }
+            // Clear the adapter list and notify change
+            shoppingList.clear()
+            shoppingListAdapter.notifyDataSetChanged()
+            Log.d("ShoppingList", "All items cleared.")
+        }.addOnFailureListener { e ->
+            Log.e("ShoppingList", "Failed to clear shopping list: ${e.message}")
         }
     }
 }
