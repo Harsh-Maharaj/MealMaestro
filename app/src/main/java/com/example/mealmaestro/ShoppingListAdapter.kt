@@ -1,13 +1,12 @@
 package com.example.mealmaestro
 
+import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mealmaestro.ShoppingListItem
-
 
 data class ShoppingListitem(
     var id: String = "",
@@ -53,8 +52,30 @@ class ShoppingListAdapter(
             itemName.text = item.name
             itemCheckBox.isChecked = item.checked
 
-            itemCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            // Apply strikethrough if item is checked
+            updateTextStrikethrough(itemName, item.checked)
+
+            // Toggle the state when the card is clicked
+            itemView.setOnClickListener {
+                val isChecked = !itemCheckBox.isChecked
+                itemCheckBox.isChecked = isChecked
+                updateTextStrikethrough(itemName, isChecked)
                 onCheckedChange(item, isChecked)
+            }
+
+            // Toggle the state when the checkbox is clicked
+            itemCheckBox.setOnCheckedChangeListener { _, isChecked ->
+                updateTextStrikethrough(itemName, isChecked)
+                onCheckedChange(item, isChecked)
+            }
+        }
+
+        // Function to add or remove strikethrough from the text
+        private fun updateTextStrikethrough(textView: TextView, isChecked: Boolean) {
+            if (isChecked) {
+                textView.paintFlags = textView.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            } else {
+                textView.paintFlags = textView.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
             }
         }
     }
