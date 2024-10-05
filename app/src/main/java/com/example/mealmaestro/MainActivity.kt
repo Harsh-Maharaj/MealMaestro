@@ -89,26 +89,26 @@ class MainActivity : AppCompatActivity() {
         val navigationView: NavigationView = binding.navView
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
+                R.id.nav_home -> {
+                    // Navigate to the HomeFragment
+                    navController.navigate(R.id.nav_home)
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
                 R.id.nav_timer -> {
-                    // Start TimerActivity when "Timer" is clicked in the drawer
                     val intent = Intent(this, TimerActivity::class.java)
                     startActivity(intent)
                     drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
-
                 R.id.nav_shopping_list -> {
-                    // Navigate to the ShoppingListFragment
                     navController.navigate(R.id.shoppingListFragment)
                     drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
-
                 R.id.nav_logout -> {
-                    // Log the user out and navigate to the login screen
-                    FirebaseAuth.getInstance().signOut()  // Sign out from FirebaseAuth
+                    FirebaseAuth.getInstance().signOut()
                     val intent = Intent(this, LoginActivity::class.java)
-                    // Clear the activity stack to prevent navigating back to the previous screens
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     startActivity(intent)
                     drawerLayout.closeDrawer(GravityCompat.START)
@@ -117,6 +117,7 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+
 
         // Retrieve FCM (Firebase Cloud Messaging) token for push notifications
         getFCMToken()
