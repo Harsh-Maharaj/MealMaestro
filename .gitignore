@@ -14,5 +14,3 @@
 .cxx
 local.properties
 app/src/main/assets/api_keys.properties
-/app/src/main/assets/serviceAccountKey.json
-
