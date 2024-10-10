@@ -93,7 +93,7 @@ class ChatFriendsActivity : AppCompatActivity() {
                 dataBase.addFriendChatMessage(
                     senderRoom!!,
                     receiverRoom!!,
-                    messageObject
+                    messageObject, this
                 )
 
                 // Clear the input field after sending the message
