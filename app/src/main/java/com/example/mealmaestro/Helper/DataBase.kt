@@ -175,12 +175,46 @@ class DataBase(private val context: Context?) {
                             context,
                             "Failed to retrieve friends list.",
                             Toast.LENGTH_SHORT
+                        ).show()
+                    }
+            } else {
+                // If the friend is not in the list, show a toast message
+                Toast.makeText(context, "Friend not in your list!", Toast.LENGTH_SHORT).show()
+            }
+        }.addOnFailureListener { e ->
+            // If there's an error fetching the current friends list, log the error
+            println("Error fetching friends list: ${e.message}")
+        }
+    }
+
+
+    // -------------------- Chat Methods --------------------------
+
+    // ================ NOTIFICATIONS ==============================================================
+    // Function to add a chat message between two friends (sender and receiver)
+    fun addFriendChatMessage(senderRoom: String, receiverRoom: String, messageObject: Message) {
+        // Generate a unique messageId using Firebase's push().key()
+        val messageId = dataBaseRef.child("friendChat").child(senderRoom).child("messages").push().key ?: ""
+
+        // Update the message object to include the messageId
+        val updatedMessage = messageObject.copy(messageId = messageId)
+
+        // First, store the message in the sender's chat room with the messageId
+        dataBaseRef.child("friendChat").child(senderRoom).child("messages").child(messageId)
+            .setValue(updatedMessage).addOnSuccessListener {
+                // Once the message is stored in the sender's chat room, store it in the receiver's chat room with the messageId
+                dataBaseRef.child("friendChat").child(receiverRoom).child("messages").child(messageId)
+                    .setValue(updatedMessage).addOnSuccessListener {
+                        // After storing the message in both rooms, trigger a notification to the friend
+                        triggerNotificationToFriend(
+                            messageObject.receiverUid!!,
+                            messageObject.message
+
                         )
                             .show()
                     }
                 })
         }
-
         fun addFriendToDataBase(currentUserId: String, newFriendId: String?) {
             if (newFriendId == null) return
             val currentUserRef = dataBaseRef.child("user").child(currentUserId).child("friends")
@@ -209,6 +243,47 @@ class DataBase(private val context: Context?) {
                 } else {
                     Toast.makeText(context, "Friend already in the list!", Toast.LENGTH_SHORT)
                         .show()
+
+    // Function to mark a message as "seen" in the chat
+    fun markMessageAsSeen(room: String, messageId: String) {
+
+        // Reference the specific message in the Firebase Realtime Database
+        // The message is stored under the "friendChat" node, in a specific room, and has a unique message ID
+        val messageRef = dataBaseRef.child("friendChat").child(room).child("messages").child(messageId)
+
+        // Update the "status" field of the message to "seen"
+        messageRef.child("status").setValue("seen").addOnSuccessListener {
+            // If the update is successful, log the success message with the message ID
+            Log.d("MessageStatus", "Message marked as seen: $messageId")
+        }.addOnFailureListener { e ->
+            // If there's an error during the update, log the error message
+            Log.e("MessageStatusError", "Failed to mark message as seen: $e")
+        }
+    }
+
+
+    // Private function to trigger a Firebase Cloud Messaging (FCM) notification to the friend
+    private fun triggerNotificationToFriend(friendUid: String, message: String) {
+        // Access the friend's data (including FCM token, username, and icon) from the database
+        val userRef = dataBaseRef.child("user").child(friendUid)
+
+        // Fetch user details (FCM token, username, and icon) from Firebase Realtime Database
+        userRef.get().addOnSuccessListener { dataSnapshot ->
+            if (dataSnapshot.exists()) {
+                // Retrieve friend's FCM token, username, and profile icon URL
+                val friendFcmToken = dataSnapshot.child("fcmToken").getValue(String::class.java)
+                val friendName = dataSnapshot.child("username").getValue(String::class.java)
+                val friendIcon = dataSnapshot.child("icon").getValue(String::class.java)
+
+                // Log the retrieved details for debugging
+                Log.d("FCM Token", "Token: $friendFcmToken") // debug
+                Log.d("Friend username", "username: $friendName")  // debug
+                Log.d("Friend Icon", "Icon: $friendIcon")  // debug
+
+                // Send the notification via FCM if all required details are available
+                if (friendFcmToken != null && friendName != null && friendIcon != null) {
+                    Log.d("sendFCMNotification", "Notification Fun Send")  // debug
+                    sendFCMNotification(friendFcmToken, friendName, friendUid, friendIcon, message)
                 }
             }.addOnFailureListener { e ->
                 println("Error fetching friends list: ${e.message}")
@@ -404,7 +479,16 @@ class DataBase(private val context: Context?) {
                             }
                     }
                 }
+            }.addOnFailureListener {
+                // Show an error message if fetching the username fails
+                Toast.makeText(context, "Failed to get username", Toast.LENGTH_SHORT).show()
+            }
+    }
 
+    // Function to like or unlike a post
+    fun likePost(postId: String, userId: String, callback: (Boolean) -> Unit) {
+        // Reference the specific post in the "posts" node
+        val postRef = dataBaseRef.child("posts").child(postId)
                 override fun onCancelled(error: DatabaseError) {
                     Toast.makeText(context, "Failed to check like status.", Toast.LENGTH_SHORT)
                         .show()
