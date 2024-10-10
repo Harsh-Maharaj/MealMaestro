@@ -2,10 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Add the VIBRATE permission here -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission
@@ -23,9 +23,7 @@
         android:theme="@style/Theme.MealMaestro"
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="31">
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="chat_message_channel" />
+
         <activity
             android:name=".LoginActivity"
             android:exported="true">

@@ -4,68 +4,53 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.mealmaestro.Chats.ChatFriendsActivity
-import com.example.mealmaestro.users.Users
-import com.google.firebase.Firebase
-import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.firestore.auth.User
 
 class SplashActivity : AppCompatActivity() {
 
+    // Firebase authentication instance to check if the user is logged in
     private lateinit var auth: FirebaseAuth
+
+    // Called when the activity is first created
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FirebaseApp.initializeApp(this)
+
+        // Enable edge-to-edge layout for immersive experience
         enableEdgeToEdge()
+
+        // Set the content view to the splash screen layout
         setContentView(R.layout.activity_splash)
+
+        // Adjust padding for system bars (status bar, navigation bar) to fit the layout properly
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.splash)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        // Hide the action bar for a cleaner splash screen
         supportActionBar?.hide()
+
+        // Initialize Firebase authentication to check user login status
         auth = FirebaseAuth.getInstance()
 
+        // Use a Handler to introduce a delay before proceeding to the next activity
         Handler(Looper.getMainLooper()).postDelayed({
-
-            // Check if the user is already logged in
-            val currentUser = auth.currentUser
-
-            if (currentUser != null) {
-                Log.d("SplashActivity", "User is logged in: ${currentUser.uid}")
-                // The user is logged in, handle intent extras for notification
-                if (intent.extras != null) {
-                    Log.d("SplashActivity", "Notification received with extras: ${intent.extras}")
-                    val userId = intent.extras?.getString("uid")
-                    if (userId != null) {
-                        val chatIntent = Intent(this, ChatFriendsActivity::class.java).apply {
-                            putExtra("uid", userId)
-                            putExtra("username", intent.extras?.getString("username"))
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        }
-                        startActivity(chatIntent)
-                    } else {
-                        Log.d("SplashActivity", "No userId in extras")
-                        startActivity(Intent(this, MainActivity::class.java))
-                    }
-                } else {
-                    Log.d("SplashActivity", "No extras in intent, navigating to MainActivity")
-                    startActivity(Intent(this, MainActivity::class.java))
-                }
-
+            // Check if the user is logged in (auth.currentUser != null)
+            if (auth.currentUser != null) {
+                // If the user is logged in, navigate to the MainActivity
+                startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                finish()  // Finish the splash activity so it won't appear when the user presses back
             } else {
-                Log.d("SplashActivity", "User is not logged in. Redirecting to login screen")
-                // The user is not logged in, redirect to the login screen
+                // If the user is not logged in, navigate to the LoginActivity
                 startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
+                finish()  // Finish the splash activity
             }
-            finish()
-        }, 2000)
+        }, 2000)  // 2-second delay for the splash screen
     }
 }
