@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".ShoppingListFragment">
+
+    <!-- RecyclerView to display the shopping list items -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_shopping_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_above="@id/card_container_input"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="16dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:clipToPadding="false" />
+
+    <!-- Button to clear the shopping list -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_clear_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:layout_above="@id/card_container_input"
+        android:backgroundTint="@color/purpleLight"
+        app:icon="@drawable/ic_trash"
+        app:iconTint="@android:color/white"
+        android:text=""
+        android:contentDescription="Clear list"
+        app:cornerRadius="16dp"
+        android:minWidth="48dp"
+        android:minHeight="48dp" />
+
+    <!-- CardView for input container -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_container_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp">
+
+            <!-- TextInput to enter new items -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/fab_add_item"
+                android:layout_alignParentStart="true"
+                android:layout_marginEnd="12dp"
+                android:hint="Add an item"
+                android:background="@null">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_add_item"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:backgroundTint="@color/purpleLight" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Floating action button to add item to the shopping list -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_add_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:contentDescription="Add item"
+                android:tint="@android:color/white"
+                android:backgroundTint="@color/purpleLight"
+                app:srcCompat="@drawable/ic_add" />
+        </RelativeLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>

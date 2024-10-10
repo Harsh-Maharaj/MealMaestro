@@ -8,7 +8,8 @@ data class Post(
     var postId: String = UUID.randomUUID().toString(), // Unique identifier for the post, generated using UUID
     val user_id: String = "", // The ID of the user who created the post
     val username: String = "", // The username of the user who created the post
-    val image_url: String = "", // The URL of the image associated with the post
+    val image_url: String = "", // The URL of the image associated with the post (if any)
+    val video_url: String = "", // The URL of the video associated with the post (if any)
     val caption: String = "", // The caption text for the post
     var likes: MutableMap<String, Boolean> = mutableMapOf(), // A map to store users who liked the post, where the key is the user ID and the value is a Boolean (liked status)
     val isPublic: Boolean = true, // A flag to indicate if the post is public or private (default is public)

@@ -21,6 +21,16 @@
             android:elevation="1dp"
             android:elegantTextHeight="true"/>
 
+        <!-- Message status (seen, delivered) -->
+        <TextView
+            android:id="@+id/status_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/send_friend_message"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp"
+            android:text="Delivered"/>
+
     </RelativeLayout>
 
 </RelativeLayout>

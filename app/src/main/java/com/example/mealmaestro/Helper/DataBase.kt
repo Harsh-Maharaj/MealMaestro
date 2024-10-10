@@ -312,12 +312,18 @@ class DataBase(private val context: Context?) {
     // ================ NOTIFICATIONS ==============================================================
     // Function to add a chat message between two friends (sender and receiver)
     fun addFriendChatMessage(senderRoom: String, receiverRoom: String, messageObject: Message) {
-        // First, store the message in the sender's chat room in the database
-        dataBaseRef.child("friendChat").child(senderRoom).child("messages").push()
-            .setValue(messageObject).addOnSuccessListener {
-                // Once the message is stored in the sender's chat room, store it in the receiver's chat room
-                dataBaseRef.child("friendChat").child(receiverRoom).child("messages").push()
-                    .setValue(messageObject).addOnSuccessListener {
+        // Generate a unique messageId using Firebase's push().key()
+        val messageId = dataBaseRef.child("friendChat").child(senderRoom).child("messages").push().key ?: ""
+
+        // Update the message object to include the messageId
+        val updatedMessage = messageObject.copy(messageId = messageId)
+
+        // First, store the message in the sender's chat room with the messageId
+        dataBaseRef.child("friendChat").child(senderRoom).child("messages").child(messageId)
+            .setValue(updatedMessage).addOnSuccessListener {
+                // Once the message is stored in the sender's chat room, store it in the receiver's chat room with the messageId
+                dataBaseRef.child("friendChat").child(receiverRoom).child("messages").child(messageId)
+                    .setValue(updatedMessage).addOnSuccessListener {
                         // After storing the message in both rooms, trigger a notification to the friend
                         triggerNotificationToFriend(
                             messageObject.receiverUid!!,
@@ -326,6 +332,25 @@ class DataBase(private val context: Context?) {
                     }
             }
     }
+
+
+    // Function to mark a message as "seen" in the chat
+    fun markMessageAsSeen(room: String, messageId: String) {
+
+        // Reference the specific message in the Firebase Realtime Database
+        // The message is stored under the "friendChat" node, in a specific room, and has a unique message ID
+        val messageRef = dataBaseRef.child("friendChat").child(room).child("messages").child(messageId)
+
+        // Update the "status" field of the message to "seen"
+        messageRef.child("status").setValue("seen").addOnSuccessListener {
+            // If the update is successful, log the success message with the message ID
+            Log.d("MessageStatus", "Message marked as seen: $messageId")
+        }.addOnFailureListener { e ->
+            // If there's an error during the update, log the error message
+            Log.e("MessageStatusError", "Failed to mark message as seen: $e")
+        }
+    }
+
 
     // Private function to trigger a Firebase Cloud Messaging (FCM) notification to the friend
     private fun triggerNotificationToFriend(friendUid: String, message: String) {
@@ -497,64 +522,52 @@ class DataBase(private val context: Context?) {
     // -------------------- Posts Methods --------------------------
 
     // Function to add a new post to the Firebase Realtime Database
-    fun addPostToDataBase(uid: String, imageUri: Uri, caption: String) {
-        // Generate a unique ID for the post using UUID
+    // Function to add a new post to the Firebase Realtime Database with support for both images and videos
+    fun addPostToDataBase(uid: String, mediaUri: Uri, caption: String, isVideo: Boolean) {
         val postId = UUID.randomUUID().toString()
+        val fileType = if (isVideo) "videos" else "images"
+        val fileExtension = if (isVideo) ".mp4" else ".jpg"
 
-        // Create a reference to where the post image will be stored in Firebase Storage
-        val postImageRef = storageRef.child("postImages/$postId.jpg")
+        // Creating a reference to where the media will be stored in Firebase Storage
+        val mediaRef = storageRef.child("$fileType/$postId$fileExtension")
 
         // Fetch the username of the user who is creating the post from the Realtime Database
         dataBaseRef.child("user").child(uid).child("username").get()
             .addOnSuccessListener { snapshot ->
-                val username = snapshot.getValue(String::class.java)
-                    ?: "Unknown" // Default to "Unknown" if username is not found
+                val username = snapshot.getValue(String::class.java) ?: "Unknown"
 
-                // Upload the image to Firebase Storage
-                postImageRef.putFile(imageUri).addOnSuccessListener {
-                    // Get the download URL for the uploaded image
-                    postImageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                // Upload the media file to Firebase Storage
+                mediaRef.putFile(mediaUri).addOnSuccessListener {
+                    // After a successful upload, retrieve the download URL of the uploaded file
+                    mediaRef.downloadUrl.addOnSuccessListener { downloadUri ->
                         // Create a Post object with the required fields
                         val post = Post(
-                            postId = postId, // Unique post ID
-                            user_id = uid, // ID of the user creating the post
-                            username = username,  // Username of the post creator
-                            image_url = downloadUri.toString(), // URL of the uploaded image
-                            caption = caption, // Post caption
-                            likes = mutableMapOf(), // Initialize an empty mutable map for likes
-                            isPublic = true // Set post visibility to public
+                            postId = postId,
+                            user_id = uid,
+                            username = username,
+                            image_url = if (!isVideo) downloadUri.toString() else "",
+                            video_url = if (isVideo) downloadUri.toString() else "",
+                            caption = caption,
+                            likes = mutableMapOf(),
+                            isPublic = true
                         )
 
                         // Save the post object to the "posts" node in the Realtime Database
                         dataBaseRef.child("posts").child(postId).setValue(post)
                             .addOnSuccessListener {
-                                // Show a success message when the post is successfully added
-                                Toast.makeText(
-                                    context,
-                                    "Post added successfully!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                Toast.makeText(context, "Post added successfully!", Toast.LENGTH_SHORT).show()
                             }.addOnFailureListener { e ->
-                                // Show an error message if adding the post fails
-                                Toast.makeText(
-                                    context,
-                                    "Failed to add post: ${e.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                Toast.makeText(context, "Failed to add post: ${e.message}", Toast.LENGTH_SHORT).show()
                             }
                     }.addOnFailureListener {
-                        // Show an error message if fetching the download URL fails
-                        Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT)
-                            .show()
+                        Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
                     }
                 }.addOnFailureListener {
-                    // Show an error message if the image upload fails
-                    Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Failed to upload media", Toast.LENGTH_SHORT).show()
                 }
             }.addOnFailureListener {
-            // Show an error message if fetching the username fails
-            Toast.makeText(context, "Failed to get username", Toast.LENGTH_SHORT).show()
-        }
+                Toast.makeText(context, "Failed to get username", Toast.LENGTH_SHORT).show()
+            }
     }
 
     // Function to like or unlike a post
