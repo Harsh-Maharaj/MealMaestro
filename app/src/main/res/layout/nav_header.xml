@@ -11,7 +11,7 @@
         android:id="@+id/nav_header_image"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:src="@drawable/ic_launcher_foreground"
+        android:src="@drawable/meal_maestro_logo"
         android:contentDescription="@string/nav_header_desc"
         android:layout_gravity="center_horizontal"
         android:paddingBottom="8dp" />
