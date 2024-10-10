@@ -3,6 +3,7 @@ package com.example.mealmaestro
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.VideoView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -27,32 +29,28 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class PostAdapter(
-    private val context: Context,            // Context to load resources and access system services
-    private val postList: MutableList<Post>, // List of posts to display in the RecyclerView
-    private val onUnsave: (Post) -> Unit     // Lambda function to handle unsaving a post
+    private val context: Context,
+    private val postList: MutableList<Post>,
+    private val onUnsave: (Post) -> Unit
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
-    // Create a new ViewHolder for each item in the RecyclerView
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.item_post, parent, false)
         return PostViewHolder(view)
     }
 
-    // Bind the data to the ViewHolder at a given position in the RecyclerView
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = postList[position]
-        holder.bind(post)  // Bind the post data to the ViewHolder
+        holder.bind(post)
     }
 
-    // Return the total number of items in the RecyclerView
     override fun getItemCount(): Int {
         return postList.size
     }
 
-    // ViewHolder class to hold and manage views for each post
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        // Initialize views
         private val imageView: ImageView = itemView.findViewById(R.id.image_view_post)
+        private val videoView: VideoView = itemView.findViewById(R.id.video_view_post)
         private val textViewCaption: TextView = itemView.findViewById(R.id.text_view_caption)
         private val buttonViewMore: TextView = itemView.findViewById(R.id.button_view_more)
         private val buttonComment: ImageButton = itemView.findViewById(R.id.button_comment)
@@ -61,68 +59,78 @@ class PostAdapter(
         private val buttonShare: ImageButton = itemView.findViewById(R.id.button_share)
         private val buttonMore: ImageButton = itemView.findViewById(R.id.button_more)
         private val likeCount: TextView = itemView.findViewById(R.id.like_count)
-        private val recyclerViewComments: RecyclerView =
-            itemView.findViewById(R.id.recycler_view_comments)
+        private val recyclerViewComments: RecyclerView = itemView.findViewById(R.id.recycler_view_comments)
         private val editTextComment: TextView = itemView.findViewById(R.id.edit_text_comment)
         private val buttonPostComment: TextView = itemView.findViewById(R.id.button_post_comment)
         private val usernameTextView: TextView = itemView.findViewById(R.id.username)
         private val postTimeTextView: TextView = itemView.findViewById(R.id.post_time)
 
         init {
-            // Handle "More" button click to generate shopping list
             buttonMore.setOnClickListener {
                 showGenerateShoppingListDialog(postList[adapterPosition])
             }
         }
 
-        // Bind the post data to the views
         fun bind(post: Post) {
-            // Load the post image using Glide
-            Glide.with(context)
-                .load(post.image_url)
-                .fitCenter()  // Set the image to fit within the view
-                .listener(object : RequestListener<Drawable> {
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        return false  // Return false to allow Glide's error handling
-                    }
-
-                    override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        resource?.let {
-                            val imageViewWidth = imageView.width
-                            val aspectRatio =
-                                it.intrinsicWidth.toFloat() / it.intrinsicHeight.toFloat()
-                            val imageViewHeight = (imageViewWidth / aspectRatio).toInt()
-
-                            // Set the ImageView height dynamically to maintain the image aspect ratio
-                            imageView.layoutParams.height = imageViewHeight
-                            imageView.requestLayout()
+            if (post.video_url.isNotEmpty()) {
+                // Display the video if video_url is not empty
+                imageView.visibility = View.GONE
+                videoView.visibility = View.VISIBLE
+                videoView.setVideoURI(Uri.parse(post.video_url))
+                videoView.setOnPreparedListener { mp ->
+                    mp.setVolume(1f, 1f)
+                    videoView.start()
+                }
+                videoView.setOnCompletionListener {
+                    // Handle video playback completion if needed
+                }
+                videoView.setOnErrorListener { mp, what, extra ->
+                    // Handle video playback errors
+                    true
+                }
+            } else {
+                // Display the image if there is no video
+                videoView.visibility = View.GONE
+                imageView.visibility = View.VISIBLE
+                Glide.with(context)
+                    .load(post.image_url)
+                    .fitCenter()
+                    .listener(object : RequestListener<Drawable> {
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Drawable>?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            return false
                         }
-                        return false
-                    }
-                })
-                .into(imageView)
 
-            // Fetch the username associated with the post from Firebase Realtime Database
-            fetchUsernameFromRealtimeDatabase(post.user_id, usernameTextView)
-
-            // Set the post timestamp if available
-            post.created_at?.let {
-                postTimeTextView.text =
-                    getTimeAgo(it.toDate().time)  // Convert timestamp to human-readable format
+                        override fun onResourceReady(
+                            resource: Drawable?,
+                            model: Any?,
+                            target: Target<Drawable>?,
+                            dataSource: DataSource?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            resource?.let {
+                                val imageViewWidth = imageView.width
+                                val aspectRatio =
+                                    it.intrinsicWidth.toFloat() / it.intrinsicHeight.toFloat()
+                                val imageViewHeight = (imageViewWidth / aspectRatio).toInt()
+                                imageView.layoutParams.height = imageViewHeight
+                                imageView.requestLayout()
+                            }
+                            return false
+                        }
+                    })
+                    .into(imageView)
             }
 
-            // Manage the visibility of the "View More" button based on caption length
+            fetchUsernameFromRealtimeDatabase(post.user_id, usernameTextView)
+            post.created_at?.let {
+                postTimeTextView.text = getTimeAgo(it.toDate().time)
+            }
+
             if (post.caption.length > 100) {
                 buttonViewMore.visibility = View.VISIBLE
                 textViewCaption.maxLines = if (post.isCaptionExpanded) Int.MAX_VALUE else 3
@@ -132,16 +140,13 @@ class PostAdapter(
                 textViewCaption.maxLines = Int.MAX_VALUE
             }
 
-            // Toggle caption expansion when the "View More" button is clicked
             buttonViewMore.setOnClickListener {
                 post.isCaptionExpanded = !post.isCaptionExpanded
                 notifyItemChanged(adapterPosition)
             }
 
-            // Set the post caption
             textViewCaption.text = post.caption
 
-            // Initialize the comments section with a CommentAdapter
             val commentAdapter = CommentAdapter(context, post.comments)
             recyclerViewComments.layoutManager = LinearLayoutManager(context).apply {
                 isSmoothScrollbarEnabled = true
@@ -149,31 +154,25 @@ class PostAdapter(
             recyclerViewComments.adapter = commentAdapter
             recyclerViewComments.setHasFixedSize(true)
 
-            // Update the like button state and like count
             updateLikeButton(post)
             likeCount.text = "${post.likes.size} likes"
 
-            // Handle like button click
             buttonLike.setOnClickListener {
                 toggleLike(post)
             }
 
-            // Toggle the visibility of the comments section
             recyclerViewComments.visibility =
                 if (post.isCommentsVisible) View.VISIBLE else View.GONE
 
-            // Handle comment button click to show/hide comments
             buttonComment.setOnClickListener {
                 post.isCommentsVisible = !post.isCommentsVisible
                 notifyItemChanged(adapterPosition)
             }
 
-            // Handle post comment button click
             buttonPostComment.setOnClickListener {
                 postComment(post)
             }
 
-            // Handle post save/unsave button click
             buttonSave.setOnClickListener {
                 if (post.isSaved) {
                     unsavePost(post)
@@ -182,7 +181,6 @@ class PostAdapter(
                 }
             }
 
-            // Handle share button click to share the post with a friend
             buttonShare.setOnClickListener {
                 showFriendsDialog(post)
             }

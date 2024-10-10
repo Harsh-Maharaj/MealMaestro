@@ -394,96 +394,104 @@ class DataBase(private val context: Context?) {
                 })
         }
 
-        // -------------------- File Metadata --------------------------
+// -------------------- File Metadata --------------------------
 
-        fun saveFileMetadata(uid: String, fileUrl: String, mimeType: String?, folder: String) {
-            val metadata = mapOf(
-                "url" to fileUrl,
-                "mimeType" to mimeType,
-                "folder" to folder,
-                "timestamp" to System.currentTimeMillis()
-            )
-            dataBaseRef.child("user").child(uid).child("files").push().setValue(metadata)
-        }
+fun saveFileMetadata(uid: String, fileUrl: String, mimeType: String?, folder: String) {
+    val metadata = mapOf(
+        "url" to fileUrl,
+        "mimeType" to mimeType,
+        "folder" to folder,
+        "timestamp" to System.currentTimeMillis()
+    )
+    dataBaseRef.child("user").child(uid).child("files").push().setValue(metadata)
+}
 
-        // -------------------- Posts Methods --------------------------
+// -------------------- Posts Methods --------------------------
 
-        fun addPostToDataBase(uid: String, imageUri: Uri, caption: String) {
-            val postId = UUID.randomUUID().toString()
-            val postImageRef = storageRef.child("postImages/$postId.jpg")
+// Function to add a new post to the Firebase Realtime Database with support for both images and videos
+fun addPostToDataBase(uid: String, mediaUri: Uri, caption: String, isVideo: Boolean) {
+    val postId = UUID.randomUUID().toString()
+    val fileType = if (isVideo) "videos" else "images"
+    val fileExtension = if (isVideo) ".mp4" else ".jpg"
 
-            postImageRef.putFile(imageUri).addOnSuccessListener {
-                postImageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+    // Creating a reference to where the media will be stored in Firebase Storage
+    val mediaRef = storageRef.child("$fileType/$postId$fileExtension")
+
+    // Fetch the username of the user who is creating the post from the Realtime Database
+    dataBaseRef.child("user").child(uid).child("username").get()
+        .addOnSuccessListener { snapshot ->
+            val username = snapshot.getValue(String::class.java) ?: "Unknown"
+
+            // Upload the media file to Firebase Storage
+            mediaRef.putFile(mediaUri).addOnSuccessListener {
+                // After a successful upload, retrieve the download URL of the uploaded file
+                mediaRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                    // Create a Post object with the required fields
                     val post = Post(
                         postId = postId,
                         user_id = uid,
-                        image_url = downloadUri.toString(),
+                        username = username,
+                        image_url = if (!isVideo) downloadUri.toString() else "",
+                        video_url = if (isVideo) downloadUri.toString() else "",
                         caption = caption,
-                        likes = mutableMapOf(), // Initialize with a mutable map
-                        isPublic = true // Set post visibility to public
+                        likes = mutableMapOf(),
+                        isPublic = true
                     )
+                    // Save the post object to the "posts" node in the Realtime Database
                     dataBaseRef.child("posts").child(postId).setValue(post)
                         .addOnSuccessListener {
-                            Toast.makeText(context, "Post added successfully!", Toast.LENGTH_SHORT)
-                                .show()
+                            Toast.makeText(context, "Post added successfully!", Toast.LENGTH_SHORT).show()
                         }.addOnFailureListener { e ->
-                            Toast.makeText(
-                                context,
-                                "Failed to add post: ${e.message}",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Toast.makeText(context, "Failed to add post: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                 }.addOnFailureListener {
                     Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
                 }
             }.addOnFailureListener {
-                Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Failed to upload media", Toast.LENGTH_SHORT).show()
+            }
+        }.addOnFailureListener {
+            Toast.makeText(context, "Failed to get username", Toast.LENGTH_SHORT).show()
+        }
+}
+
+// Function to like or unlike a post
+fun likePost(postId: String, userId: String, callback: (Boolean) -> Unit) {
+    val postRef = dataBaseRef.child("posts").child(postId)
+
+    postRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val post = snapshot.getValue(Post::class.java) ?: return
+
+            if (post.likes.containsKey(userId)) {
+                // User has already liked the post, so we remove the like
+                postRef.child("likes").child(userId).removeValue()
+                    .addOnSuccessListener {
+                        callback(false) // Not liked
+                        Toast.makeText(context, "Post unliked!", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(context, "Failed to unlike post: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            } else {
+                // User has not liked the post yet, so we add the like
+                postRef.child("likes").child(userId).setValue(true)
+                    .addOnSuccessListener {
+                        callback(true) // Liked
+                        Toast.makeText(context, "Post liked!", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(context, "Failed to like post: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
         }
 
+        override fun onCancelled(error: DatabaseError) {
+            Toast.makeText(context, "Failed to check like status.", Toast.LENGTH_SHORT).show()
+        }
+    })
+}
 
-        fun likePost(postId: String, userId: String, callback: (Boolean) -> Unit) {
-            val postRef = dataBaseRef.child("posts").child(postId)
-
-            postRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val post = snapshot.getValue(Post::class.java) ?: return
-
-                    if (post.likes.containsKey(userId)) {
-                        // User has already liked the post, so we remove the like
-                        postRef.child("likes").child(userId).removeValue()
-                            .addOnSuccessListener {
-                                callback(false) // Not liked
-                                Toast.makeText(context, "Post unliked!", Toast.LENGTH_SHORT).show()
-                            }
-                            .addOnFailureListener { e ->
-                                Toast.makeText(
-                                    context,
-                                    "Failed to unlike post: ${e.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                    } else {
-                        // User has not liked the post yet, so we add the like
-                        postRef.child("likes").child(userId).setValue(true)
-                            .addOnSuccessListener {
-                                callback(true) // Liked
-                                Toast.makeText(context, "Post liked!", Toast.LENGTH_SHORT).show()
-                            }
-                            .addOnFailureListener { e ->
-                                Toast.makeText(
-                                    context,
-                                    "Failed to like post: ${e.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                    }
-                }
-            }.addOnFailureListener {
-                // Show an error message if fetching the username fails
-                Toast.makeText(context, "Failed to get username", Toast.LENGTH_SHORT).show()
-            }
-    }
 
     // Function to like or unlike a post
     fun likePost(postId: String, userId: String, callback: (Boolean) -> Unit) {
