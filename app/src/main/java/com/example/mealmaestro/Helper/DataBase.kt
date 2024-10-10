@@ -522,62 +522,50 @@ class DataBase(private val context: Context?) {
     // -------------------- Posts Methods --------------------------
 
     // Function to add a new post to the Firebase Realtime Database
-    fun addPostToDataBase(uid: String, imageUri: Uri, caption: String) {
-        // Generate a unique ID for the post using UUID
+    // Function to add a new post to the Firebase Realtime Database with support for both images and videos
+    fun addPostToDataBase(uid: String, mediaUri: Uri, caption: String, isVideo: Boolean) {
         val postId = UUID.randomUUID().toString()
+        val fileType = if (isVideo) "videos" else "images"
+        val fileExtension = if (isVideo) ".mp4" else ".jpg"
 
-        // Create a reference to where the post image will be stored in Firebase Storage
-        val postImageRef = storageRef.child("postImages/$postId.jpg")
+        // Creating a reference to where the media will be stored in Firebase Storage
+        val mediaRef = storageRef.child("$fileType/$postId$fileExtension")
 
         // Fetch the username of the user who is creating the post from the Realtime Database
         dataBaseRef.child("user").child(uid).child("username").get()
             .addOnSuccessListener { snapshot ->
-                val username = snapshot.getValue(String::class.java)
-                    ?: "Unknown" // Default to "Unknown" if username is not found
+                val username = snapshot.getValue(String::class.java) ?: "Unknown"
 
-                // Upload the image to Firebase Storage
-                postImageRef.putFile(imageUri).addOnSuccessListener {
-                    // Get the download URL for the uploaded image
-                    postImageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                // Upload the media file to Firebase Storage
+                mediaRef.putFile(mediaUri).addOnSuccessListener {
+                    // After a successful upload, retrieve the download URL of the uploaded file
+                    mediaRef.downloadUrl.addOnSuccessListener { downloadUri ->
                         // Create a Post object with the required fields
                         val post = Post(
-                            postId = postId, // Unique post ID
-                            user_id = uid, // ID of the user creating the post
-                            username = username,  // Username of the post creator
-                            image_url = downloadUri.toString(), // URL of the uploaded image
-                            caption = caption, // Post caption
-                            likes = mutableMapOf(), // Initialize an empty mutable map for likes
-                            isPublic = true // Set post visibility to public
+                            postId = postId,
+                            user_id = uid,
+                            username = username,
+                            image_url = if (!isVideo) downloadUri.toString() else "",
+                            video_url = if (isVideo) downloadUri.toString() else "",
+                            caption = caption,
+                            likes = mutableMapOf(),
+                            isPublic = true
                         )
 
                         // Save the post object to the "posts" node in the Realtime Database
                         dataBaseRef.child("posts").child(postId).setValue(post)
                             .addOnSuccessListener {
-                                // Show a success message when the post is successfully added
-                                Toast.makeText(
-                                    context,
-                                    "Post added successfully!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                Toast.makeText(context, "Post added successfully!", Toast.LENGTH_SHORT).show()
                             }.addOnFailureListener { e ->
-                                // Show an error message if adding the post fails
-                                Toast.makeText(
-                                    context,
-                                    "Failed to add post: ${e.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                Toast.makeText(context, "Failed to add post: ${e.message}", Toast.LENGTH_SHORT).show()
                             }
                     }.addOnFailureListener {
-                        // Show an error message if fetching the download URL fails
-                        Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT)
-                            .show()
+                        Toast.makeText(context, "Failed to get download URL", Toast.LENGTH_SHORT).show()
                     }
                 }.addOnFailureListener {
-                    // Show an error message if the image upload fails
-                    Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Failed to upload media", Toast.LENGTH_SHORT).show()
                 }
             }.addOnFailureListener {
-                // Show an error message if fetching the username fails
                 Toast.makeText(context, "Failed to get username", Toast.LENGTH_SHORT).show()
             }
     }
