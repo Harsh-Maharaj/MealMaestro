@@ -43,4 +43,12 @@
         android:name="com.example.mealmaestro.AiFragment"
         android:label="AI"
         tools:layout="@layout/fragment_ai" />
+
+
+    <fragment
+        android:id="@+id/shoppingListFragment"
+        android:name="com.example.mealmaestro.ShoppingListFragment"
+        android:label="Shopping List"
+        tools:layout="@layout/fragment_shopping_list" />
+
 </navigation>
