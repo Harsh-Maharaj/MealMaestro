@@ -1,5 +1,11 @@
 [versions]
 agp = "8.5.2"
+firebaseBom = "33.3.0"
+glide = "4.12.0"
+googleGoogleAuthLibraryOauth2Http = "1.1.0"
+jetbrainsKotlinxCoroutinesCoreVersion = "1.5.0"
+json = "20210307"
+jsonJson = "20201115"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -21,13 +27,21 @@ firebaseMessaging = "24.0.1"
 firebaseFunctions = "21.0.0"
 firebaseAnalytics = "22.1.0"
 firebaseConfigKtx = "22.0.0"
+okhttp = "4.9.3"
+playServicesAuth = "21.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+google-google-auth-library-oauth2-http = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleGoogleAuthLibraryOauth2Http" }
+json = { module = "org.json:json", version.ref = "json" }
+json-v20201115 = { module = "org.json:json", version.ref = "jsonJson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "jetbrainsKotlinxCoroutinesCoreVersion" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
@@ -42,6 +56,9 @@ firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging
 firebase-functions = { group = "com.google.firebase", name = "firebase-functions", version.ref = "firebaseFunctions" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics", version.ref = "firebaseAnalytics" }
 firebase-config-ktx = { group = "com.google.firebase", name = "firebase-config-ktx", version.ref = "firebaseConfigKtx" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+org-jetbrains-kotlinx-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "jetbrainsKotlinxCoroutinesCoreVersion" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
