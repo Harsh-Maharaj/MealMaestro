@@ -51,4 +51,11 @@
         android:label="Shopping List"
         tools:layout="@layout/fragment_shopping_list" />
 
+    <fragment
+        android:id="@+id/aiGenRecipesFragment"
+        android:name="com.example.mealmaestro.AiGenRecipesFragment"
+        android:label="AI Generated Recipes"
+        tools:layout="@layout/fragment_aigen_recipes" />
+
+
 </navigation>

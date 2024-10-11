@@ -118,6 +118,14 @@ class MainActivity : AppCompatActivity() {
                     drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
+                R.id.nav_aigen_recipes -> {
+                    navController.navigate(R.id.aiGenRecipesFragment)
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+
+
+
                 else -> false
             }
         }
