@@ -1,6 +1,7 @@
 package com.example.mealmaestro
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -18,30 +19,31 @@ class LoginActivity : AppCompatActivity() {
 
     // View binding for accessing views in the layout
     private lateinit var binding: ActivityLoginBinding
+
     // Google authentication helper class
     private lateinit var googleAuth: GoogleAuth
+
     // Firebase authentication instance
     private lateinit var auth: FirebaseAuth
+
     // Additional authentication helper (if needed)
     private lateinit var xAuth: XAuth
 
-    // ========================== GOOGLE AUTH HANDLING ==============================================
     // Register an activity result launcher to handle Google Sign-In result
     private val launcher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            googleAuth.handleSignInResult(GoogleAuth.REQ_ONE_TAP, result.data)  // Handle sign-in result
+            googleAuth.handleSignInResult(GoogleAuth.REQ_ONE_TAP, result.data)
         }
 
     // Handle activity result for Google sign-in (if not using the launcher)
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        // Forward the result to the GoogleAuth class to process it
         googleAuth.handleSignInResult(requestCode, data)
     }
-    // ==============================================================================================
 
     // onCreate method - this is called when the activity is first created
     override fun onCreate(savedInstanceState: Bundle?) {
+        applyThemeFromPreferences()  // Apply the selected theme before setting the layout
         super.onCreate(savedInstanceState)
 
         // Set up view binding to access the UI components
@@ -69,44 +71,38 @@ class LoginActivity : AppCompatActivity() {
             UserLogin()  // Trigger login when the login button is clicked
         }
         binding.loginSignupBtn.setOnClickListener {
-            val intent = Intent(this@LoginActivity, SignUpActivity::class.java)  // Start signup activity
+            val intent = Intent(this@LoginActivity, SignUpActivity::class.java)
             startActivity(intent)
         }
 
-        // ========================= GOOGLE SIGN-IN ================================================
         // Set up Google sign-in button click listener
         binding.googleBtn.setOnClickListener {
-            googleAuth.launchSignIn()  // Trigger Google sign-in
+            googleAuth.launchSignIn()
         }
+
         // Initialize GoogleAuth with the activity and launcher
         googleAuth = GoogleAuth(this, launcher)
     }
 
-    // ========================= EMAIL & PASSWORD LOGIN ============================================
     // Function to handle user login via email and password
     private fun UserLogin() {
-        // Retrieve the username and password from the input fields
         val userName = binding.loginUsername.text.toString()
         val password = binding.loginPassword.text.toString()
 
-        // Check if either the username or password is empty
         if (userName.isEmpty() || password.isEmpty()) {
             Toast.makeText(
                 this@LoginActivity,
-                "please fill UserName and Password",  // Show a toast message if fields are empty
+                "please fill UserName and Password",
                 Toast.LENGTH_SHORT
             ).show()
         } else {
-            // Use Firebase Authentication to sign in with email and password
             auth.signInWithEmailAndPassword(userName, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        // Show success message and navigate to the main activity if login is successful
                         Toast.makeText(this@LoginActivity, "Login Successfully", Toast.LENGTH_SHORT)
                             .show()
                         startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                     } else {
-                        // Show failure message if login fails
                         Toast.makeText(
                             this@LoginActivity,
                             "Login failed, please try again",
@@ -114,6 +110,19 @@ class LoginActivity : AppCompatActivity() {
                         ).show()
                     }
                 }
+        }
+    }
+
+    // Apply the selected theme from SharedPreferences
+    private fun applyThemeFromPreferences() {
+        val sharedPreferences: SharedPreferences =
+            android.preference.PreferenceManager.getDefaultSharedPreferences(this)
+        val selectedTheme = sharedPreferences.getInt("SelectedTheme", 0)
+        when (selectedTheme) {
+            1 -> setTheme(R.style.DynamicTheme1)
+            2 -> setTheme(R.style.DynamicTheme2)
+            3 -> setTheme(R.style.DynamicTheme3)
+            4 -> setTheme(R.style.DynamicTheme4)
         }
     }
 }
