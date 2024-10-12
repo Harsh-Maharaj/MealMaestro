@@ -56,7 +56,7 @@ class TimerActivity : AppCompatActivity() {
 
         // Keep the screen on while using the TimerActivity
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        
+
         // Initialize the UI components
         drawerLayout = findViewById(R.id.drawer_layout) // Get the DrawerLayout from the XML layout
         timeTxt = findViewById(R.id.timeTxt) // Get the TextView to display the time

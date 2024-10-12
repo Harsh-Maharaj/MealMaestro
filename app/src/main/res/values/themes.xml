@@ -18,4 +18,31 @@
 
 
     <style name="Theme.MealMaestro" parent="Base.Theme.MealMaestro" />
+
+
+
+    <style name="DynamicTheme1" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/theme1ColorPrimary</item>
+        <item name="colorPrimaryDark">@color/theme1ColorPrimaryDark</item>
+        <item name="colorSecondary">@color/theme1ColorOnSecondary</item>
+    </style>
+
+    <style name="DynamicTheme2" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/theme2ColorPrimary</item>
+        <item name="colorPrimaryDark">@color/theme2ColorPrimaryDark</item>
+        <item name="colorSecondary">@color/theme2ColorOnSecondary</item>
+    </style>
+
+    <style name="DynamicTheme3" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/theme3ColorPrimary</item>
+        <item name="colorPrimaryDark">@color/theme3ColorPrimaryDark</item>
+        <item name="colorSecondary">@color/theme3ColorOnSecondary</item>
+    </style>
+
+    <style name="DynamicTheme4" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/theme4ColorPrimary</item>
+        <item name="colorPrimaryDark">@color/theme4ColorPrimaryDark</item>
+        <item name="colorSecondary">@color/theme4ColorOnSecondary</item>
+    </style>
+
 </resources>

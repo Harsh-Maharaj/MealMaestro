@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
 
     // onCreate method - this is called when the activity is first created
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
 
         // Set up view binding to access the UI components
@@ -124,7 +125,12 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
 
-
+                R.id.nav_customColor -> {
+                    val intent = Intent(this, ColorActivity::class.java)
+                    startActivity(intent)
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
 
                 else -> false
             }

@@ -58,4 +58,6 @@
         tools:layout="@layout/fragment_aigen_recipes" />
 
 
+
+
 </navigation>
