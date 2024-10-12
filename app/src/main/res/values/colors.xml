@@ -16,6 +16,8 @@
     <color name="colorAccent">#03DAC5</color>
     <color name="cardBackground">#F5F5F5</color>
     <color name="focused_background">#E0E0E0</color> <!-- Light gray or any color you prefer -->
+    <color name="grey">#949297</color>
+    <color name="darkgrey">#545454</color>
     <color name="purple_500">#6200EE</color>
 
 

@@ -23,13 +23,14 @@ class AiGenRecipesFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_aigen_recipes, container, false)
-        recyclerView = view.findViewById(R.id.recyclerViewAiResponses)
 
-        aiResponseAdapter = AiResponseAdapter(aiResponses)
+        // Initialize RecyclerView and Adapter
+        recyclerView = view.findViewById(R.id.recyclerViewAiResponses)
+        aiResponseAdapter = AiResponseAdapter(aiResponses, requireContext())
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = aiResponseAdapter
 
-        fetchResponsesFromFirestore()
+        fetchResponsesFromFirestore() // Fetch saved responses
 
         return view
     }
@@ -39,16 +40,18 @@ class AiGenRecipesFragment : Fragment() {
 
         if (userId != null) {
             val db = Firebase.firestore
+
+            // Query Firestore for responses matching the logged-in user
             db.collection("ai_responses")
                 .whereEqualTo("userId", userId)
                 .get()
                 .addOnSuccessListener { documents ->
-                    aiResponses.clear()
+                    aiResponses.clear() // Clear existing data to avoid duplicates
                     for (document in documents) {
                         val response = document.toObject(AiResponse::class.java)
                         aiResponses.add(response)
                     }
-                    aiResponseAdapter.notifyDataSetChanged()
+                    aiResponseAdapter.notifyDataSetChanged() // Notify adapter
                 }
                 .addOnFailureListener { e ->
                     Log.e("AiGenRecipesFragment", "Failed to fetch responses from Firestore", e)
