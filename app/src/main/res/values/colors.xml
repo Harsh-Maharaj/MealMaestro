@@ -20,8 +20,21 @@
     <color name="darkgrey">#545454</color>
     <color name="purple_500">#6200EE</color>
 
+    <color name="theme1ColorPrimary">#EF6C00</color>
+    <color name="theme1ColorPrimaryDark">#E65100</color>
+    <color name="theme1ColorOnSecondary">#0277BD</color>
 
+    <color name="theme2ColorPrimary">#00695C</color>
+    <color name="theme2ColorPrimaryDark">#004D40</color>
+    <color name="theme2ColorOnSecondary">#0097A7</color>
 
+    <color name="theme3ColorPrimary">#AD1457</color>
+    <color name="theme3ColorPrimaryDark">#880E4F</color>
+    <color name="theme3ColorOnSecondary">#7986CB</color>
+
+    <color name="theme4ColorPrimary">#1565C0</color>
+    <color name="theme4ColorPrimaryDark">#0D47A1</color>
+    <color name="theme4ColorOnSecondary">#C62828</color>
 
 
 </resources>
