@@ -6,16 +6,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
-import com.google.firebase.ktx.Firebase
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -29,7 +32,8 @@ class AiFragment : Fragment() {
     private lateinit var idTVQuestion: TextView
     private lateinit var etQuestion: TextInputEditText
     private lateinit var aiImageResponse: ImageView
-    private lateinit var btnSubmitQuestion: MaterialButton // Button to trigger the AI request
+    private lateinit var btnSubmitQuestion: MaterialButton
+    private lateinit var btnSaveToFavorites: ImageButton
     private lateinit var apiKey: String
 
     // Initialize Firebase Remote Config
@@ -48,6 +52,7 @@ class AiFragment : Fragment() {
         txtResponse = view.findViewById(R.id.txtResponse)
         aiImageResponse = view.findViewById(R.id.ai_image_response)
         btnSubmitQuestion = view.findViewById(R.id.btnSubmitQuestion)
+        btnSaveToFavorites = view.findViewById(R.id.btnSaveToFavorites)
 
         // Introduce Maestro when the user enters the page
         txtResponse.text = "Hi I'm Maestro, your virtual food AI assistant"
@@ -75,7 +80,38 @@ class AiFragment : Fragment() {
             handleQuerySubmit()
         }
 
+        // Save the response when clicking the heart button
+        btnSaveToFavorites.setOnClickListener {
+            saveResponse()
+        }
+
         return view
+    }
+
+    // Function to save the current AI response to Firestore
+    private fun saveResponse() {
+        val question = idTVQuestion.text.toString()
+        val response = txtResponse.text.toString()
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (userId != null && question.isNotEmpty() && response.isNotEmpty()) {
+            val aiResponse = AiResponse(userId, question, response)
+            saveResponseToFirestore(aiResponse)
+        } else {
+            Log.d("AiFragment", "No response to save or user not logged in.")
+        }
+    }
+
+    private fun saveResponseToFirestore(aiResponse: AiResponse) {
+        val db = Firebase.firestore
+        db.collection("ai_responses")
+            .add(aiResponse)
+            .addOnSuccessListener {
+                Log.d("AiFragment", "Response saved successfully in Firestore for user: ${aiResponse.userId}")
+            }
+            .addOnFailureListener { e ->
+                Log.e("AiFragment", "Failed to save response in Firestore", e)
+            }
     }
 
     // Fetch API key from Firebase Remote Config
