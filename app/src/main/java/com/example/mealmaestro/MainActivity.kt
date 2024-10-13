@@ -1,6 +1,9 @@
 package com.example.mealmaestro
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -50,7 +53,8 @@ class MainActivity : AppCompatActivity() {
 
         drawerLayout = binding.drawerLayout
 
-        val logoImageView: ImageView = binding.chatToolBarImgFrame.findViewById(R.id.chatToolBar_img)
+        val logoImageView: ImageView =
+            binding.chatToolBarImgFrame.findViewById(R.id.chatToolBar_img)
         logoImageView.setOnClickListener {
             if (!drawerLayout.isDrawerOpen(GravityCompat.START)) {
                 drawerLayout.openDrawer(GravityCompat.START)
@@ -68,6 +72,7 @@ class MainActivity : AppCompatActivity() {
                     startActivity(Intent(this, RecycleUserFriends::class.java))
                     true
                 }
+
                 else -> {
                     NavigationUI.onNavDestinationSelected(item, navController)
                     drawerLayout.closeDrawer(GravityCompat.START)
@@ -84,16 +89,25 @@ class MainActivity : AppCompatActivity() {
                     drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
+
                 R.id.nav_timer -> {
                     startActivity(Intent(this, TimerActivity::class.java))
                     drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
+
                 R.id.nav_shopping_list -> {
                     navController.navigate(R.id.shoppingListFragment)
                     drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
+
+                R.id.nav_meal_planner -> {  // New: Handle Meal Planner Navigation
+                    startActivity(Intent(this, MealPlannerActivity::class.java))
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+
                 R.id.nav_logout -> {
                     FirebaseAuth.getInstance().signOut()
                     startActivity(Intent(this, LoginActivity::class.java).apply {
@@ -102,16 +116,19 @@ class MainActivity : AppCompatActivity() {
                     drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
+
                 R.id.nav_aigen_recipes -> {
                     navController.navigate(R.id.aiGenRecipesFragment)
                     drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
+
                 R.id.nav_customColor -> {
                     startActivity(Intent(this, ColorActivity::class.java))
                     drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
+
                 else -> false
             }
         }
@@ -128,8 +145,9 @@ class MainActivity : AppCompatActivity() {
         searchBar.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val searchQuery = s.toString()
-                val currentFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
-                    ?.childFragmentManager?.fragments?.get(0)
+                val currentFragment =
+                    supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
+                        ?.childFragmentManager?.fragments?.get(0)
                 if (currentFragment is HomeFragment) {
                     currentFragment.performSearch(searchQuery)
                 }
@@ -173,4 +191,19 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun createNotificationChannel() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val name = "Meal Reminder Channel"
+            val descriptionText = "Channel for meal reminder notifications"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel("mealReminderChannel", name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
 }

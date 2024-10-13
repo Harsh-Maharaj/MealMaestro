@@ -9,15 +9,21 @@
         android:id="@+id/nav_timer"
         android:icon="@drawable/ic_timer"
         android:title="Timer" />
+
     <item
         android:id="@+id/nav_shopping_list"
         android:icon="@drawable/ic_shopping_cart"
-    android:title="Shopping List" />
+        android:title="Shopping List" />
 
     <item
         android:id="@+id/nav_aigen_recipes"
-        android:title="AiGenRecipes"
-        android:icon="@drawable/ic_aigen_recipes" />
+        android:icon="@drawable/ic_aigen_recipes"
+        android:title="AiGenRecipes" />
+
+    <item
+        android:id="@+id/nav_meal_planner"
+        android:icon="@drawable/ic_meal_planner"
+        android:title="Meal Planner" />
 
     <item
         android:id="@+id/nav_settings"
@@ -33,5 +39,4 @@
         android:id="@+id/nav_customColor"
         android:icon="@drawable/baseline_lens_50"
         android:title="CustomColor" />
-
 </menu>

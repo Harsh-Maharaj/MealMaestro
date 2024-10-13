@@ -27,6 +27,14 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Locale
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.app.TimePickerDialog
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import java.util.Calendar
+
 
 class PostAdapter(
     private val context: Context,
@@ -66,10 +74,18 @@ class PostAdapter(
         private val postTimeTextView: TextView = itemView.findViewById(R.id.post_time)
 
         init {
+            // Existing buttonMore click listener
             buttonMore.setOnClickListener {
                 showGenerateShoppingListDialog(postList[adapterPosition])
             }
+
+            // Add long-press listener for showing options dialog
+            itemView.setOnLongClickListener {
+                showOptionsDialog(postList[adapterPosition])
+                true
+            }
         }
+
 
         fun bind(post: Post) {
             if (post.video_url.isNotEmpty()) {
@@ -185,6 +201,125 @@ class PostAdapter(
                 showFriendsDialog(post)
             }
         }
+
+        private fun showOptionsDialog(post: Post) {
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+            val isOwner = post.user_id == currentUserId
+
+            val options = if (isOwner) {
+                arrayOf("Add to Meal Planner", "Delete Post")
+            } else {
+                arrayOf("Add to Meal Planner")
+            }
+
+            AlertDialog.Builder(context)
+                .setTitle("Select an Option")
+                .setItems(options) { _, which ->
+                    when (options[which]) {
+                        "Add to Meal Planner" -> showMealTypeDialog(post)
+                        "Delete Post" -> deletePost(post)
+                    }
+                }
+                .show()
+        }
+        private fun showMealTypeDialog(post: Post) {
+            val mealTypes = arrayOf("Breakfast", "Lunch", "Dinner")
+
+            AlertDialog.Builder(context)
+                .setTitle("Select Meal Type")
+                .setItems(mealTypes) { _, which ->
+                    scheduleAlarmForMeal(post, mealTypes[which])
+                }
+                .show()
+        }
+        private fun scheduleAlarmForMeal(post: Post, mealType: String) {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+            val mealPlannerRef = FirebaseFirestore.getInstance()
+                .collection("mealPlanner")
+                .document(userId)
+                .collection(mealType)
+
+            mealPlannerRef.document(post.postId).set(post)
+                .addOnSuccessListener {
+                    Toast.makeText(context, "$mealType added to meal planner", Toast.LENGTH_SHORT).show()
+                    showTimePicker(post)
+                }
+                .addOnFailureListener {
+                    Toast.makeText(context, "Failed to add to meal planner", Toast.LENGTH_SHORT).show()
+                }
+        }
+        private fun showTimePicker(post: Post) {
+            val calendar = Calendar.getInstance()
+            TimePickerDialog(
+                context,
+                { _, hourOfDay, minute -> setAlarm(post, hourOfDay, minute) },
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                true
+            ).show()
+        }
+        private fun setAlarm(post: Post, hour: Int, minute: Int) {
+            val context = itemView.context
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+            val intent = Intent(context, AlarmReceiver::class.java).apply {
+                putExtra("postId", post.postId)
+                putExtra("title", post.caption)
+                putExtra("mealType", post.mealType)
+            }
+
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                post.postId.hashCode(),
+                intent,
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                } else {
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                }
+            )
+
+            val calendar = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+            }
+
+            // Set alarm with backward compatibility
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                if (!alarmManager.canScheduleExactAlarms()) {
+                    requestExactAlarmPermission(context)
+                    return
+                }
+            }
+
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
+            Toast.makeText(context, "Alarm set for ${post.mealType}!", Toast.LENGTH_SHORT).show()
+        }
+
+        // Function to request permission only for Android 12+
+        private fun requestExactAlarmPermission(context: Context) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                val intent = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                context.startActivity(intent)
+            }
+        }
+
+
+        private fun deletePost(post: Post) {
+            FirebaseFirestore.getInstance().collection("posts").document(post.postId)
+                .delete()
+                .addOnSuccessListener {
+                    postList.remove(post)
+                    notifyItemRemoved(adapterPosition)
+                    Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(context, "Failed to delete post", Toast.LENGTH_SHORT).show()
+                }
+        }
+
+
 
         // Fetch the username from Firebase Realtime Database based on the user ID
         private fun fetchUsernameFromRealtimeDatabase(userId: String, usernameTextView: TextView) {
