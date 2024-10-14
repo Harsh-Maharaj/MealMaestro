@@ -8,5 +8,6 @@ data class Message(
     val timestamp: Long = System.currentTimeMillis(), // The time when the message was created, defaults to the current system time
     val seen: Boolean = false, // Whether the message has been seen by the receiver
     val delivered: Boolean = false, // Whether the message has been delivered to the receiver's device
+    var image: Boolean = false,
     var messageId: String? = null // Unique message ID, nullable
 )

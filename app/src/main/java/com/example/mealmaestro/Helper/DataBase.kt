@@ -312,28 +312,67 @@ class DataBase(private val context: Context?) {
     // -------------------- Chat Methods --------------------------
 
     // ================ NOTIFICATIONS ==============================================================
-    // Function to add a chat message between two friends (sender and receiver)
-    fun addFriendChatMessage(senderRoom: String, receiverRoom: String, messageObject: Message) {
-        // Generate a unique messageId using Firebase's push().key()
-        val messageId = dataBaseRef.child("friendChat").child(senderRoom).child("messages").push().key ?: ""
+    fun addFriendChatMessage(
+        senderRoom: String,
+        receiverRoom: String,
+        messageObject: Message,
+        context: Context
+    ) {
+        val senderUid = messageObject.sender
+        val senderRef = dataBaseRef.child("user").child(senderUid)
 
-        // Update the message object to include the messageId
-        val updatedMessage = messageObject.copy(messageId = messageId)
+        senderRef.get().addOnSuccessListener { senderSnapshot ->
+            if (senderSnapshot.exists()) {
+                val senderName = senderSnapshot.child("username").getValue(String::class.java)
+                val senderIcon = senderSnapshot.child("icon").getValue(String::class.java) ?: "default_icon_url"
 
-        // First, store the message in the sender's chat room with the messageId
-        dataBaseRef.child("friendChat").child(senderRoom).child("messages").child(messageId)
-            .setValue(updatedMessage).addOnSuccessListener {
-                // Once the message is stored in the sender's chat room, store it in the receiver's chat room with the messageId
-                dataBaseRef.child("friendChat").child(receiverRoom).child("messages").child(messageId)
-                    .setValue(updatedMessage).addOnSuccessListener {
-                        // After storing the message in both rooms, trigger a notification to the friend
-                        triggerNotificationToFriend(
-                            messageObject.receiverUid!!,
-                            messageObject.message
-                        )
+                // Store the message in the sender's chat room
+                val senderMessageRef = dataBaseRef.child("friendChat").child(senderRoom).child("messages").push()
+                val messageId = senderMessageRef.key
+
+                if (messageId != null) {
+                    messageObject.messageId = messageId
+                    senderMessageRef.setValue(messageObject).addOnSuccessListener {
+                        // Store the message in the receiver's chat room
+                        dataBaseRef.child("friendChat").child(receiverRoom).child("messages")
+                            .child(messageId).setValue(messageObject).addOnSuccessListener {
+                                // Now call the FCMNotificationService to send the notification
+                                val friendUid = messageObject.receiverUid!!
+                                val friendRef = dataBaseRef.child("user").child(friendUid)
+
+                                // Fetch friend's FCM token from the database
+                                friendRef.get().addOnSuccessListener { friendSnapshot ->
+                                    val friendFcmToken = friendSnapshot.child("fcmToken")
+                                        .getValue(String::class.java)
+
+                                    if (friendFcmToken != null && senderName != null) {
+                                        // Send FCM notification to friend
+                                        val fcmService = FCMNotificationService()
+                                        fcmService.sendFCMNotification(
+                                            friendFcmToken, senderName, friendUid, senderIcon, messageObject.message
+                                        )
+                                    } else {
+                                        Log.e("FCMNotification", "Failed to retrieve FCM token or sender name.")
+                                    }
+                                }.addOnFailureListener {
+                                    Log.e("FCMNotification", "Error retrieving friend's data.")
+                                }
+                            }.addOnFailureListener {
+                                Toast.makeText(context, "Failed to send message to receiver's room.", Toast.LENGTH_SHORT).show()
+                            }
+                    }.addOnFailureListener {
+                        Toast.makeText(context, "Failed to send message to sender's room.", Toast.LENGTH_SHORT).show()
                     }
+                } else {
+                    Log.e("MessageError", "Failed to generate message ID.")
+                }
             }
+        }.addOnFailureListener {
+            Log.e("SenderInfoError", "Error retrieving sender information.")
+        }
     }
+
+
 
 
     // Function to mark a message as "seen" in the chat
@@ -375,7 +414,8 @@ class DataBase(private val context: Context?) {
                 // Send the notification via FCM if all required details are available
                 if (friendFcmToken != null && friendName != null && friendIcon != null) {
                     Log.d("sendFCMNotification", "Notification Fun Send")  // debug
-                    sendFCMNotification(friendFcmToken, friendName, friendUid, friendIcon, message)
+                    val fcmService = FCMNotificationService()
+                    fcmService.sendFCMNotification(friendFcmToken, friendName, friendUid, friendIcon, message)
                 }
             }
         }.addOnFailureListener { exception ->
@@ -384,79 +424,7 @@ class DataBase(private val context: Context?) {
         }
     }
 
-    // Function to send the actual Firebase Cloud Messaging (FCM) notification
-    private fun sendFCMNotification(
-        friendFcmToken: String,
-        friendName: String,
-        friendUid: String,
-        friendIcon: String,
-        message: String
-    ) {
-        // Build the JSON payload for the FCM notification
-        val jsonObject = JSONObject().apply {
-            // Create the notification object that holds the title and body of the notification
-            val notificationObject = JSONObject().apply {
-                put("title", "New message from $friendName") // Notification title
-                put("body", message) // Notification body containing the message content
-            }
-            // Create the data object that holds additional information about the friend (sent as data payload)
-            val dataObject = JSONObject().apply {
-                put("friendName", friendName) // Friend's username
-                put("friendUid", friendUid) // Friend's UID
-                put("friendIcon", friendIcon) // Friend's profile icon URL
-            }
-            // Attach the notification and data to the FCM payload
-            put("notification", notificationObject)
-            put("data", dataObject)
-            put("to", friendFcmToken) // Send the notification to the friend's FCM token
-        }
 
-        // Create an OkHttp client to send the HTTP request to FCM
-        val client = OkHttpClient()
-
-        // Define the media type for the request as JSON
-        val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
-        val requestBody =
-            jsonObject.toString().toRequestBody(mediaType) // Convert JSON to request body
-
-        // Build the HTTP request to send to the FCM server
-        val request = Request.Builder()
-            .url("https://fcm.googleapis.com/fcm/send") // FCM send URL
-            .post(requestBody) // Attach the request body (notification payload)
-            .addHeader(
-                "Authorization",
-                "key=AIzaSyDB24uVr8v76ti0Cd5x-nWPUfrP4OlnHPo"
-            )  // Firebase server key
-            .addHeader("Content-Type", "application/json") // Content type header
-            .build()
-
-        // Send the HTTP request asynchronously using OkHttp
-        client.newCall(request).enqueue(object : Callback {
-            // Handle failure to send the notification
-            override fun onFailure(call: Call, e: IOException) {
-                Log.e("FCMNotification", "Failed to send FCM notification", e)
-            }
-
-            // Handle the response from the FCM server
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!it.isSuccessful) {
-                        // If the response is not successful, log the error message
-                        Log.e(
-                            "FCMNotification",
-                            "FCM Notification Response Failed: ${response.body?.string()}"
-                        )
-                    } else {
-                        // Log the successful response for debugging
-                        Log.i(
-                            "FCMNotification",
-                            "FCM Notification Response: ${response.body?.string()}"
-                        )
-                    }
-                }
-            }
-        })
-    }
 
     //=============================== END NOTIFICATION =================================================
 
@@ -826,6 +794,34 @@ class DataBase(private val context: Context?) {
             ).show()
         }
     }
+// ====================== UPLOAD CAMERA IMAGE ==================================================
 
+    // Upload image to Firebase Storage and send as message
+    fun uploadImageToFirebase(
+        imageUri: Uri,
+        senderRoom: String,
+        receiverRoom: String,
+        senderUid: String,
+        receiverUid: String,
+        context: Context
+    ) {
+        val fileRef = storageRef.child("chatImages/${System.currentTimeMillis()}.jpg")
+        fileRef.putFile(imageUri)
+            .addOnSuccessListener {
+                fileRef.downloadUrl.addOnSuccessListener { uri ->
+                    val messageObject = Message(
+                        uri.toString(),
+                        senderUid,
+                        receiverUid,
+                        image = true
+                    ) // Indicate this is an image message
 
+                    addFriendChatMessage(senderRoom, receiverRoom, messageObject, context)
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+            }
+    }
 }
+

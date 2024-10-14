@@ -1,86 +1,129 @@
 package com.example.mealmaestro.Chats
 
+import android.app.DownloadManager
 import android.content.Context
+import android.net.Uri
+import android.os.Environment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.mealmaestro.Helper.DataBase
 import com.example.mealmaestro.R
 import com.google.firebase.auth.FirebaseAuth
 
-// MessageAdapter is a RecyclerView adapter that manages chat messages
-// and displays them in the appropriate format (sent or received)
-class MessageAdapter(val context: Context, val messageList: ArrayList<Message>) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MessageAdapter(
+    private val context: Context,
+    private val messageList: ArrayList<Message>,
+    private val senderRoom: String,
+    private val receiverRoom: String
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    // Constants to represent the two different view types: sent and received messages
-    private val ITEM_RECEIVE = 1 // Message received by the user
-    private val ITEM_SENT = 2 // Message sent by the user
+    private val ITEM_RECEIVE = 1
+    private val ITEM_SENT = 2
 
-    // This method is called to create the ViewHolder (the view for each item in the list)
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        // If the message type is receive (1), inflate the receive layout
-        if (viewType == ITEM_RECEIVE) {
-            val view: View =
-                LayoutInflater.from(context).inflate(R.layout.receive_layout, parent, false)
-            return ReceiveViewHolder(view) // Return the ReceiveViewHolder for received messages
-        } else {
-            // If the message type is sent (2), inflate the send layout
-            val view: View =
-                LayoutInflater.from(context).inflate(R.layout.send_layout, parent, false)
-            return SendViewHolder(view) // Return the SendViewHolder for sent messages
-        }
+        val layout = if (viewType == ITEM_RECEIVE) R.layout.receive_layout else R.layout.send_layout
+        val view = LayoutInflater.from(context).inflate(layout, parent, false)
+        return if (viewType == ITEM_RECEIVE) ReceiveViewHolder(view) else SendViewHolder(view)
     }
 
-    // Returns the total number of messages in the chat (size of the messageList)
-    override fun getItemCount(): Int {
-        return messageList.size
-    }
+    override fun getItemCount(): Int = messageList.size
 
-    // Called to bind data (message content) to the view holder based on the position in the list
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        // Get the message at the current position
         val currentMessage = messageList[position]
+        Log.d("MessageAdapter", "Binding position=$position, message=${currentMessage.message}, isImage=${currentMessage.image}")
 
-        // Check the type of the holder (whether it's a sent or received message)
-        if (holder.javaClass == SendViewHolder::class.java) {
-            // If it's a SendViewHolder, bind the sent message content and statuses
-            val viewHolder = holder as SendViewHolder
-            viewHolder.sendMessage.text = currentMessage.message.toString()
-            viewHolder.statusView.text = if (currentMessage.seen) {
-                "Seen"
-            } else if (currentMessage.delivered) {
-                "Delivered"
-            } else {
-                "Sent"
-            }
-        } else {
-            // If it's a ReceiveViewHolder, bind the received message content
-            val viewHolder = holder as ReceiveViewHolder
-            viewHolder.receiveMessage.text = currentMessage.message.toString()
+        if (holder is SendViewHolder) {
+            bindSendViewHolder(holder, currentMessage)
+        } else if (holder is ReceiveViewHolder) {
+            bindReceiveViewHolder(holder, currentMessage)
         }
     }
 
-    // Determines whether the current message is sent or received, to decide the view type
     override fun getItemViewType(position: Int): Int {
         val currentMessage = messageList[position]
-        // If the current user's UID matches the message sender, it's a sent message
-        return if (FirebaseAuth.getInstance().currentUser!!.uid == currentMessage.sender) {
-            ITEM_SENT // Return 2 for sent messages
+        return if (FirebaseAuth.getInstance().currentUser!!.uid == currentMessage.sender) ITEM_SENT else ITEM_RECEIVE
+    }
+
+    private fun bindSendViewHolder(holder: SendViewHolder, message: Message) {
+        if (message.image) {
+            holder.sendImage.visibility = View.VISIBLE
+            holder.sendMessage.visibility = View.GONE
+            Glide.with(context).load(message.message).error(R.drawable.error_placeholder).into(holder.sendImage)
         } else {
-            ITEM_RECEIVE // Return 1 for received messages
+            holder.sendMessage.visibility = View.VISIBLE
+            holder.sendMessage.text = message.message
+            holder.sendImage.visibility = View.GONE
+        }
+        holder.itemView.setOnLongClickListener {
+            showOptionsDialog(message, isSender = true)
+            true
         }
     }
 
-    // ViewHolder for sent messages, referencing the layout for a sent message
-    class SendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val sendMessage: TextView = itemView.findViewById(R.id.send_friend_message) // TextView for the sent message
-        val statusView: TextView = itemView.findViewById(R.id.status_message) // TextView for the status of the message
+    private fun bindReceiveViewHolder(holder: ReceiveViewHolder, message: Message) {
+        if (message.image) {
+            holder.receiveImage.visibility = View.VISIBLE
+            holder.receiveMessage.visibility = View.GONE
+            Glide.with(context).load(message.message).error(R.drawable.error_placeholder).into(holder.receiveImage)
+        } else {
+            holder.receiveMessage.visibility = View.VISIBLE
+            holder.receiveMessage.text = message.message
+            holder.receiveImage.visibility = View.GONE
+        }
+        holder.itemView.setOnLongClickListener {
+            showOptionsDialog(message, isSender = false)
+            true
+        }
     }
 
-    // ViewHolder for received messages, referencing the layout for a received message
+    class SendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val sendMessage: TextView = itemView.findViewById(R.id.send_friend_message)
+        val sendImage: ImageView = itemView.findViewById(R.id.send_friend_image)
+    }
+
     class ReceiveViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val receiveMessage: TextView = itemView.findViewById(R.id.receive_friend_message) // TextView for the received message
+        val receiveMessage: TextView = itemView.findViewById(R.id.receive_friend_message)
+        val receiveImage: ImageView = itemView.findViewById(R.id.receive_friend_image)
+    }
+
+    private fun showOptionsDialog(message: Message, isSender: Boolean) {
+        val dataBase = DataBase()
+        val options = when {
+            message.image && isSender -> arrayOf("Delete")
+            message.image && !isSender -> arrayOf("Download")
+            isSender -> arrayOf("Edit", "Delete")
+            else -> emptyArray()
+        }
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("Select an action")
+        builder.setItems(options) { _, which ->
+            when (options[which]) {
+                "Edit" -> dataBase.editMessage(message, context, senderRoom, receiverRoom)
+                "Delete" -> dataBase.deleteMessage(message, context, senderRoom, receiverRoom)
+                "Download" -> downloadImage(message.message)
+            }
+        }
+        builder.show()
+    }
+
+    private fun downloadImage(url: String) {
+        val request = DownloadManager.Request(Uri.parse(url))
+            .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
+            .setTitle("Downloading Image")
+            .setDescription("Downloading image from chat")
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "${System.currentTimeMillis()}.jpg")
+
+        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        downloadManager.enqueue(request)
+        Toast.makeText(context, "Downloading Image...", Toast.LENGTH_SHORT).show()
     }
 }

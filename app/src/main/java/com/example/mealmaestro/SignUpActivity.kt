@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.mealmaestro.Auth.GoogleAuth
-import com.example.mealmaestro.Auth.XAuth
 import com.example.mealmaestro.Helper.DataBase
 import com.example.mealmaestro.databinding.ActivitySignUpBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -25,9 +24,6 @@ class SignUpActivity : AppCompatActivity() {
 
     // Google authentication helper class
     private lateinit var googleAuth: GoogleAuth
-
-    // Additional authentication helper (if needed)
-    private lateinit var xAuth: XAuth
 
     // Database instance for adding user data to the database
     private val dataBase: DataBase = DataBase()
