@@ -1,17 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@android:color/white">
 
+    <!-- Header TextView -->
     <TextView
-        android:id="@+id/tv_aigen_recipes"
-        android:layout_width="wrap_content"
+        android:id="@+id/headerTextView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="AI-Generated Recipes"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:text="AI Generated Saved Recipes"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="8dp" />
 
-    <!-- Add more UI components like RecyclerView or ListView to display recipes -->
+    <!-- RecyclerView for displaying AI-generated recipes -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewAiResponses"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false" />
 
-</RelativeLayout>
+</LinearLayout>

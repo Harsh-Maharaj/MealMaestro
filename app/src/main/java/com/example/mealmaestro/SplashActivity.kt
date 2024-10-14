@@ -18,6 +18,7 @@ class SplashActivity : AppCompatActivity() {
 
     // Called when the activity is first created
     override fun onCreate(savedInstanceState: Bundle?) {
+        applyThemeFromPreferences()  // Apply theme from preferences before anything else
         super.onCreate(savedInstanceState)
 
         // Enable edge-to-edge layout for immersive experience
@@ -52,5 +53,17 @@ class SplashActivity : AppCompatActivity() {
                 finish()  // Finish the splash activity
             }
         }, 2000)  // 2-second delay for the splash screen
+    }
+
+    // Apply the selected theme from SharedPreferences
+    private fun applyThemeFromPreferences() {
+        val sharedPreferences = android.preference.PreferenceManager.getDefaultSharedPreferences(this)
+        val selectedTheme = sharedPreferences.getInt("SelectedTheme", 0)
+        when (selectedTheme) {
+            1 -> setTheme(R.style.DynamicTheme1)
+            2 -> setTheme(R.style.DynamicTheme2)
+            3 -> setTheme(R.style.DynamicTheme3)
+            4 -> setTheme(R.style.DynamicTheme4)
+        }
     }
 }

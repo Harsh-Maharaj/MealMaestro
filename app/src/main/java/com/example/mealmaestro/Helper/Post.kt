@@ -17,5 +17,8 @@ data class Post(
     val created_at: Timestamp? = null, // The timestamp when the post was created, using Firebase's Timestamp object
     var comments: MutableList<Comment> = mutableListOf(), // A list to store comments on the post, initialized as an empty list
     var isCommentsVisible: Boolean = false, // A flag to track whether comments are currently visible or hidden
-    var isCaptionExpanded: Boolean = false // A flag to track whether the caption is expanded (showing the full caption) or collapsed
+    var isCaptionExpanded: Boolean = false, // A flag to track whether the caption is expanded (showing the full caption) or collapsed
+    val time: Long = 0L,        // Scheduled time in milliseconds
+    var mealType: String = ""  // Add this property
 )
+
