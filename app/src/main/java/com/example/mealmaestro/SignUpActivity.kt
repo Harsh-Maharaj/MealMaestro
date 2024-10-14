@@ -17,16 +17,16 @@ import com.google.firebase.auth.FirebaseAuth
 class SignUpActivity : AppCompatActivity() {
 
     // View binding to access views in the layout
-    private lateinit var binding: ActivitySignUpBinding
+    lateinit var binding: ActivitySignUpBinding
 
     // Firebase authentication instance for email/password sign-up
-    private lateinit var auth: FirebaseAuth
+    lateinit var auth: FirebaseAuth
 
     // Google authentication helper class
     private lateinit var googleAuth: GoogleAuth
 
     // Database instance for adding user data to the database
-    private val dataBase: DataBase = DataBase()
+    var dataBase: DataBase = DataBase()
 
     // Register an activity result launcher to handle Google Sign-In result
     private val launcher =

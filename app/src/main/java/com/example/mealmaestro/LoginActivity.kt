@@ -17,13 +17,13 @@ import com.google.firebase.auth.FirebaseAuth
 class LoginActivity : AppCompatActivity() {
 
     // View binding for accessing views in the layout
-    private lateinit var binding: ActivityLoginBinding
+    lateinit var binding: ActivityLoginBinding
 
     // Google authentication helper class
     private lateinit var googleAuth: GoogleAuth
 
     // Firebase authentication instance
-    private lateinit var auth: FirebaseAuth
+    lateinit var auth: FirebaseAuth
 
     // Register an activity result launcher to handle Google Sign-In result
     private val launcher =
@@ -81,7 +81,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     // Function to handle user login via email and password
-    private fun UserLogin() {
+    fun UserLogin() {
         val userName = binding.loginUsername.text.toString()
         val password = binding.loginPassword.text.toString()
 

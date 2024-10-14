@@ -15,9 +15,9 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
 
     buildTypes {
         release {
@@ -38,6 +38,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
 }
 
 dependencies {
@@ -66,6 +67,14 @@ dependencies {
     implementation(libs.firebase.config.ktx)
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
+
+    testImplementation (libs.junit)
+    testImplementation (libs.robolectric)
+    testImplementation (libs.mockito.core)
+    testImplementation (libs.mockito.inline)
+    testImplementation (libs.androidx.core)
+    testImplementation (libs.androidx.junit.v113)
+
 
 
 
