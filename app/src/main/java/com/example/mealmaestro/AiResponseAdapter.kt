@@ -35,7 +35,7 @@ class AiResponseAdapter(
 
     override fun getItemCount(): Int = responses.size
 
-    private fun showDeleteConfirmationDialog(response: AiResponse, position: Int) {
+    fun showDeleteConfirmationDialog(response: AiResponse, position: Int) {
         AlertDialog.Builder(context).apply {
             setTitle("Delete Response")
             setMessage("Are you sure you want to delete this response?")
