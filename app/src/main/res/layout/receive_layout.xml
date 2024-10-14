@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="5dp">
 
     <RelativeLayout
@@ -15,13 +16,32 @@
             android:id="@+id/receive_friend_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="This is a received message"
+            android:textColor="@android:color/black"
             android:background="@drawable/round_border"
             android:backgroundTint="@color/greenLight"
             android:elegantTextHeight="true"
             android:padding="10dp"
-            android:text="This is a received message"
-            android:textColor="@android:color/black"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:visibility="visible" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginVertical="30dp"
+            app:cardCornerRadius="50dp"
+            app:cardElevation="3dp">
+
+            <ImageView
+                android:id="@+id/receive_friend_image"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:fadingEdge="horizontal"
+                android:visibility="gone"/>
+        </androidx.cardview.widget.CardView>
+
     </RelativeLayout>
 
 </RelativeLayout>

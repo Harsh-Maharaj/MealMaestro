@@ -3,7 +3,9 @@ package com.example.mealmaestro.Helper
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import com.example.mealmaestro.Chats.Message
 import com.example.mealmaestro.Chats.MessageAdapter
 import com.example.mealmaestro.PostAdapter
@@ -700,5 +702,130 @@ class DataBase(private val context: Context?) {
             }
         }
     }
+    // ====================== EDIT MESSAGE =========================================================
+
+    fun editMessage(message: Message, context: Context, senderRoom: String, receiverRoom: String) {
+
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("Edit Message")
+
+        // Use EditText for user input
+        val input = EditText(context)
+        input.setText(message.message) // Pre-fill the EditText with the existing message
+        builder.setView(input)
+
+        // Set the "Update" button to apply changes
+        builder.setPositiveButton("Update") { _, _ ->
+            val newText = input.text.toString().trim()
+            if (newText.isNotEmpty() && message.messageId != null) {
+                val senderRoomRef = dataBaseRef
+                    .child("friendChat")
+                    .child(senderRoom)
+                    .child("messages")
+                    .child(message.messageId!!)
+
+                val receiverRoomRef = dataBaseRef
+                    .child("friendChat")
+                    .child(receiverRoom)
+                    .child("messages")
+                    .child(message.messageId!!)
+
+                // Log to check if the correct message is being updated
+                Log.d(
+                    "EditMessage",
+                    "Editing message in senderRoom: ${senderRoom}, messageId: ${message.messageId}"
+                )
+
+                // Update the message in both sender and receiver rooms
+                senderRoomRef.child("message").setValue(newText)
+                    .addOnSuccessListener {
+                        Log.d("EditMessage", "Message successfully updated in senderRoom")
+                        receiverRoomRef.child("message").setValue(newText)
+                            .addOnSuccessListener {
+                                Log.d("EditMessage", "Message successfully updated in receiverRoom")
+                                Toast.makeText(context, "Message updated", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                            .addOnFailureListener { exception ->
+                                Log.e(
+                                    "EditMessage",
+                                    "Failed to update message in receiverRoom",
+                                    exception
+                                )
+                                Toast.makeText(
+                                    context,
+                                    "Failed to update message in receiver room",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e("EditMessage", "Failed to update message in senderRoom", exception)
+                        Toast.makeText(
+                            context,
+                            "Failed to update message in sender room",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+            }
+        }
+
+        // Set the "Cancel" button to dismiss the dialog
+        builder.setNegativeButton("Cancel", null)
+        builder.show()
+    }
+
+
+    // ======================= DELETE MESSAGE ======================================================
+    // Delete the message
+    fun deleteMessage(
+        message: Message,
+        context: Context,
+        senderRoom: String,
+        receiverRoom: String
+    ) {
+        if (message.messageId != null) {
+            val senderRoomRef = dataBaseRef
+                .child("friendChat")
+                .child(senderRoom)
+                .child("messages")
+                .child(message.messageId!!)
+
+            val receiverRoomRef = dataBaseRef
+                .child("friendChat")
+                .child(receiverRoom)
+                .child("messages")
+                .child(message.messageId!!)
+
+            senderRoomRef.removeValue()
+                .addOnSuccessListener {
+                    receiverRoomRef.removeValue()
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(
+                                context,
+                                "Failed to delete message in receiver room",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(
+                        context,
+                        "Failed to delete message in sender room",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+        } else {
+            Toast.makeText(
+                context,
+                "Unable to delete message, messageId not found",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
 
 }
