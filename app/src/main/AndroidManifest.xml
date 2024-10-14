@@ -2,16 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Existing permissions -->
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-
-    <!-- New permission to allow scheduling of exact alarms -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-permission
         android:name="com.google.android.gms.permission.AD_ID"
@@ -45,6 +42,8 @@
         <activity android:name=".SignUpActivity" android:exported="false" />
         <activity android:name=".users.RecycleUserView" android:exported="true" />
         <activity android:name=".SplashActivity" android:exported="true" />
+        <activity android:name=".MealPlannerActivity" />
+        <activity android:name=".TimerActivity" android:exported="false" />
 
         <!-- Firebase notification service -->
         <service
@@ -57,9 +56,5 @@
 
         <!-- AlarmReceiver to handle scheduled alarms -->
         <receiver android:name=".AlarmReceiver" android:exported="false" />
-
-        <activity android:name=".MealPlannerActivity" />
-        <activity android:name=".TimerActivity" android:exported="false" />
-
     </application>
 </manifest>

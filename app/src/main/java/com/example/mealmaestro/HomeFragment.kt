@@ -19,7 +19,7 @@ import com.google.firebase.firestore.Query
 
 class HomeFragment : Fragment() {
 
-    private lateinit var recyclerView: RecyclerView
+    lateinit var recyclerView: RecyclerView
     private lateinit var postAdapter: PostAdapter
     private lateinit var backToTopButton: FloatingActionButton
     private var postList: MutableList<Post> = mutableListOf()

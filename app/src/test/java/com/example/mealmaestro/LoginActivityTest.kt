@@ -1,5 +1,6 @@
-import android.app.Application
 import android.content.Intent
+import android.os.Build
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.mealmaestro.LoginActivity
 import com.example.mealmaestro.MainActivity
 import com.google.android.gms.tasks.Task
@@ -14,16 +15,13 @@ import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.robolectric.Robolectric
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
-import org.robolectric.shadows.ShadowToast
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowToast
 
-
-@RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE, sdk = [30], application = Application::class)
+@Config(sdk = [Build.VERSION_CODES.Q], manifest = Config.NONE)  // Set SDK and specify no manifest
+@RunWith(AndroidJUnit4::class)
 class LoginActivityTest {
-
     private lateinit var authMock: FirebaseAuth
     private lateinit var loginActivity: LoginActivity
 
@@ -36,19 +34,18 @@ class LoginActivityTest {
 
     @Test
     fun testUserLogin_Success() {
-        // Mock a successful task with TaskCompletionSource<AuthResult>
+        // Mock a successful task
         val taskCompletionSource = TaskCompletionSource<AuthResult>()
         val taskMock: Task<AuthResult> = taskCompletionSource.task
 
-        // Configure authMock to return a successful task when signInWithEmailAndPassword is called
         `when`(authMock.signInWithEmailAndPassword(anyString(), anyString())).thenReturn(taskMock)
 
-        // Set up the UserLogin and verify intent to MainActivity
-        loginActivity.binding.loginUsername.setText("111@111.cl")
-        loginActivity.binding.loginPassword.setText("test000")
+        // Simulate user input
+        loginActivity.binding.loginUsername.setText("test@example.com")
+        loginActivity.binding.loginPassword.setText("password123")
         loginActivity.UserLogin()
 
-        // Complete the task as successful
+        // Complete the task successfully
         taskCompletionSource.setResult(mock(AuthResult::class.java))
 
         // Assert MainActivity is started
@@ -59,15 +56,14 @@ class LoginActivityTest {
 
     @Test
     fun testUserLogin_Failure() {
-        // Mock a failed task with TaskCompletionSource<AuthResult>
+        // Mock a failed task
         val taskCompletionSource = TaskCompletionSource<AuthResult>()
         val taskMock: Task<AuthResult> = taskCompletionSource.task
 
-        // Configure authMock to return a failed task when signInWithEmailAndPassword is called
         `when`(authMock.signInWithEmailAndPassword(anyString(), anyString())).thenReturn(taskMock)
 
-        // Set up the UserLogin and trigger a failed login
-        loginActivity.binding.loginUsername.setText("testuser@example.com")
+        // Simulate user input
+        loginActivity.binding.loginUsername.setText("wrong@example.com")
         loginActivity.binding.loginPassword.setText("wrongpassword")
         loginActivity.UserLogin()
 
@@ -78,5 +74,4 @@ class LoginActivityTest {
         val latestToastText = ShadowToast.getTextOfLatestToast()
         assertEquals("Login failed, please try again", latestToastText)
     }
-
 }
