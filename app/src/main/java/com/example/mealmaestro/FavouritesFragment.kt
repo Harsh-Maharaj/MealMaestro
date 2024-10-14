@@ -16,7 +16,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Source
 import com.example.mealmaestro.Helper.Post
-import android.util.Log
 
 class FavouritesFragment : Fragment() {
 

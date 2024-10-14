@@ -1,7 +1,6 @@
 package com.example.mealmaestro
 
 import android.app.AlertDialog
-import android.content.Context
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.Log
@@ -31,16 +30,20 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.app.TimePickerDialog
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import java.util.Calendar
+import android.content.Context
+import com.example.mealmaestro.Helper.ShoppingListItem
+
+
+
 
 
 class PostAdapter(
-    private val context: Context,
+    private val context: Context,  // Correct context type for Android
     private val postList: MutableList<Post>,
     private val onUnsave: (Post) -> Unit
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.item_post, parent, false)
@@ -55,6 +58,25 @@ class PostAdapter(
     override fun getItemCount(): Int {
         return postList.size
     }
+
+    // Inside PostAdapter class
+
+    fun extractIngredients(caption: String): List<String> {
+        val instructionKeywords = listOf(
+            "cook", "stir", "boil", "sauté", "heat", "mix", "bake",
+            "slice", "preheat", "chop", "simmer", "remove", "serve", "add"
+        )
+
+        val ingredientsSection = caption.substringAfter("Ingredients:", "")
+        return ingredientsSection.split("\n")
+            .map { it.trim() }
+            .filter { line ->
+                line.isNotEmpty() && instructionKeywords.none { keyword ->
+                    line.contains(keyword, ignoreCase = true)
+                }
+            }
+    }
+
 
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageView: ImageView = itemView.findViewById(R.id.image_view_post)
@@ -108,7 +130,7 @@ class PostAdapter(
                 // Display the image if there is no video
                 videoView.visibility = View.GONE
                 imageView.visibility = View.VISIBLE
-                Glide.with(context)
+                Glide.with(itemView.context)
                     .load(post.image_url)
                     .fitCenter()
                     .listener(object : RequestListener<Drawable> {
@@ -130,8 +152,7 @@ class PostAdapter(
                         ): Boolean {
                             resource?.let {
                                 val imageViewWidth = imageView.width
-                                val aspectRatio =
-                                    it.intrinsicWidth.toFloat() / it.intrinsicHeight.toFloat()
+                                val aspectRatio = it.intrinsicWidth.toFloat() / it.intrinsicHeight.toFloat()
                                 val imageViewHeight = (imageViewWidth / aspectRatio).toInt()
                                 imageView.layoutParams.height = imageViewHeight
                                 imageView.requestLayout()
@@ -140,6 +161,7 @@ class PostAdapter(
                         }
                     })
                     .into(imageView)
+
             }
 
             fetchUsernameFromRealtimeDatabase(post.user_id, usernameTextView)

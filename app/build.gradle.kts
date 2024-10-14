@@ -87,8 +87,15 @@ android {
         testImplementation(libs.mockito.inline)
         testImplementation(libs.androidx.core)
         testImplementation(libs.androidx.junit.v113)
+        testImplementation ("org.robolectric:robolectric:4.10")
+        testImplementation ("org.mockito:mockito-inline:4.11.0")
+
+
 
         androidTestImplementation(libs.androidx.junit)
         androidTestImplementation(libs.androidx.espresso.core)
     }
+}
+dependencies {
+    implementation(libs.junit.junit)
 }

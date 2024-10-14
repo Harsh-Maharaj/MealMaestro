@@ -25,6 +25,7 @@ firebaseFunctions = "21.0.0"
 firebaseAnalytics = "22.1.0"
 firebaseConfigKtx = "22.0.0"
 robolectric = "4.7.3"
+junitJunit = "4.12"
 
 [libraries]
 androidx-core = { module = "androidx.test:core", version.ref = "core" }
@@ -51,6 +52,7 @@ firebase-config-ktx = { group = "com.google.firebase", name = "firebase-config-k
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
 mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockitoCore" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+junit-junit = { group = "junit", name = "junit", version.ref = "junitJunit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
