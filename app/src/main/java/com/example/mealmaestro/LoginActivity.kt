@@ -11,7 +11,6 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.mealmaestro.Auth.GoogleAuth
-import com.example.mealmaestro.Auth.XAuth
 import com.example.mealmaestro.databinding.ActivityLoginBinding
 import com.google.firebase.auth.FirebaseAuth
 
@@ -25,9 +24,6 @@ class LoginActivity : AppCompatActivity() {
 
     // Firebase authentication instance
     private lateinit var auth: FirebaseAuth
-
-    // Additional authentication helper (if needed)
-    private lateinit var xAuth: XAuth
 
     // Register an activity result launcher to handle Google Sign-In result
     private val launcher =

@@ -1,56 +1,52 @@
 package com.example.mealmaestro.Chats
 
-import android.content.SharedPreferences
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.mealmaestro.Helper.DataBase
-import com.example.mealmaestro.R
 import com.example.mealmaestro.databinding.ActivityChatFriendsBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
-// ChatFriendsActivity manages the chat interface between users
 class ChatFriendsActivity : AppCompatActivity() {
 
-    // Binding for the activity's layout
     private lateinit var binding: ActivityChatFriendsBinding
-
-    // Views from the layout
     private lateinit var chatFriends: RecyclerView
-    private lateinit var cameraText: ImageView
     private lateinit var imageText: ImageView
-
-    // Adapter and data list for chat messages
     private lateinit var adapter: MessageAdapter
     private lateinit var messageList: ArrayList<Message>
-
-    // Firebase database helper and reference
     private lateinit var dataBase: DataBase
-    private lateinit var dataBaseRef: DatabaseReference
+    private lateinit var senderUid: String
+    private lateinit var receiverUid: String
+    private var receiverRoom: String? = null
+    private var senderRoom: String? = null
 
-    // Variables to store chat room identifiers
-    var receiverRoom: String? = null
-    var senderRoom: String? = null
-
-    // onCreate method to initialize activity components
     override fun onCreate(savedInstanceState: Bundle?) {
-        applyThemeFromPreferences()  // Apply the selected theme before setting the layout
         super.onCreate(savedInstanceState)
-
         binding = ActivityChatFriendsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Enable edge-to-edge layout behavior for immersive experience
         enableEdgeToEdge()
 
-        // Apply window insets for proper layout adjustment with system bars
         ViewCompat.setOnApplyWindowInsetsListener(binding.chatFriends) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -58,20 +54,18 @@ class ChatFriendsActivity : AppCompatActivity() {
         }
 
         val name = intent.getStringExtra("username")
-        val receiverUid = intent.getStringExtra("uid")
+        receiverUid = intent.getStringExtra("uid")!!
         val icon = intent.getStringExtra("icon")
-        val senderUid = FirebaseAuth.getInstance().currentUser!!.uid
+        senderUid = FirebaseAuth.getInstance().currentUser!!.uid
 
         senderRoom = receiverUid + senderUid
         receiverRoom = senderUid + receiverUid
 
         binding.cahtToolBarName.text = name
-        Glide.with(this)
-            .load(icon)
-            .into(binding.chatToolBarImg)
+        Glide.with(this).load(icon).into(binding.chatToolBarImg)
 
         messageList = ArrayList()
-        adapter = MessageAdapter(this, messageList)
+        adapter = MessageAdapter(this, messageList, senderRoom!!, receiverRoom!!)
         dataBase = DataBase()
 
         chatFriends = binding.chatFriends
@@ -80,36 +74,68 @@ class ChatFriendsActivity : AppCompatActivity() {
 
         binding.sendMessage.setOnClickListener {
             val message = binding.textMessage.text.toString()
-            if (message.isNotEmpty() && receiverUid != null) {
+            if (message.isNotEmpty()) {
                 val messageObject = Message(message, senderUid, receiverUid)
-
-                dataBase.addFriendChatMessage(
-                    senderRoom!!,
-                    receiverRoom!!,
-                    messageObject
-                )
-
+                dataBase.addFriendChatMessage(senderRoom!!, receiverRoom!!, messageObject, this)
                 binding.textMessage.text.clear()
             }
         }
 
+        binding.cameraText.setOnClickListener {
+            openCamera()
+        }
+
         dataBase.getFriendMessage(senderRoom!!, messageList, adapter)
 
-        binding.chatBack.setOnClickListener {
-            finish()
+        binding.chatBack.setOnClickListener { finish() }
+    }
+
+    private fun openCamera() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CAMERA),
+                CAMERA_PERMISSION_REQUEST_CODE
+            )
+        } else {
+            val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            cameraResultLauncher.launch(takePictureIntent)
         }
     }
 
-    // Apply the selected theme from SharedPreferences
-    private fun applyThemeFromPreferences() {
-        val sharedPreferences: SharedPreferences =
-            android.preference.PreferenceManager.getDefaultSharedPreferences(this)
-        val selectedTheme = sharedPreferences.getInt("SelectedTheme", 0)
-        when (selectedTheme) {
-            1 -> setTheme(R.style.DynamicTheme1)
-            2 -> setTheme(R.style.DynamicTheme2)
-            3 -> setTheme(R.style.DynamicTheme3)
-            4 -> setTheme(R.style.DynamicTheme4)
+    private val cameraResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val imageBitmap = result.data?.extras?.get("data") as? Bitmap
+            if (imageBitmap != null) {
+                val imageUri = saveBitmapToCache(imageBitmap)
+                if (imageUri != null) {
+                    dataBase.uploadImageToFirebase(imageUri, senderRoom!!, receiverRoom!!, senderUid, receiverUid, this)
+                } else {
+                    Toast.makeText(this, "Failed to save image", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(this, "Failed to capture image", Toast.LENGTH_SHORT).show()
+            }
         }
+    }
+
+    private fun saveBitmapToCache(bitmap: Bitmap): Uri? {
+        return try {
+            val file = File(cacheDir, "${System.currentTimeMillis()}.jpg")
+            val fileOutputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
+            fileOutputStream.flush()
+            fileOutputStream.close()
+            Uri.fromFile(file)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    companion object {
+        private const val CAMERA_PERMISSION_REQUEST_CODE = 2
     }
 }
