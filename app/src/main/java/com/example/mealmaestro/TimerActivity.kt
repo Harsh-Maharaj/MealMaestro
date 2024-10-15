@@ -9,7 +9,6 @@ import android.os.CountDownTimer
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.speech.tts.TextToSpeech
-import android.view.MenuItem
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
@@ -26,70 +25,58 @@ import java.util.*
 
 class TimerActivity : AppCompatActivity() {
 
-    // UI components for displaying the timer and progress
+    // UI components
     private lateinit var timeTxt: TextView
     private lateinit var circularProgressBar: ProgressBar
     private lateinit var editHours: EditText
     private lateinit var editMinutes: EditText
     private lateinit var editSeconds: EditText
+    private lateinit var startBtn: Button
+
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var toggle: ActionBarDrawerToggle
 
-    // Timer control buttons
-    private lateinit var startBtn: Button
-    private lateinit var pauseBtn: Button
-    private lateinit var resumeBtn: Button
-    private lateinit var resetBtn: Button
-
-    // Variables to handle the timer
+    // Timer variables
     private var timerMillis: Long = 0
     private var remainingMillis: Long = 0
     private var timer: CountDownTimer? = null
     private val maxProgress = 100
 
-    // Text-to-Speech engine for announcing when the timer is up
+    // Text-to-Speech engine
     private lateinit var textToSpeech: TextToSpeech
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        applyThemeFromPreferences()  // Apply the selected theme
+        applyThemeFromPreferences()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_timer)
 
-        // Keep the screen on while using the TimerActivity
+        // Keep the screen on while using the activity
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        // Initialize the UI components
-        drawerLayout = findViewById(R.id.drawer_layout)
+        // Initialize UI components
         timeTxt = findViewById(R.id.timeTxt)
         circularProgressBar = findViewById(R.id.circularProgressBar)
         editHours = findViewById(R.id.editHours)
         editMinutes = findViewById(R.id.editMinutes)
         editSeconds = findViewById(R.id.editSeconds)
         startBtn = findViewById(R.id.startBtn)
-        pauseBtn = findViewById(R.id.pauseBtn)
-        resumeBtn = findViewById(R.id.resumeBtn)
-        resetBtn = findViewById(R.id.resetBtn)
 
-        // Set up the Toolbar as the ActionBar
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        // Set initial states
+        timeTxt.text = "00:00:00"
+        circularProgressBar.progress = 0
+        startBtn.isEnabled = true
+        editHours.setText("")
+        editMinutes.setText("")
+        editSeconds.setText("")
 
-        // Setup Drawer Toggle for the navigation drawer
-        toggle = ActionBarDrawerToggle(
-            this, drawerLayout, toolbar,
-            R.string.navigation_drawer_open, R.string.navigation_drawer_close
-        )
-        drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
-
-        // Initialize Text-to-Speech
+        // Set up Text-to-Speech
         textToSpeech = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 textToSpeech.language = Locale.US
             }
         }
 
-        // Initialize timer control buttons
+        // Handle Start button click
         startBtn.setOnClickListener {
             val hours = editHours.text.toString().toIntOrNull() ?: 0
             val minutes = editMinutes.text.toString().toIntOrNull() ?: 0
@@ -99,32 +86,6 @@ class TimerActivity : AppCompatActivity() {
                 startTimer(timerMillis)
                 startBtn.isEnabled = false
             }
-        }
-
-        pauseBtn.setOnClickListener { pauseTimer() }
-        resumeBtn.setOnClickListener { resumeTimer() }
-        resetBtn.setOnClickListener { resetTimer() }
-
-        val navigationView: NavigationView = findViewById(R.id.nav_view)
-        navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_home -> {
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                }
-                R.id.nav_settings -> {
-                    // Handle Settings action (currently empty)
-                }
-                R.id.nav_logout -> {
-                    FirebaseAuth.getInstance().signOut()
-                    val intent = Intent(this, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                }
-            }
-            drawerLayout.closeDrawer(GravityCompat.START)
-            true
         }
     }
 
@@ -142,9 +103,7 @@ class TimerActivity : AppCompatActivity() {
 
     private fun startTimer(durationMillis: Long) {
         circularProgressBar.max = maxProgress
-        val startMillis = if (remainingMillis > 0) remainingMillis else durationMillis
-
-        timer = object : CountDownTimer(startMillis, 1000) {
+        timer = object : CountDownTimer(durationMillis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 remainingMillis = millisUntilFinished
                 val secondsRemaining = (millisUntilFinished / 1000).toInt()
@@ -165,24 +124,6 @@ class TimerActivity : AppCompatActivity() {
         }.start()
     }
 
-    private fun pauseTimer() {
-        timer?.cancel()
-    }
-
-    private fun resumeTimer() {
-        if (remainingMillis > 0) {
-            startTimer(remainingMillis)
-        }
-    }
-
-    private fun resetTimer() {
-        pauseTimer()
-        remainingMillis = timerMillis
-        circularProgressBar.progress = maxProgress
-        updateTimerText((timerMillis / 1000).toInt())
-        startBtn.isEnabled = true
-    }
-
     private fun updateTimerText(secondsLeft: Int) {
         val hours = secondsLeft / 3600
         val minutes = (secondsLeft % 3600) / 60
@@ -193,13 +134,7 @@ class TimerActivity : AppCompatActivity() {
     private fun vibratePhone() {
         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         if (vibrator.hasVibrator()) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                vibrator.vibrate(
-                    VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
-                )
-            } else {
-                vibrator.vibrate(500)
-            }
+            vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
         }
     }
 
