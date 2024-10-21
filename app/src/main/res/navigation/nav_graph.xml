@@ -57,6 +57,14 @@
         android:label="AI Generated Recipes"
         tools:layout="@layout/fragment_aigen_recipes" />
 
+    <!-- Settings Fragment -->
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="com.example.mealmaestro.SettingsFragment"
+        android:label="Settings"
+        tools:layout="@layout/fragment_settings" />
+
+
 
 
 

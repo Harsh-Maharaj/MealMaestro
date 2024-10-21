@@ -20,6 +20,7 @@
     <string name="message_user">message user</string>
     <string name="chat">Chat</string>
     <string name="user_profile_icon">user profile icon</string>
+    <string name="do_not_sleep">Do Not Sleep</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_desc">Navigation header image description</string>

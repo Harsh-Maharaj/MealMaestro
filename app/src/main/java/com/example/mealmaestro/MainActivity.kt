@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
 
-                R.id.nav_meal_planner -> {  // New: Handle Meal Planner Navigation
+                R.id.nav_meal_planner -> {  // Handle Meal Planner Navigation
                     startActivity(Intent(this, MealPlannerActivity::class.java))
                     drawerLayout.closeDrawer(GravityCompat.START)
                     true
@@ -129,9 +129,16 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
 
+                R.id.nav_settings -> {  // Added: Handle Settings Navigation
+                    navController.navigate(R.id.nav_settings)
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+
                 else -> false
             }
         }
+
 
         getFCMToken()
 

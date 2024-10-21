@@ -9,8 +9,8 @@ import android.view.ViewGroup
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 // Constants to hold fragment arguments
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+const val ARG_PARAM1 = "param1"
+const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
