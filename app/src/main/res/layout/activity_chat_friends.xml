@@ -81,6 +81,7 @@
             android:layout_marginStart="5dp"
             android:backgroundTint="@color/purple"
             android:padding="7dp"
+            android:elevation="10dp"
             android:src="@drawable/camera" />
 
         <EditText
