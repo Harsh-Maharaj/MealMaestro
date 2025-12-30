@@ -112,4 +112,10 @@ If the AI isn’t responding correctly, verify your OpenAI API key is correctly 
 ## 📄 License
 This project is licensed under the MIT License. See the LICENSE file for more details.
 
+## Contributors
+- Harsh Maharaj
+- Dillan Pillai
+- Ranwei Zhang
+- Christian Hidalgo
+
 ## Thank you for using Meal Maestro! If you have any issues or suggestions, feel free to open an issue or contact us via email at MealMaestrohelp@gmail.com.
